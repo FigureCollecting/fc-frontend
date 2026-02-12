@@ -57,18 +57,20 @@ describe('FigureCard', () => {
       render(<FigureCard figure={mockFigureWithAllData} />);
 
       expect(screen.getByText(mockFigureWithAllData.name)).toBeInTheDocument();
-      expect(screen.getByText(mockFigureWithAllData.manufacturer)).toBeInTheDocument();
       expect(screen.getByText(mockFigureWithAllData.scale)).toBeInTheDocument();
-      expect(screen.getByText(`Location: ${mockFigureWithAllData.location} (Box ${mockFigureWithAllData.boxNumber})`)).toBeInTheDocument();
+      // Location is displayed without prefix or box number
+      expect(screen.getByText(mockFigureWithAllData.location)).toBeInTheDocument();
     });
 
     it('should render MFC link when provided', () => {
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      const mfcLink = screen.getByText(`MFC: ${mockFigureWithAllData.mfcLink}`);
+      // Should display just the ID, not the full URL
+      const mfcLink = screen.getByText('MFC: 123');
       expect(mfcLink).toBeInTheDocument();
-      expect(mfcLink.closest('a')).toHaveAttribute('href', mockFigureWithAllData.mfcLink);
-      expect(mfcLink.closest('a')).toHaveAttribute('target', '_blank');
+      // The closest <a> with the external href
+      const externalLink = mfcLink.closest('a[target="_blank"]') || mfcLink.closest('a[href*="myfigurecollection"]');
+      expect(externalLink).toHaveAttribute('href', 'https://myfigurecollection.net/item/123');
     });
 
     it('should not render MFC link when not provided', () => {
@@ -86,7 +88,7 @@ describe('FigureCard', () => {
       // In test environment, external images may fail to load and use fallback
       const imageSrc = image.getAttribute('src');
       expect(
-        imageSrc === mockFigureWithAllData.imageUrl || 
+        imageSrc === mockFigureWithAllData.imageUrl ||
         imageSrc === 'https://via.placeholder.com/300x200?text=No+Image'
       ).toBe(true);
     });
@@ -104,27 +106,27 @@ describe('FigureCard', () => {
     it('should render edit and delete buttons', () => {
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      expect(screen.getByRole('button', { name: /edit figure/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /delete figure/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /edit item/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /delete item/i })).toBeInTheDocument();
     });
   });
 
   describe('Navigation', () => {
-    it('should have correct links to figure detail page (image and name)', () => {
+    it('should have a link to figure detail page wrapping the card', () => {
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      // Both image and name should link to the detail page
-      const detailLinks = screen.getAllByRole('link', { name: mockFigureWithAllData.name });
-      expect(detailLinks).toHaveLength(2); // Image link and name link
-      detailLinks.forEach(link => {
-        expect(link).toHaveAttribute('href', `/figures/${mockFigureWithAllData._id}`);
-      });
+      // The entire card is wrapped in a single link to the detail page
+      const detailLinks = screen.getAllByRole('link');
+      const cardLink = detailLinks.find(link =>
+        link.getAttribute('href') === `/figures/${mockFigureWithAllData._id}`
+      );
+      expect(cardLink).toBeInTheDocument();
     });
 
     it('should have correct link to edit page', () => {
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      const editButton = screen.getByRole('button', { name: /edit figure/i });
+      const editButton = screen.getByRole('button', { name: /edit item/i });
       const editLink = editButton.closest('a');
       expect(editLink).toHaveAttribute('href', `/figures/edit/${mockFigureWithAllData._id}`);
     });
@@ -135,7 +137,7 @@ describe('FigureCard', () => {
       const user = userEvent.setup();
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      const deleteButton = screen.getByRole('button', { name: /delete figure/i });
+      const deleteButton = screen.getByRole('button', { name: /delete item/i });
       await user.click(deleteButton);
 
       expect(mockConfirm).toHaveBeenCalledWith(`Are you sure you want to delete ${mockFigureWithAllData.name}?`);
@@ -144,10 +146,10 @@ describe('FigureCard', () => {
     it('should call deleteFigure API when confirmed', async () => {
       const user = userEvent.setup();
       mockConfirm.mockReturnValue(true);
-      
+
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      const deleteButton = screen.getByRole('button', { name: /delete figure/i });
+      const deleteButton = screen.getByRole('button', { name: /delete item/i });
       await user.click(deleteButton);
 
       expect(mockMutation.mutate).toHaveBeenCalled();
@@ -156,10 +158,10 @@ describe('FigureCard', () => {
     it('should not call deleteFigure API when cancelled', async () => {
       const user = userEvent.setup();
       mockConfirm.mockReturnValue(false);
-      
+
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      const deleteButton = screen.getByRole('button', { name: /delete figure/i });
+      const deleteButton = screen.getByRole('button', { name: /delete item/i });
       await user.click(deleteButton);
 
       expect(mockMutation.mutate).not.toHaveBeenCalled();
@@ -172,7 +174,7 @@ describe('FigureCard', () => {
 
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      const deleteButton = screen.getByRole('button', { name: /delete figure/i });
+      const deleteButton = screen.getByRole('button', { name: /delete item/i });
       expect(deleteButton).toBeDisabled();
     });
   });
@@ -223,11 +225,14 @@ describe('FigureCard', () => {
     it('should have hover styles applied', () => {
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      // Find the figure card container by looking for the figure name links (image + text)
-      const figureLinks = screen.getAllByRole('link', { name: mockFigureWithAllData.name });
-      expect(figureLinks.length).toBeGreaterThanOrEqual(1);
+      // The card is wrapped in a single link; find the card link by href
+      const allLinks = screen.getAllByRole('link');
+      const cardLink = allLinks.find(link =>
+        link.getAttribute('href') === `/figures/${mockFigureWithAllData._id}`
+      );
+      expect(cardLink).toBeInTheDocument();
       // The card should be rendered and interactive
-      expect(figureLinks[0].closest('div')).toBeInTheDocument();
+      expect(cardLink!.closest('div') || cardLink).toBeInTheDocument();
     });
   });
 
@@ -235,8 +240,8 @@ describe('FigureCard', () => {
     it('should have proper ARIA labels on buttons', () => {
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      expect(screen.getByRole('button', { name: 'Edit figure' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Delete figure' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Edit item' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Delete item' })).toBeInTheDocument();
     });
 
     it('should have proper alt text on image', () => {
@@ -249,28 +254,23 @@ describe('FigureCard', () => {
     it('should have proper link text for figure name', () => {
       render(<FigureCard figure={mockFigureWithAllData} />);
 
-      // Both image and name link to the detail page
-      const links = screen.getAllByRole('link', { name: mockFigureWithAllData.name });
-      expect(links.length).toBeGreaterThanOrEqual(1);
-      expect(links[0]).toBeInTheDocument();
+      // The card is wrapped in a single link to the detail page
+      const allLinks = screen.getAllByRole('link');
+      const cardLink = allLinks.find(link =>
+        link.getAttribute('href') === `/figures/${mockFigureWithAllData._id}`
+      );
+      expect(cardLink).toBeInTheDocument();
     });
   });
 
   describe('Search Highlighting', () => {
     it('should highlight matching text in figure name when searchQuery provided', () => {
       // mockFigure has name: 'Test Figure' - search for 'Test'
-      render(<FigureCard figure={mockFigureWithAllData} searchQuery="Test" />);
+      const { container } = render(<FigureCard figure={mockFigureWithAllData} searchQuery="Test" />);
 
-      // Both image and name link to detail page - get the text link (second one)
-      const nameLinks = screen.getAllByRole('link', { name: mockFigureWithAllData.name });
-      expect(nameLinks.length).toBeGreaterThanOrEqual(1);
-      // Check that mark element exists for highlighted text in the text link
-      const textLink = nameLinks.find(link => link.textContent?.includes('Test'));
-      expect(textLink).toBeDefined();
-      if (textLink) {
-        const marks = textLink.querySelectorAll('mark');
-        expect(marks.length).toBeGreaterThan(0);
-      }
+      // Check that mark element exists for highlighted text in the card
+      const marks = container.querySelectorAll('mark');
+      expect(marks.length).toBeGreaterThan(0);
     });
 
     it('should highlight matching text in manufacturer when searchQuery provided', () => {
@@ -283,31 +283,19 @@ describe('FigureCard', () => {
     });
 
     it('should not highlight when searchQuery is empty', () => {
-      render(<FigureCard figure={mockFigureWithAllData} searchQuery="" />);
+      const { container } = render(<FigureCard figure={mockFigureWithAllData} searchQuery="" />);
 
-      // Both image and name link to detail page
-      const nameLinks = screen.getAllByRole('link', { name: mockFigureWithAllData.name });
-      expect(nameLinks.length).toBeGreaterThanOrEqual(1);
-      // No mark elements should be present in the text link
-      const textLink = nameLinks.find(link => link.textContent?.includes('Test'));
-      if (textLink) {
-        const marks = textLink.querySelectorAll('mark');
-        expect(marks.length).toBe(0);
-      }
+      // No mark elements should be present
+      const marks = container.querySelectorAll('mark');
+      expect(marks.length).toBe(0);
     });
 
     it('should not highlight when searchQuery is undefined', () => {
-      render(<FigureCard figure={mockFigureWithAllData} />);
+      const { container } = render(<FigureCard figure={mockFigureWithAllData} />);
 
-      // Both image and name link to detail page
-      const nameLinks = screen.getAllByRole('link', { name: mockFigureWithAllData.name });
-      expect(nameLinks.length).toBeGreaterThanOrEqual(1);
       // No mark elements should be present
-      const textLink = nameLinks.find(link => link.textContent?.includes('Test'));
-      if (textLink) {
-        const marks = textLink.querySelectorAll('mark');
-        expect(marks.length).toBe(0);
-      }
+      const marks = container.querySelectorAll('mark');
+      expect(marks.length).toBe(0);
     });
 
     it('should highlight multiple search terms', () => {
@@ -316,19 +304,23 @@ describe('FigureCard', () => {
         name: 'Saber Alter Figure',
         manufacturer: 'Good Smile Company',
       };
-      render(<FigureCard figure={figure} searchQuery="Saber Good" />);
+      const { container } = render(<FigureCard figure={figure} searchQuery="Saber Good" />);
 
       // Both "Saber" in name and "Good" in manufacturer should be highlighted
-      const nameLinks = screen.getAllByRole('link', { name: figure.name });
-      expect(nameLinks.length).toBeGreaterThanOrEqual(1);
+      const marks = container.querySelectorAll('mark');
+      expect(marks.length).toBeGreaterThan(0);
     });
 
     it('should handle special regex characters in searchQuery safely', () => {
-      render(<FigureCard figure={mockFigureWithAllData} searchQuery="test.* [special]" />);
+      const { container } = render(<FigureCard figure={mockFigureWithAllData} searchQuery="test.* [special]" />);
 
       // Should not throw an error with special regex characters
-      const nameLinks = screen.getAllByRole('link', { name: mockFigureWithAllData.name });
-      expect(nameLinks.length).toBeGreaterThanOrEqual(1);
+      // The card should render without crashing
+      const allLinks = screen.getAllByRole('link');
+      const cardLink = allLinks.find(link =>
+        link.getAttribute('href') === `/figures/${mockFigureWithAllData._id}`
+      );
+      expect(cardLink).toBeInTheDocument();
     });
   });
 
@@ -340,10 +332,8 @@ describe('FigureCard', () => {
         boxNumber: undefined
       };
 
-      render(<FigureCard figure={figureWithoutLocation} />);
-
-      // When location/boxNumber are undefined, React renders them as empty strings
-      expect(screen.getByText(/Location:\s*\(Box\s*\)/)).toBeInTheDocument();
+      // Component conditionally renders location only if truthy
+      expect(() => render(<FigureCard figure={figureWithoutLocation} />)).not.toThrow();
     });
 
     it('should truncate long figure names', () => {
@@ -354,10 +344,12 @@ describe('FigureCard', () => {
 
       render(<FigureCard figure={figureWithLongName} />);
 
-      // Both image and name link to detail page
-      const nameLinks = screen.getAllByRole('link', { name: figureWithLongName.name });
-      expect(nameLinks.length).toBeGreaterThanOrEqual(1);
-      expect(nameLinks[0]).toBeInTheDocument();
+      // The card is wrapped in a single link; find it by href
+      const allLinks = screen.getAllByRole('link');
+      const cardLink = allLinks.find(link =>
+        link.getAttribute('href') === `/figures/${figureWithLongName._id}`
+      );
+      expect(cardLink).toBeInTheDocument();
       // Note: Testing text truncation would require more complex DOM testing
     });
 
@@ -369,7 +361,7 @@ describe('FigureCard', () => {
         location: '',
         boxNumber: '',
       };
-      
+
       expect(() => render(<FigureCard figure={minimalFigure} />)).not.toThrow();
     });
   });

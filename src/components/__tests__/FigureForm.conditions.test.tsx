@@ -18,6 +18,20 @@ jest.mock('../../hooks/usePublicConfig', () => ({
   }),
 }));
 
+// Mock useLookupData hook
+jest.mock('../../hooks/useLookupData', () => ({
+  useLookupData: () => ({
+    roleTypes: [
+      { _id: 'role1', name: 'Manufacturer', kind: 'company' },
+      { _id: 'role2', name: 'Sculptor', kind: 'artist' },
+    ],
+    companies: [],
+    artists: [],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 // Mock window.open
 const mockOpen = jest.fn();
 window.open = mockOpen;
@@ -145,7 +159,7 @@ describe('FigureForm Uncovered Conditions', () => {
   describe('Line 101: MFC URL validation (3 of 4 conditions)', () => {
     it('should test all 4 MFC URL validation conditions', () => {
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i) as HTMLInputElement;
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i) as HTMLInputElement;
 
       // Condition 1: Valid MFC URL without www
       fireEvent.change(mfcInput, { target: { value: 'https://myfigurecollection.net/item/123' } });
@@ -170,7 +184,7 @@ describe('FigureForm Uncovered Conditions', () => {
       const onSubmit = jest.fn();
       renderFigureForm({ onSubmit });
 
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
       const form = screen.getByRole('form');
 
       // Invalid MFC URL
@@ -189,35 +203,26 @@ describe('FigureForm Uncovered Conditions', () => {
       renderFigureForm({ onSubmit });
 
       const form = screen.getByRole('form');
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
       const nameInput = screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i);
-      const manufacturerInput = screen.getByPlaceholderText(/Good Smile Company/i);
 
-      // Condition 1: No MFC link, no name, no manufacturer
+      // Condition 1: No MFC link, no name - validation should fail
       fireEvent.submit(form);
       await waitFor(() => {
         expect(onSubmit).not.toHaveBeenCalled();
       });
 
-      // Condition 2: MFC link present, name and manufacturer not required
+      // Condition 2: MFC link present, name not required
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/123');
       fireEvent.submit(form);
       // May submit or trigger scraping
 
-      // Condition 3: No MFC link, name present, no manufacturer
+      // Condition 3: No MFC link, name present - should submit
       await userEvent.clear(mfcInput);
       await userEvent.type(nameInput, 'Test Figure');
       fireEvent.submit(form);
       await waitFor(() => {
-        expect(onSubmit).not.toHaveBeenCalled();
-      });
-
-      // Condition 4: No MFC link, manufacturer present, no name
-      await userEvent.clear(nameInput);
-      await userEvent.type(manufacturerInput, 'Test Manufacturer');
-      fireEvent.submit(form);
-      await waitFor(() => {
-        expect(onSubmit).not.toHaveBeenCalled();
+        expect(onSubmit).toHaveBeenCalled();
       });
     });
   });
@@ -231,7 +236,7 @@ describe('FigureForm Uncovered Conditions', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/123');
       fireEvent.blur(mfcInput);
@@ -258,7 +263,7 @@ describe('FigureForm Uncovered Conditions', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/456');
       fireEvent.blur(mfcInput);
@@ -279,7 +284,7 @@ describe('FigureForm Uncovered Conditions', () => {
       (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/789');
       fireEvent.blur(mfcInput);
@@ -344,7 +349,7 @@ describe('FigureForm Uncovered Conditions', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/1001');
       fireEvent.blur(mfcInput);
@@ -371,15 +376,16 @@ describe('FigureForm Uncovered Conditions', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
-      await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/1002');
+      // Use fireEvent.change to avoid slow character-by-character typing that causes timeouts
+      fireEvent.change(mfcInput, { target: { value: 'https://myfigurecollection.net/item/1002' } });
       fireEvent.blur(mfcInput);
 
       await waitFor(() => {
         const imageInput = screen.getByPlaceholderText(/example\.com\/image\.jpg/i) as HTMLInputElement;
         expect(imageInput.value).toBe('https://example.com/normal.jpg');
-      }, { timeout: 2000 });
+      }, { timeout: 3000 });
     });
   });
 
@@ -391,7 +397,7 @@ describe('FigureForm Uncovered Conditions', () => {
       );
 
       const { unmount } = renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/unmount');
 
@@ -412,14 +418,13 @@ describe('FigureForm Uncovered Conditions', () => {
     it('should test with initialData provided', () => {
       const initialData = {
         _id: '123',
-        manufacturer: 'Test Mfr',
         name: 'Test Name',
         scale: '1/7',
       };
 
       renderFigureForm({ initialData });
 
-      expect(screen.getByDisplayValue('Test Mfr')).toBeInTheDocument();
+      // manufacturer field was removed from form
       expect(screen.getByDisplayValue('Test Name')).toBeInTheDocument();
       expect(screen.getByDisplayValue('1/7')).toBeInTheDocument();
     });
@@ -427,11 +432,12 @@ describe('FigureForm Uncovered Conditions', () => {
     it('should test without initialData', () => {
       renderFigureForm({ initialData: undefined });
 
-      const manufacturerInput = screen.getByPlaceholderText(/Good Smile Company/i) as HTMLInputElement;
+      // manufacturer field was removed from form
       const nameInput = screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i) as HTMLInputElement;
+      const scaleInput = screen.getByPlaceholderText(/1\/8, 1\/7/i) as HTMLInputElement;
 
-      expect(manufacturerInput.value).toBe('');
       expect(nameInput.value).toBe('');
+      expect(scaleInput.value).toBe('');
     });
   });
 
@@ -450,7 +456,7 @@ describe('FigureForm Uncovered Conditions', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/1003');
       fireEvent.blur(mfcInput);
@@ -469,14 +475,15 @@ describe('FigureForm Uncovered Conditions', () => {
       );
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
-      await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/1004');
+      await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/100400');
       fireEvent.blur(mfcInput);
 
+      // Item ID "100400" has 6 digits so debounce delay is 1000ms
       await waitFor(() => {
         expect(screen.queryByTestId('mfc-scraping-spinner')).toBeInTheDocument();
-      }, { timeout: 1500 });
+      }, { timeout: 3000 });
 
       // Clean up
       if (resolveFetch) {
@@ -495,7 +502,7 @@ describe('FigureForm Uncovered Conditions', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/1005');
       fireEvent.blur(mfcInput);

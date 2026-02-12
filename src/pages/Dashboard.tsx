@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
@@ -16,28 +16,86 @@ import {
   Grid,
   GridItem,
   useColorModeValue,
+  useDisclosure,
+  HStack,
 } from '@chakra-ui/react';
-import { FaCube, FaPlus, FaSearch, FaChartBar, FaBoxOpen } from 'react-icons/fa';
-import { useQuery } from 'react-query';
+import { FaCube, FaPlus, FaSearch, FaChartBar, FaBoxOpen, FaSync } from 'react-icons/fa';
+import MfcSyncModal from '../components/MfcSyncModal';
+import CollectionStatusTabs from '../components/CollectionStatusTabs';
+import { useQuery, useQueryClient } from 'react-query';
 import { getFigures, getFigureStats } from '../api';
 import FigureCard from '../components/FigureCard';
 import SearchBar from '../components/SearchBar';
 import { useNavigate } from 'react-router-dom';
+import { CollectionStatus } from '../types';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const cardBg = useColorModeValue('white', 'gray.800');
+  const { isOpen: isSyncOpen, onOpen: onSyncOpen, onClose: onSyncClose } = useDisclosure();
 
-  const { data: figuresData } = useQuery('recentFigures', () => getFigures(1, 4)) || {};
-  const { data: statsData } = useQuery('dashboardStats', getFigureStats) || {};
+  // Collection status state - controls which slice of data is shown
+  const [activeStatus, setActiveStatus] = useState<CollectionStatus>('owned');
+
+  // Fetch stats with status filter - also provides status counts for tabs
+  const { data: statsData, isLoading: isStatsLoading } = useQuery(
+    ['dashboardStats', activeStatus],
+    () => getFigureStats(activeStatus)
+  ) || {};
+
+  // Fetch recent figures filtered by active status
+  const { data: figuresData } = useQuery(
+    ['recentFigures', activeStatus],
+    () => getFigures(1, 12, 'createdAt', 'desc', activeStatus)
+  ) || {};
+
+  const handleSyncComplete = () => {
+    // Refresh dashboard data after sync
+    queryClient.invalidateQueries(['recentFigures']);
+    queryClient.invalidateQueries(['dashboardStats']);
+  };
   
   const handleSearch = (query: string) => {
     navigate(`/search?q=${encodeURIComponent(query)}`);
   };
 
+  // Default status counts if data hasn't loaded yet
+  const statusCounts = statsData?.statusCounts || { owned: 0, ordered: 0, wished: 0 };
+
   return (
     <Box>
-      <Heading size="lg" mb={6}>Dashboard</Heading>
+      <Flex justify="space-between" align="center" mb={6}>
+        <Heading size="lg">Dashboard</Heading>
+        <HStack spacing={3}>
+          <Button
+            as={RouterLink}
+            to="/figures/add"
+            leftIcon={<FaPlus />}
+            colorScheme="brand"
+            size="sm"
+          >
+            Add Item
+          </Button>
+          <Button
+            leftIcon={<FaSync />}
+            colorScheme="purple"
+            variant="outline"
+            size="sm"
+            onClick={onSyncOpen}
+          >
+            Sync with MFC
+          </Button>
+        </HStack>
+      </Flex>
+
+      {/* Collection Status Tabs - filter by Owned/Ordered/Wished */}
+      <CollectionStatusTabs
+        activeStatus={activeStatus}
+        statusCounts={statusCounts}
+        onStatusChange={setActiveStatus}
+        isLoading={isStatsLoading}
+      />
 
       <Box mb={8}>
         <SearchBar onSearch={handleSearch} placeholder="Search your entire collection..." />
@@ -119,7 +177,7 @@ const Dashboard: React.FC = () => {
                 to="/figures" 
                 variant="outline" 
                 size="sm"
-                aria-label="View All Figures"
+                aria-label="View All Items"
               >
                 View All
               </Button>
@@ -140,7 +198,7 @@ const Dashboard: React.FC = () => {
                 </Button>
               </Flex>
             ) : (
-              <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+              <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
                 {figuresData?.data.map((figure) => (
                   <FigureCard key={figure._id} figure={figure} />
                 ))}
@@ -183,6 +241,12 @@ const Dashboard: React.FC = () => {
           </Box>
         </GridItem>
       </Grid>
+
+      <MfcSyncModal
+        isOpen={isSyncOpen}
+        onClose={onSyncClose}
+        onSyncComplete={handleSyncComplete}
+      />
     </Box>
   );
 };

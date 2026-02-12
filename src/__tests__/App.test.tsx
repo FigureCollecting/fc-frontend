@@ -92,6 +92,36 @@ jest.mock('../components/Layout', () => {
 jest.mock('../stores/authStore');
 const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore>;
 
+// Setup default getState mock for static method calls (useTokenRefresh uses this)
+const mockRecordActivity = jest.fn();
+const mockGetState = jest.fn(() => ({
+  user: null,
+  isAuthenticated: false,
+  setUser: jest.fn(),
+  logout: jest.fn(),
+  recordActivity: mockRecordActivity,
+}));
+(mockUseAuthStore as any).getState = mockGetState;
+
+// Helper to set up both mocks together (hook and getState)
+const setupAuthMock = (authState: {
+  user: typeof mockUser | null;
+  isAuthenticated: boolean;
+  setUser?: jest.Mock;
+  logout?: jest.Mock;
+  recordActivity?: jest.Mock;
+}) => {
+  const fullState = {
+    setUser: jest.fn(),
+    logout: jest.fn(),
+    recordActivity: jest.fn(),
+    ...authState,
+  };
+  mockUseAuthStore.mockReturnValue(fullState);
+  mockGetState.mockReturnValue(fullState);
+  return fullState;
+};
+
 // Custom render function for routing tests
 const renderWithRouter = (
   ui: React.ReactElement,
@@ -117,8 +147,8 @@ const renderWithRouter = (
 describe('App Routing', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.resetAllMocks(); // Reset mock implementations
-    jest.restoreAllMocks(); // Restore original implementations
+    // Restore getState mock after clearAllMocks (it gets cleared too)
+    (mockUseAuthStore as any).getState = mockGetState;
   });
 
   afterEach(() => {
@@ -127,12 +157,15 @@ describe('App Routing', () => {
 
   describe('Public Routes', () => {
     beforeEach(() => {
-      mockUseAuthStore.mockReturnValue({
+      const publicAuthState = {
         user: null,
         isAuthenticated: false,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(publicAuthState);
+      mockGetState.mockReturnValue(publicAuthState);
     });
 
     it('should render login page for unauthenticated users at root path', () => {
@@ -170,12 +203,15 @@ describe('App Routing', () => {
 
   describe('Protected Routes', () => {
     beforeEach(() => {
-      mockUseAuthStore.mockReturnValue({
+      const protectedAuthState = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(protectedAuthState);
+      mockGetState.mockReturnValue(protectedAuthState);
     });
 
     it('should render dashboard page at root path for authenticated users', () => {
@@ -244,12 +280,15 @@ describe('App Routing', () => {
 
   describe('ProtectedRoute Component', () => {
     it('should render children when user is authenticated', () => {
-      mockUseAuthStore.mockReturnValue({
+      const authState = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(authState);
+      mockGetState.mockReturnValue(authState);
 
       renderWithRouter(<App />);
 
@@ -258,12 +297,15 @@ describe('App Routing', () => {
     });
 
     it('should redirect to login when user is not authenticated', () => {
-      mockUseAuthStore.mockReturnValue({
+      const unauthState = {
         user: null,
         isAuthenticated: false,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(unauthState);
+      mockGetState.mockReturnValue(unauthState);
 
       renderWithRouter(<App />, { initialEntries: ['/figures'] });
 
@@ -277,9 +319,11 @@ describe('App Routing', () => {
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
+        recordActivity: jest.fn(),
       };
 
       mockUseAuthStore.mockReturnValue(mockStore);
+      mockGetState.mockReturnValue(mockStore);
 
       renderWithRouter(<App />, { initialEntries: ['/figures'] });
 
@@ -290,12 +334,15 @@ describe('App Routing', () => {
 
   describe('Route Parameters', () => {
     beforeEach(() => {
-      mockUseAuthStore.mockReturnValue({
+      const routeAuthState = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(routeAuthState);
+      mockGetState.mockReturnValue(routeAuthState);
     });
 
     it('should handle dynamic route parameters for figure detail', () => {
@@ -322,12 +369,15 @@ describe('App Routing', () => {
 
   describe('Nested Routes', () => {
     beforeEach(() => {
-      mockUseAuthStore.mockReturnValue({
+      const nestedAuthState = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(nestedAuthState);
+      mockGetState.mockReturnValue(nestedAuthState);
     });
 
     it('should render layout wrapper for all protected routes', () => {
@@ -364,27 +414,33 @@ describe('App Routing', () => {
     it('should handle authentication state changes dynamically', async () => {
       // Test that the component responds correctly to different auth states
       // This is a unit test focused on the component's render behavior, not integration of the auth store
-      
+
       // Test unauthenticated state
-      mockUseAuthStore.mockReturnValue({
+      const unauthState = {
         user: null,
         isAuthenticated: false,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(unauthState);
+      mockGetState.mockReturnValue(unauthState);
 
       const { unmount } = renderWithRouter(<App />, { initialEntries: ['/figures'] });
       expect(screen.getByTestId('login-page')).toBeInTheDocument();
-      
+
       unmount();
 
       // Test authenticated state (separate render to test component behavior)
-      mockUseAuthStore.mockReturnValue({
+      const authState = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(authState);
+      mockGetState.mockReturnValue(authState);
 
       renderWithRouter(<App />, { initialEntries: ['/figures'] });
       expect(screen.queryByTestId('login-page')).not.toBeInTheDocument();
@@ -392,14 +448,16 @@ describe('App Routing', () => {
     });
 
     it('should redirect to login when user logs out', async () => {
-      let authState = {
+      let authState: any = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
+        recordActivity: jest.fn(),
       };
 
       mockUseAuthStore.mockReturnValue(authState);
+      mockGetState.mockReturnValue(authState);
 
       const { rerender } = renderWithRouter(<App />, { initialEntries: ['/figures'] });
 
@@ -412,9 +470,11 @@ describe('App Routing', () => {
         isAuthenticated: false,
         setUser: jest.fn(),
         logout: jest.fn(),
+        recordActivity: jest.fn(),
       };
 
       mockUseAuthStore.mockReturnValue(authState);
+      mockGetState.mockReturnValue(authState);
 
       // Rerender with logged out state
       rerender(<App />);
@@ -428,12 +488,15 @@ describe('App Routing', () => {
 
   describe('Route Guards', () => {
     it('should prevent access to authenticated-only routes when not logged in', () => {
-      mockUseAuthStore.mockReturnValue({
+      const unauthState = {
         user: null,
         isAuthenticated: false,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(unauthState);
+      mockGetState.mockReturnValue(unauthState);
 
       const protectedRoutes = [
         '/',
@@ -455,12 +518,15 @@ describe('App Routing', () => {
 
     it('should allow access to public routes regardless of authentication', () => {
       // Test when not authenticated
-      mockUseAuthStore.mockReturnValue({
+      const unauthState = {
         user: null,
         isAuthenticated: false,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(unauthState);
+      mockGetState.mockReturnValue(unauthState);
 
       renderWithRouter(<App />, { initialEntries: ['/login'] });
       expect(screen.getByTestId('login-page')).toBeInTheDocument();
@@ -469,12 +535,15 @@ describe('App Routing', () => {
       expect(screen.getByTestId('register-page')).toBeInTheDocument();
 
       // Test when authenticated
-      mockUseAuthStore.mockReturnValue({
+      const authState = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(authState);
+      mockGetState.mockReturnValue(authState);
 
       renderWithRouter(<App />, { initialEntries: ['/login'] });
       expect(screen.getByTestId('login-page')).toBeInTheDocument();
@@ -487,12 +556,15 @@ describe('App Routing', () => {
   describe('Error Boundaries and Edge Cases', () => {
     it('should handle invalid authentication state gracefully', () => {
       // Test with undefined auth state
-      mockUseAuthStore.mockReturnValue({
+      const undefinedState = {
         user: undefined as any,
         isAuthenticated: undefined as any,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(undefinedState);
+      mockGetState.mockReturnValue(undefinedState);
 
       expect(() => {
         renderWithRouter(<App />);
@@ -500,12 +572,15 @@ describe('App Routing', () => {
     });
 
     it('should handle malformed user object', () => {
-      mockUseAuthStore.mockReturnValue({
+      const malformedState = {
         user: {} as any,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(malformedState);
+      mockGetState.mockReturnValue(malformedState);
 
       expect(() => {
         renderWithRouter(<App />);
@@ -513,12 +588,15 @@ describe('App Routing', () => {
     });
 
     it('should handle route navigation with special characters', () => {
-      mockUseAuthStore.mockReturnValue({
+      const specialCharState = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(specialCharState);
+      mockGetState.mockReturnValue(specialCharState);
 
       const specialRoutes = [
         '/figures/123-abc',
@@ -534,15 +612,18 @@ describe('App Routing', () => {
     });
 
     it('should handle deeply nested invalid routes', () => {
-      mockUseAuthStore.mockReturnValue({
+      const nestedRouteState = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(nestedRouteState);
+      mockGetState.mockReturnValue(nestedRouteState);
 
       renderWithRouter(<App />, { initialEntries: ['/invalid/deeply/nested/route'] });
-      
+
       expect(screen.getByTestId('not-found-page')).toBeInTheDocument();
     });
   });
@@ -554,9 +635,11 @@ describe('App Routing', () => {
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
+        recordActivity: jest.fn(),
       };
 
       mockUseAuthStore.mockReturnValue(mockStore);
+      mockGetState.mockReturnValue(mockStore);
 
       renderWithRouter(<App />);
 
@@ -567,12 +650,15 @@ describe('App Routing', () => {
     });
 
     it('should handle rapid route changes', () => {
-      mockUseAuthStore.mockReturnValue({
+      const routeTestStore = {
         user: mockUser,
         isAuthenticated: true,
         setUser: jest.fn(),
         logout: jest.fn(),
-      });
+        recordActivity: jest.fn(),
+      };
+      mockUseAuthStore.mockReturnValue(routeTestStore);
+      mockGetState.mockReturnValue(routeTestStore);
 
       const routes = ['/', '/figures', '/search', '/statistics', '/profile'];
 

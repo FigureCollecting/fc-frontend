@@ -93,6 +93,7 @@ describe('Enhanced API Integration Tests', () => {
       user: mockUser,
       setUser: mockSetUser,
       logout: mockLogout,
+      recordActivity: jest.fn(),
     });
 
     // Set up default mock returns for API methods
@@ -160,7 +161,7 @@ describe('Enhanced API Integration Tests', () => {
 
     it('should add authorization header when user has token', () => {
       const config = { headers: {} };
-      mockGetState.mockReturnValue({ user: { ...mockUser, token: 'test-token' } });
+      mockGetState.mockReturnValue({ user: { ...mockUser, token: 'test-token' }, recordActivity: jest.fn() });
 
       const result = requestInterceptor(config);
 
@@ -169,7 +170,7 @@ describe('Enhanced API Integration Tests', () => {
 
     it('should not add authorization header when no user token', () => {
       const config = { headers: {} };
-      mockGetState.mockReturnValue({ user: null });
+      mockGetState.mockReturnValue({ user: null, recordActivity: jest.fn() });
 
       const result = requestInterceptor(config);
 
@@ -178,7 +179,7 @@ describe('Enhanced API Integration Tests', () => {
 
     it('should not add authorization header when user exists but no token', () => {
       const config = { headers: {} };
-      mockGetState.mockReturnValue({ user: { ...mockUser, token: undefined } });
+      mockGetState.mockReturnValue({ user: { ...mockUser, token: undefined }, recordActivity: jest.fn() });
 
       const result = requestInterceptor(config);
 
@@ -187,7 +188,7 @@ describe('Enhanced API Integration Tests', () => {
 
     it('should preserve existing headers', () => {
       const config = { headers: { 'Custom-Header': 'value' } };
-      mockGetState.mockReturnValue({ user: { ...mockUser, token: 'test-token' } });
+      mockGetState.mockReturnValue({ user: { ...mockUser, token: 'test-token' }, recordActivity: jest.fn() });
 
       const result = requestInterceptor(config);
 
@@ -207,19 +208,22 @@ describe('Enhanced API Integration Tests', () => {
     });
 
     describe('Success Handler', () => {
+      const mockUpdateTokens = jest.fn();
+
+      beforeEach(() => {
+        mockUpdateTokens.mockClear();
+      });
+
       it('should update token when new token is provided in response header', () => {
         const response = {
           headers: { 'x-new-token': 'new-token' },
           data: {},
         };
-        mockGetState.mockReturnValue({ user: mockUser, setUser: mockSetUser });
+        mockGetState.mockReturnValue({ user: mockUser, setUser: mockSetUser, updateTokens: mockUpdateTokens, recordActivity: jest.fn() });
 
         const result = responseInterceptorSuccess(response);
 
-        expect(mockSetUser).toHaveBeenCalledWith({
-          ...mockUser,
-          token: 'new-token',
-        });
+        expect(mockUpdateTokens).toHaveBeenCalled();
         expect(result).toBe(response);
       });
 
@@ -228,27 +232,25 @@ describe('Enhanced API Integration Tests', () => {
           headers: { 'x-access-token': 'Bearer updated-token' },
           data: {},
         };
-        mockGetState.mockReturnValue({ user: mockUser, setUser: mockSetUser });
+        mockGetState.mockReturnValue({ user: mockUser, setUser: mockSetUser, updateTokens: mockUpdateTokens, recordActivity: jest.fn() });
 
         const result = responseInterceptorSuccess(response);
 
-        expect(mockSetUser).toHaveBeenCalledWith({
-          ...mockUser,
-          token: 'updated-token',
-        });
+        expect(mockUpdateTokens).toHaveBeenCalledWith('updated-token', undefined, expect.any(Number));
         expect(result).toBe(response);
       });
 
-      it('should not update token when no user is logged in', () => {
+      it('should update token even when no user is logged in (for token refresh scenarios)', () => {
         const response = {
           headers: { 'x-new-token': 'new-token' },
           data: {},
         };
-        mockGetState.mockReturnValue({ user: null, setUser: mockSetUser });
+        mockGetState.mockReturnValue({ user: null, setUser: mockSetUser, updateTokens: mockUpdateTokens, recordActivity: jest.fn() });
 
         const result = responseInterceptorSuccess(response);
 
-        expect(mockSetUser).not.toHaveBeenCalled();
+        // Token is still updated - the store handles whether to apply it
+        expect(mockUpdateTokens).toHaveBeenCalled();
         expect(result).toBe(response);
       });
 
@@ -257,11 +259,11 @@ describe('Enhanced API Integration Tests', () => {
           headers: {},
           data: {},
         };
-        mockGetState.mockReturnValue({ user: mockUser, setUser: mockSetUser });
+        mockGetState.mockReturnValue({ user: mockUser, setUser: mockSetUser, updateTokens: mockUpdateTokens, recordActivity: jest.fn() });
 
         const result = responseInterceptorSuccess(response);
 
-        expect(mockSetUser).not.toHaveBeenCalled();
+        expect(mockUpdateTokens).not.toHaveBeenCalled();
         expect(result).toBe(response);
       });
     });
@@ -270,9 +272,10 @@ describe('Enhanced API Integration Tests', () => {
       it('should handle refresh token endpoint errors with 401 status', async () => {
         const refreshTokenError = {
           response: { status: 401, data: { message: 'Invalid refresh token' } },
+          config: { url: '/auth/refresh', _retry: false },
         };
         const responseInterceptorError = (mockApiInstance as any).responseErrorInterceptor;
-        mockGetState.mockReturnValue({ logout: mockLogout });
+        mockGetState.mockReturnValue({ user: null, logout: mockLogout, recordActivity: jest.fn() });
 
         await expect(responseInterceptorError(refreshTokenError)).rejects.toBe(refreshTokenError);
 
@@ -286,7 +289,7 @@ describe('Enhanced API Integration Tests', () => {
           response: { status: 500, data: { message: 'Server error during logout' } },
         };
         const responseInterceptorError = (mockApiInstance as any).responseErrorInterceptor;
-        mockGetState.mockReturnValue({ logout: mockLogout });
+        mockGetState.mockReturnValue({ logout: mockLogout, recordActivity: jest.fn() });
 
         await expect(responseInterceptorError(logoutError)).rejects.toBe(logoutError);
 
@@ -323,8 +326,9 @@ describe('Enhanced API Integration Tests', () => {
       it('should handle 401 error and logout user', async () => {
         const error = {
           response: { status: 401 },
+          config: { _retry: false },
         };
-        mockGetState.mockReturnValue({ logout: mockLogout });
+        mockGetState.mockReturnValue({ user: null, logout: mockLogout, recordActivity: jest.fn() });
 
         await expect(responseInterceptorError(error)).rejects.toBe(error);
 
@@ -348,8 +352,9 @@ describe('Enhanced API Integration Tests', () => {
       it('should handle 401 error without response data', async () => {
         const error = {
           response: { status: 401 },
+          config: { _retry: false },
         };
-        mockGetState.mockReturnValue({ logout: mockLogout });
+        mockGetState.mockReturnValue({ user: null, logout: mockLogout, recordActivity: jest.fn() });
 
         await expect(responseInterceptorError(error)).rejects.toBe(error);
 
@@ -465,7 +470,7 @@ describe('Enhanced API Integration Tests', () => {
 
         await getFigures(-1, 0);
 
-        expect(mockApiInstance.get).toHaveBeenCalledWith('/figures?page=-1&limit=0');
+        expect(mockApiInstance.get).toHaveBeenCalledWith('/figures?page=-1&limit=0&sortBy=createdAt&sortOrder=desc');
       });
 
       it('should handle very large page numbers', async () => {
@@ -473,7 +478,7 @@ describe('Enhanced API Integration Tests', () => {
 
         await getFigures(999999, 1000);
 
-        expect(mockApiInstance.get).toHaveBeenCalledWith('/figures?page=999999&limit=1000');
+        expect(mockApiInstance.get).toHaveBeenCalledWith('/figures?page=999999&limit=1000&sortBy=createdAt&sortOrder=desc');
       });
 
       it('should handle server returning empty data array', async () => {

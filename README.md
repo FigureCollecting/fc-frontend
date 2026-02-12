@@ -13,6 +13,7 @@ React frontend for the Figure Collector application. Provides a user interface f
 - Version display with service health status
 - Real-time service health monitoring
 - **MFC Cookie Authentication** - Secure storage for accessing NSFW and private content
+- **MFC Bulk Import with SSE** - Real-time sync progress via Server-Sent Events
 - **Terminal Retro Theme** - DOS/Osbourne-inspired green/orange theme with Matrix easter egg
 
 ## Terminal Retro Theme
@@ -101,6 +102,34 @@ The frontend supports optional MyFigureCollection (MFC) cookie authentication fo
 - **Navbar Indicator**: `src/components/Navbar.tsx` - CookieStatusIndicator
 - **Auto-cleanup**: `src/stores/authStore.ts` - Logout hook
 
+## MFC Bulk Import with SSE
+
+Real-time synchronization of your MFC collection using Server-Sent Events (SSE) for live progress updates.
+
+### Features
+
+- **Real-time Progress**: Live updates as each figure is processed
+- **Phase Tracking**: Visual indicators for validation → export → parsing → queueing → enrichment → complete
+- **Item Statistics**: Running counts of pending, processing, completed, failed, and skipped items
+- **Cancel Support**: Abort sync at any time with immediate feedback
+- **Auto-Reconnect**: Automatic SSE reconnection on connection loss
+
+### How It Works
+
+1. **Start Sync**: Click "Sync from MFC" and provide your session cookies
+2. **CSV Export**: Scraper fetches your collection CSV from MFC
+3. **Queue Processing**: Items are queued with priority ordering
+4. **Live Enrichment**: Each figure is scraped with real-time status updates via SSE
+5. **Completion**: Summary shows enriched, skipped, and failed counts
+
+### Technical Implementation
+
+- **SSE Hook**: `src/hooks/useSyncEvents.ts` - Manages EventSource connection lifecycle
+- **Types**: `src/types/index.ts` - SSE event interfaces (SyncPhase, SyncItemStatus, etc.)
+- **API Client**: `src/api/scraper.ts` - Sync job management (create, get, cancel)
+- **UI Component**: `src/components/MfcSyncModal.tsx` - Progress modal with live updates
+- **Token Auth**: SSE uses query param token (`?token=<jwt>`) since EventSource can't set headers
+
 ## Technology Stack
 
 - TypeScript
@@ -131,7 +160,7 @@ Nginx must be configured to:
 - Example configuration available in `../figure-collector-infra/nginx/`
 
 ### Direct Backend Access
-**Not supported.** The frontend assumes a proxy and uses relative URLs. Accessing the backend directly (e.g., `http://backend:5000`) bypasses the frontend entirely.
+**Not supported.** The frontend assumes a proxy and uses relative URLs. Accessing the backend directly (e.g., `http://backend:5050`) bypasses the frontend entirely.
 
 ### Environment Setup
 
@@ -182,7 +211,7 @@ See `.env.example` for complete configuration template.
 - `REACT_APP_API_URL`: API endpoint URL (default: `/api`)
   - Local dev with proxy: `/api` (recommended)
   - Docker/Coolify: `/api`
-  - Direct backend: `http://localhost:5000/api` (not typical)
+  - Direct backend: `http://localhost:5080/api` (not typical)
 
 **Optional:**
 - `REACT_APP_BACKEND_URL`: Direct backend URL (debugging only, not typically needed)
@@ -195,14 +224,14 @@ See `.env.example` for complete configuration template.
 The frontend uses `src/setupProxy.js` to proxy API requests during development:
 
 - **Path Rewriting**: Requests to `/api/*` are rewritten to `/*` when forwarded to the backend
-- **Target**: `http://backend:5070` (Docker network)
+- **Target**: `http://backend:5090` (Docker network)
 - **Additional Routes**: `/version` is also proxied for service health information
 
 This mirrors the production nginx configuration, ensuring consistent behavior between development and production environments.
 
 **Requirements**:
 - `http-proxy-middleware` package (included in dependencies)
-- Backend service must be running on port 5000 (local) or 5070 (Docker dev)
+- Backend service must be running on port 5080 (local) or 5090 (Docker dev)
 
 **Verify proxy is working**:
 ```bash
