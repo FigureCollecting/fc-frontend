@@ -6,6 +6,7 @@ import Layout from './components/Layout';
 import TerminalThemeProvider from './components/TerminalThemeProvider';
 import { useCustomTheme } from './hooks/useCustomTheme';
 import { useSessionValidator } from './hooks/useSessionValidator';
+import { useTokenRefresh } from './hooks/useTokenRefresh';
 import Dashboard from './pages/Dashboard';
 import FigureList from './pages/FigureList';
 import FigureDetail from './pages/FigureDetail';
@@ -34,6 +35,9 @@ const App: React.FC = () => {
 
   // Proactively validate session - redirects to login if expired
   useSessionValidator();
+
+  // Manage automatic token refresh based on user activity
+  useTokenRefresh();
 
   return (
     <TerminalThemeProvider key={colorProfile}>

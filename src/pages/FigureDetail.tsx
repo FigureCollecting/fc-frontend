@@ -20,10 +20,13 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
+  HStack,
+  VStack,
 useColorModeValue, } from '@chakra-ui/react';
 import { FaEdit, FaTrash, FaArrowLeft, FaExternalLinkAlt } from 'react-icons/fa';
 // import { ChevronRightIcon } from '@chakra-ui/icons'; // Temporarily disabled
 import { getFigureById, deleteFigure } from '../api';
+import { getDisplayCompanies, getDisplayArtists } from '../utils/statsUtils';
 
 const FigureDetail: React.FC = () => {
   const cardBg = useColorModeValue('white', 'gray.800');
@@ -154,10 +157,43 @@ const FigureDetail: React.FC = () => {
               </Flex>
             </Flex>
             
-            <Text fontSize="xl" color="gray.600" mb={4}>
-              {figure.manufacturer}
-            </Text>
-            
+            {/* Companies with role badges */}
+            <VStack align="flex-start" spacing={1} mb={4}>
+              {getDisplayCompanies(figure.companyRoles, figure.manufacturer).map((company, idx) => (
+                <HStack key={idx} spacing={2}>
+                  <Text fontSize="xl" color="gray.600">
+                    {company.name}
+                  </Text>
+                  {company.role && (
+                    <Badge colorScheme="purple" fontSize="sm">
+                      {company.role}
+                    </Badge>
+                  )}
+                </HStack>
+              ))}
+              {getDisplayCompanies(figure.companyRoles, figure.manufacturer).length === 0 && (
+                <Text fontSize="xl" color="gray.600">Unknown Manufacturer</Text>
+              )}
+            </VStack>
+
+            {/* Artists with role badges */}
+            {getDisplayArtists(figure.artistRoles).length > 0 && (
+              <VStack align="flex-start" spacing={1} mb={4}>
+                {getDisplayArtists(figure.artistRoles).map((artist, idx) => (
+                  <HStack key={idx} spacing={2}>
+                    <Text fontSize="md" color="gray.500">
+                      {artist.name}
+                    </Text>
+                    {artist.role && (
+                      <Badge colorScheme="teal" fontSize="xs">
+                        {artist.role}
+                      </Badge>
+                    )}
+                  </HStack>
+                ))}
+              </VStack>
+            )}
+
             <Flex gap={2} mb={4} flexWrap="wrap">
               <Badge colorScheme="brand" fontSize="md" px={2} py={1}>
                 {figure.scale}

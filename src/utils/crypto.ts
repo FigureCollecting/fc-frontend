@@ -115,53 +115,79 @@ export async function decrypt(ciphertext: string): Promise<string> {
 
 /**
  * Storage types for MFC cookies
+ * - session: Stored in sessionStorage, cleared on logout
+ * - persistent: Encrypted and stored in localStorage until manually cleared
  */
-export type StorageType = 'one-time' | 'session' | 'persistent';
+export type StorageType = 'session' | 'persistent';
 
-const STORAGE_KEY = 'mfc_auth_encrypted';
-const STORAGE_TYPE_KEY = 'mfc_auth_storage_type';
+const STORAGE_KEY_BASE = 'mfc_auth_encrypted';
+const STORAGE_TYPE_KEY_BASE = 'mfc_auth_storage_type';
+
+/**
+ * Get user-scoped storage keys
+ * Cookies are isolated per user to prevent leakage between FC users on same browser
+ * Returns null if no userId provided (caller should handle gracefully)
+ */
+function getStorageKeys(userId?: string): { cookieKey: string; typeKey: string } | null {
+  if (!userId) {
+    return null;
+  }
+  return {
+    cookieKey: `${STORAGE_KEY_BASE}_${userId}`,
+    typeKey: `${STORAGE_TYPE_KEY_BASE}_${userId}`,
+  };
+}
 
 /**
  * Stores MFC cookies with encryption (if persistent)
+ * @param cookies - The MFC cookie string to store
+ * @param storageType - 'session' or 'persistent'
+ * @param userId - User ID for scoped storage (required)
  */
 export async function storeMfcCookies(
   cookies: string,
-  storageType: StorageType
+  storageType: StorageType,
+  userId?: string
 ): Promise<void> {
+  const keys = getStorageKeys(userId);
+  if (!keys) return; // No userId, can't store
+
   // Clear any existing storage first
-  clearMfcCookies();
+  clearMfcCookies(userId);
 
-  // One-time storage: don't persist anywhere (only kept in component state)
-  if (storageType === 'one-time') {
-    return; // Don't store to sessionStorage or localStorage
-  }
-
+  const { cookieKey, typeKey } = keys;
   const storage = storageType === 'persistent' ? localStorage : sessionStorage;
 
   if (storageType === 'persistent') {
     // Encrypt for persistent storage
     const encrypted = await encrypt(cookies);
-    storage.setItem(STORAGE_KEY, encrypted);
+    storage.setItem(cookieKey, encrypted);
   } else {
     // Store plaintext in sessionStorage (session type only)
-    storage.setItem(STORAGE_KEY, cookies);
+    storage.setItem(cookieKey, cookies);
   }
 
-  storage.setItem(STORAGE_TYPE_KEY, storageType);
+  storage.setItem(typeKey, storageType);
 }
 
 /**
  * Retrieves stored MFC cookies
+ * @param userId - User ID for scoped storage lookup (required)
  */
-export async function retrieveMfcCookies(): Promise<string | null> {
-  // Check sessionStorage first (one-time or session)
-  let cookies = sessionStorage.getItem(STORAGE_KEY);
-  let storageType = sessionStorage.getItem(STORAGE_TYPE_KEY);
+export async function retrieveMfcCookies(userId?: string): Promise<string | null> {
+  const keys = getStorageKeys(userId);
+  if (!keys) return null; // No userId, can't retrieve
+
+  const { cookieKey, typeKey } = keys;
+
+  // Check sessionStorage first (session storage)
+  let cookies = sessionStorage.getItem(cookieKey);
+  let storageType = sessionStorage.getItem(typeKey);
 
   // If not in session, check localStorage (persistent)
   if (!cookies) {
-    cookies = localStorage.getItem(STORAGE_KEY);
-    storageType = localStorage.getItem(STORAGE_TYPE_KEY);
+    cookies = localStorage.getItem(cookieKey);
+    storageType = localStorage.getItem(typeKey);
   }
 
   if (!cookies || !storageType) {
@@ -174,7 +200,7 @@ export async function retrieveMfcCookies(): Promise<string | null> {
       return await decrypt(cookies);
     } catch (error) {
       console.error('Failed to decrypt MFC cookies:', error);
-      clearMfcCookies(); // Clear corrupted data
+      clearMfcCookies(userId); // Clear corrupted data
       return null;
     }
   }
@@ -185,39 +211,60 @@ export async function retrieveMfcCookies(): Promise<string | null> {
 /**
  * Clears session-based MFC cookies only (for logout)
  * Preserves persistent cookies
+ * @param userId - User ID for scoped storage (required)
  */
-export function clearSessionCookies(): void {
-  sessionStorage.removeItem(STORAGE_KEY);
-  sessionStorage.removeItem(STORAGE_TYPE_KEY);
+export function clearSessionCookies(userId?: string): void {
+  const keys = getStorageKeys(userId);
+  if (!keys) return; // No userId, nothing to clear
+
+  const { cookieKey, typeKey } = keys;
+  sessionStorage.removeItem(cookieKey);
+  sessionStorage.removeItem(typeKey);
 }
 
 /**
  * Clears ALL stored MFC cookies (session AND persistent)
  * Use this for manual "Clear Cookies" action only
+ * @param userId - User ID for scoped storage (required)
  */
-export function clearMfcCookies(): void {
-  clearSessionCookies();
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(STORAGE_TYPE_KEY);
+export function clearMfcCookies(userId?: string): void {
+  const keys = getStorageKeys(userId);
+  if (!keys) return; // No userId, nothing to clear
+
+  const { cookieKey, typeKey } = keys;
+  sessionStorage.removeItem(cookieKey);
+  sessionStorage.removeItem(typeKey);
+  localStorage.removeItem(cookieKey);
+  localStorage.removeItem(typeKey);
 }
 
 /**
  * Checks if MFC cookies are currently stored
+ * @param userId - User ID for scoped storage lookup (required)
  */
-export function hasMfcCookies(): boolean {
+export function hasMfcCookies(userId?: string): boolean {
+  const keys = getStorageKeys(userId);
+  if (!keys) return false; // No userId, no cookies
+
+  const { cookieKey } = keys;
   return !!(
-    sessionStorage.getItem(STORAGE_KEY) ||
-    localStorage.getItem(STORAGE_KEY)
+    sessionStorage.getItem(cookieKey) ||
+    localStorage.getItem(cookieKey)
   );
 }
 
 /**
  * Gets the current storage type
+ * @param userId - User ID for scoped storage lookup (required)
  */
-export function getStorageType(): StorageType | null {
+export function getStorageType(userId?: string): StorageType | null {
+  const keys = getStorageKeys(userId);
+  if (!keys) return null; // No userId, no storage type
+
+  const { typeKey } = keys;
   const storageType =
-    sessionStorage.getItem(STORAGE_TYPE_KEY) ||
-    localStorage.getItem(STORAGE_TYPE_KEY);
+    sessionStorage.getItem(typeKey) ||
+    localStorage.getItem(typeKey);
 
   return storageType as StorageType | null;
 }

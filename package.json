@@ -8,7 +8,7 @@
     "@chakra-ui/utils": "^2.2.5",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "axios": "^1.12.0",
+    "axios": "^1.13.5",
     "framer-motion": "^12.23.24",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -16,13 +16,13 @@
     "react-icons": "^4.11.0",
     "react-markdown": "^10.1.0",
     "react-query": "^3.39.3",
-    "react-router-dom": "^6.16.0",
+    "react-router-dom": "^6.30.3",
     "web-vitals": "^5.1.0",
     "zustand": "^5.0.8"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "craco start",
+    "build": "craco build",
     "lint": "echo 'Using eslint via react-scripts'",
     "test": "react-scripts test --coverage --watchAll=false --verbose --testPathIgnorePatterns='cross-service'",
     "test:unit": "react-scripts test --watchAll=false --verbose --testPathIgnorePatterns='cross-service|integration'",
@@ -62,15 +62,20 @@
     ]
   },
   "overrides": {
+    "jsonpath": "^1.2.1",
+    "lodash": "^4.17.23",
     "nth-check": "^2.1.1",
     "postcss": "^8.4.31",
-    "webpack-dev-server": "^5.2.1"
+    "qs": "^6.14.1",
+    "webpack": "^5.104.1",
+    "webpack-dev-server": "^5.2.2"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.28.3",
     "@babel/preset-env": "^7.28.3",
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
+    "@craco/craco": "^7.1.0",
     "@emotion/babel-plugin": "^11.13.5",
     "@emotion/cache": "^11.14.0",
     "@emotion/jest": "^11.13.0",

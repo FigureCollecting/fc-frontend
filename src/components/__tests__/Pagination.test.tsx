@@ -19,20 +19,20 @@ describe('Pagination', () => {
   describe('Rendering', () => {
     it('should not render content when there is only one page', () => {
       const { container } = render(
-        <Pagination currentPage={1} totalPages={1} onPageChange={mockOnPageChange} />
+        <Pagination currentPage={1} totalPages={1} onPageChange={mockOnPageChange} showPageSizeSelector={false} />
       );
 
-      // The component returns null, but test wrapper adds div - check for empty content
-      expect(container.firstChild).toHaveTextContent('');
+      // The component returns null when totalPages <= 1 and showPageSizeSelector is false
+      expect(container.firstChild).toBeEmptyDOMElement();
     });
 
     it('should not render content when there are no pages', () => {
       const { container } = render(
-        <Pagination currentPage={1} totalPages={0} onPageChange={mockOnPageChange} />
+        <Pagination currentPage={1} totalPages={0} onPageChange={mockOnPageChange} showPageSizeSelector={false} />
       );
 
-      // The component returns null, but test wrapper adds div - check for empty content
-      expect(container.firstChild).toHaveTextContent('');
+      // The component returns null when totalPages <= 1 and showPageSizeSelector is false
+      expect(container.firstChild).toBeEmptyDOMElement();
     });
 
     it('should render pagination controls when there are multiple pages', () => {
@@ -172,8 +172,8 @@ describe('Pagination', () => {
     it('should show ellipsis when there are gaps', () => {
       render(<Pagination currentPage={1} totalPages={10} onPageChange={mockOnPageChange} />);
 
-      // Check for ellipsis text (could be "..." or "…")
-      const ellipsisElements = screen.getAllByText(/\.\.\./);
+      // The component uses middle dots (···) for ellipsis gaps
+      const ellipsisElements = screen.getAllByText('···');
       expect(ellipsisElements.length).toBeGreaterThan(0);
     });
   });

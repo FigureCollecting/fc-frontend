@@ -18,10 +18,13 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get clean
 
 # Install Node.js 24 using official binaries (avoids package manager CVEs)
-RUN NODE_VERSION=v24.8.0 \
+RUN NODE_VERSION=v24.13.1 \
     && curl -fsSLO https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz \
     && tar -xJf node-${NODE_VERSION}-linux-x64.tar.xz -C /usr/local --strip-components=1 \
     && rm node-${NODE_VERSION}-linux-x64.tar.xz
+
+# Upgrade npm to latest to fix bundled dependency vulnerabilities (tar, brace-expansion)
+RUN npm install -g npm@latest && npm cache clean --force
 
 WORKDIR /app
 
@@ -44,11 +47,11 @@ ARG REACT_APP_API_URL=/api
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 ENV NODE_ENV=development
 
-EXPOSE 3000
+EXPOSE 5081
 
 # Health check using Node.js with explicit timeout handling
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "const req = require('http').get('http://localhost:3000', { timeout: 5000 }, (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('timeout', () => { req.destroy(); process.exit(1); }); req.on('error', () => process.exit(1));"
+  CMD node -e "const req = require('http').get('http://localhost:5081', { timeout: 5000 }, (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('timeout', () => { req.destroy(); process.exit(1); }); req.on('error', () => process.exit(1));"
 
 CMD ["npm", "start"]
 
@@ -126,10 +129,13 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get clean
 
 # Install Node.js for health check
-RUN NODE_VERSION=v24.8.0 \
+RUN NODE_VERSION=v24.13.1 \
     && curl -fsSLO https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz \
     && tar -xJf node-${NODE_VERSION}-linux-x64.tar.xz -C /usr/local --strip-components=1 \
     && rm node-${NODE_VERSION}-linux-x64.tar.xz
+
+# Upgrade npm to latest to fix bundled dependency vulnerabilities (tar, brace-expansion)
+RUN npm install -g npm@latest && npm cache clean --force
 
 # Create nginx user and set up directories
 RUN useradd --system --no-create-home --shell /bin/false nginx \
@@ -149,8 +155,10 @@ COPY --from=builder /app/build /usr/share/nginx/html
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 
 # Configure nginx to not use user directive (we're already running as nginx user)
+# Also remove default site symlink to prevent it from overriding our config
 RUN sed -i '/^user /d' /etc/nginx/nginx.conf \
-    && sed -i '/^pid /d' /etc/nginx/nginx.conf
+    && sed -i '/^pid /d' /etc/nginx/nginx.conf \
+    && rm -f /etc/nginx/sites-enabled/default
 
 # Create startup script to process templates
 RUN echo '#!/bin/bash\n\

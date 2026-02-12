@@ -10,7 +10,8 @@ jest.mock('../../stores/authStore', () => ({
     getState: jest.fn(() => ({
       user: null,
       setUser: jest.fn(),
-      logout: jest.fn()
+      logout: jest.fn(),
+      recordActivity: jest.fn()
     }))
   }
 }));
@@ -83,18 +84,17 @@ describe('Authentication Token Mapping', () => {
 
       const result = await loginUser('test@example.com', 'password');
 
-      // Frontend should receive token field (not accessToken)
-      expect(result).toEqual({
-        _id: 'user123',
-        username: 'testuser',
-        email: 'test@example.com',
-        isAdmin: false,
-        token: 'jwt-token-here'  // Frontend field name
-      });
+      // Frontend should receive token field mapped from accessToken
+      expect(result._id).toBe('user123');
+      expect(result.username).toBe('testuser');
+      expect(result.email).toBe('test@example.com');
+      expect(result.isAdmin).toBe(false);
+      expect(result.token).toBe('jwt-token-here');  // accessToken mapped to token
+      expect(result.refreshToken).toBe('refresh-token-here');  // refreshToken preserved
+      expect(result.tokenExpiresAt).toBeDefined();  // tokenExpiresAt added
 
-      // Should NOT have accessToken field
+      // Should NOT have accessToken field (mapped to token)
       expect(result).not.toHaveProperty('accessToken');
-      expect(result).not.toHaveProperty('refreshToken');
     });
 
     it('should handle missing accessToken gracefully', async () => {
@@ -116,13 +116,13 @@ describe('Authentication Token Mapping', () => {
       const result = await loginUser('test@example.com', 'password');
 
       // Should still return user data with undefined token
-      expect(result).toEqual({
-        _id: 'user123',
-        username: 'testuser',
-        email: 'test@example.com',
-        isAdmin: false,
-        token: undefined  // Token is undefined when accessToken is missing
-      });
+      expect(result._id).toBe('user123');
+      expect(result.username).toBe('testuser');
+      expect(result.email).toBe('test@example.com');
+      expect(result.isAdmin).toBe(false);
+      expect(result.token).toBeUndefined();  // Token is undefined when accessToken is missing
+      expect(result.refreshToken).toBeUndefined();  // refreshToken also undefined
+      expect(result.tokenExpiresAt).toBeDefined();  // tokenExpiresAt still added
     });
 
     it('should handle completely missing response data', async () => {
@@ -160,18 +160,17 @@ describe('Authentication Token Mapping', () => {
 
       const result = await registerUser('newuser', 'new@example.com', 'password');
 
-      // Frontend should receive token field (not accessToken)
-      expect(result).toEqual({
-        _id: 'newuser123',
-        username: 'newuser',
-        email: 'new@example.com',
-        isAdmin: false,
-        token: 'new-jwt-token'  // Frontend field name
-      });
+      // Frontend should receive token field mapped from accessToken
+      expect(result._id).toBe('newuser123');
+      expect(result.username).toBe('newuser');
+      expect(result.email).toBe('new@example.com');
+      expect(result.isAdmin).toBe(false);
+      expect(result.token).toBe('new-jwt-token');  // accessToken mapped to token
+      expect(result.refreshToken).toBe('new-refresh-token');  // refreshToken preserved
+      expect(result.tokenExpiresAt).toBeDefined();  // tokenExpiresAt added
 
-      // Should NOT have accessToken field
+      // Should NOT have accessToken field (mapped to token)
       expect(result).not.toHaveProperty('accessToken');
-      expect(result).not.toHaveProperty('refreshToken');
     });
   });
 
@@ -191,7 +190,8 @@ describe('Authentication Token Mapping', () => {
       useAuthStore.getState.mockReturnValue({
         user: mockUser,
         setUser: jest.fn(),
-        logout: jest.fn()
+        logout: jest.fn(),
+        recordActivity: jest.fn()
       });
 
       // Verify the interceptor was set up
@@ -235,7 +235,8 @@ describe('Authentication Token Mapping', () => {
       useAuthStore.getState.mockReturnValue({
         user: user,  // User object with token field
         setUser: jest.fn(),
-        logout: jest.fn()
+        logout: jest.fn(),
+        recordActivity: jest.fn()
       });
 
       // 4. The interceptor should attach the token

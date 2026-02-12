@@ -13,6 +13,20 @@ jest.mock('../../hooks/usePublicConfig', () => ({
   }),
 }));
 
+// Mock useLookupData hook
+jest.mock('../../hooks/useLookupData', () => ({
+  useLookupData: () => ({
+    roleTypes: [
+      { _id: 'role1', name: 'Manufacturer', kind: 'company' },
+      { _id: 'role2', name: 'Sculptor', kind: 'artist' },
+    ],
+    companies: [],
+    artists: [],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 // Mock window.open
 const mockOpen = jest.fn();
 window.open = mockOpen;
@@ -49,7 +63,19 @@ jest.mock('react-hook-form', () => ({
     getValues: mockGetValues,
     reset: mockReset,
     formState: { errors: {} },
+    control: {},
   }),
+  FormProvider: ({ children }: any) => children,
+  useFormContext: () => ({
+    register: jest.fn((name) => ({ name, onChange: jest.fn(), onBlur: jest.fn(), ref: jest.fn() })),
+    control: {},
+  }),
+  useFieldArray: () => ({
+    fields: [],
+    append: jest.fn(),
+    remove: jest.fn(),
+  }),
+  Controller: ({ render }: any) => render({ field: { value: false, onChange: jest.fn() } }),
 }));
 
 describe('FigureForm Comprehensive Tests', () => {
@@ -62,7 +88,7 @@ describe('FigureForm Comprehensive Tests', () => {
     mfcLink: 'https://myfigurecollection.net/item/123456',
     imageUrl: 'https://example.com/miku.jpg',
     location: 'Shelf A',
-    boxNumber: 'B001',
+    storageDetail: 'B001',
   };
 
   beforeEach(() => {
@@ -86,12 +112,12 @@ describe('FigureForm Comprehensive Tests', () => {
       expect(screen.getByRole('form')).toBeInTheDocument();
 
       // Check for input fields by placeholder text to avoid ambiguity
-      expect(screen.getByPlaceholderText(/myfigurecollection\.net/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/Good Smile Company/i)).toBeInTheDocument();
+      // Note: manufacturer field was removed from form in Schema v3 (replaced by companyRoles)
+      expect(screen.getByPlaceholderText(/item #.*MFC URL/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/1\/8, 1\/7/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/Shelf, Display Case/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/A1, Box 3/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/Shelf A-3, Box #12/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/example\.com\/image\.jpg/i)).toBeInTheDocument();
     });
 
@@ -99,19 +125,26 @@ describe('FigureForm Comprehensive Tests', () => {
       render(<FigureForm initialData={mockFigure} onSubmit={mockOnSubmit} isLoading={false} />);
 
       expect(screen.getByRole('form')).toBeInTheDocument();
-      expect(mockReset).toHaveBeenCalledWith(mockFigure);
+      // Form reset includes all fields merged with initialData
+      expect(mockReset).toHaveBeenCalledWith(expect.objectContaining({
+        manufacturer: mockFigure.manufacturer,
+        name: mockFigure.name,
+        scale: mockFigure.scale,
+      }));
     });
 
     it('should show loading state when isLoading is true', () => {
       render(<FigureForm onSubmit={mockOnSubmit} isLoading={true} />);
 
-      // Look for any submit button (text might vary)
+      // Look specifically for the Save/Submit button, not Add buttons from array sections
       const buttons = screen.getAllByRole('button');
-      const submitButton = buttons.find(btn =>
-        btn.textContent?.toLowerCase().includes('save') ||
-        btn.textContent?.toLowerCase().includes('submit') ||
-        btn.textContent?.toLowerCase().includes('add')
-      );
+      const submitButton = buttons.find(btn => {
+        const text = btn.textContent?.toLowerCase() || '';
+        const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || '';
+        // Match Save/Submit but exclude Add buttons for array sections
+        return (text.includes('save') || text.includes('submit') || ariaLabel.includes('save')) &&
+               !text.includes('add company') && !text.includes('add artist') && !text.includes('add release');
+      });
 
       if (submitButton) {
         expect(submitButton).toBeDisabled();
@@ -177,7 +210,7 @@ describe('FigureForm Comprehensive Tests', () => {
       render(<FigureForm onSubmit={mockOnSubmit} isLoading={false} />);
 
       // Valid MFC URLs should be accepted
-      const mfcInput = screen.getByLabelText(/MyFigureCollection Link/i);
+      const mfcInput = screen.getByLabelText(/MFC Item/i);
       expect(mfcInput).toBeInTheDocument();
     });
   });
@@ -273,13 +306,15 @@ describe('FigureForm Comprehensive Tests', () => {
     it('should disable submit button when loading', () => {
       render(<FigureForm onSubmit={mockOnSubmit} isLoading={true} />);
 
-      // Same as the loading test above
+      // Look specifically for the Save/Submit button, not Add buttons from array sections
       const buttons = screen.getAllByRole('button');
-      const submitButton = buttons.find(btn =>
-        btn.textContent?.toLowerCase().includes('save') ||
-        btn.textContent?.toLowerCase().includes('submit') ||
-        btn.textContent?.toLowerCase().includes('add')
-      );
+      const submitButton = buttons.find(btn => {
+        const text = btn.textContent?.toLowerCase() || '';
+        const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || '';
+        // Match Save/Submit but exclude Add buttons for array sections
+        return (text.includes('save') || text.includes('submit') || ariaLabel.includes('save')) &&
+               !text.includes('add company') && !text.includes('add artist') && !text.includes('add release');
+      });
 
       if (submitButton) {
         expect(submitButton).toBeDisabled();
@@ -316,7 +351,12 @@ describe('FigureForm Comprehensive Tests', () => {
         <FigureForm initialData={newFigure} onSubmit={mockOnSubmit} isLoading={false} />
       );
 
-      expect(mockReset).toHaveBeenCalledWith(newFigure);
+      // Form reset includes all fields, so check that key fields from newFigure are present
+      expect(mockReset).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'New Figure',
+        manufacturer: mockFigure.manufacturer,
+        scale: mockFigure.scale,
+      }));
     });
 
     it('should reset to empty form when no initialData', () => {
@@ -328,8 +368,71 @@ describe('FigureForm Comprehensive Tests', () => {
         scale: '',
         mfcLink: '',
         location: '',
-        boxNumber: '',
+        storageDetail: '',
         imageUrl: '',
+      }));
+    });
+
+    it('should generate mfcLink from mfcId when mfcLink is missing in initialData', () => {
+      // This test verifies the fix for the bug where MFC ID wasn't visible on edit page
+      // When a figure has mfcId but no mfcLink, the form should generate mfcLink from mfcId
+      const figureWithMfcIdOnly = {
+        ...mockFigure,
+        mfcId: 987654,
+        mfcLink: '', // Empty mfcLink - should be generated from mfcId
+      };
+
+      render(<FigureForm initialData={figureWithMfcIdOnly} onSubmit={mockOnSubmit} isLoading={false} />);
+
+      // The form should generate mfcLink from mfcId during reset
+      expect(mockReset).toHaveBeenCalledWith(expect.objectContaining({
+        mfcLink: 'https://myfigurecollection.net/item/987654',
+      }));
+    });
+
+    it('should preserve existing mfcLink when both mfcId and mfcLink are present', () => {
+      // When figure has both mfcId and mfcLink, mfcLink should be preserved (not regenerated)
+      const figureWithBoth = {
+        ...mockFigure,
+        mfcId: 111111,
+        mfcLink: 'https://myfigurecollection.net/item/123456', // Different from mfcId
+      };
+
+      render(<FigureForm initialData={figureWithBoth} onSubmit={mockOnSubmit} isLoading={false} />);
+
+      // The existing mfcLink should be preserved, not overwritten with mfcId
+      expect(mockReset).toHaveBeenCalledWith(expect.objectContaining({
+        mfcLink: 'https://myfigurecollection.net/item/123456',
+      }));
+    });
+
+    it('should handle undefined mfcLink by generating from mfcId', () => {
+      // Edge case: mfcLink is undefined (not empty string)
+      const figureWithUndefinedMfcLink = {
+        ...mockFigure,
+        mfcId: 555555,
+        mfcLink: undefined,
+      };
+
+      render(<FigureForm initialData={figureWithUndefinedMfcLink as any} onSubmit={mockOnSubmit} isLoading={false} />);
+
+      expect(mockReset).toHaveBeenCalledWith(expect.objectContaining({
+        mfcLink: 'https://myfigurecollection.net/item/555555',
+      }));
+    });
+
+    it('should handle missing mfcId gracefully with empty mfcLink', () => {
+      // Edge case: no mfcId and no mfcLink - should result in empty mfcLink
+      const figureWithoutMfc = {
+        ...mockFigure,
+        mfcId: undefined,
+        mfcLink: '',
+      };
+
+      render(<FigureForm initialData={figureWithoutMfc as any} onSubmit={mockOnSubmit} isLoading={false} />);
+
+      expect(mockReset).toHaveBeenCalledWith(expect.objectContaining({
+        mfcLink: '',
       }));
     });
   });
@@ -352,8 +455,8 @@ describe('FigureForm Comprehensive Tests', () => {
       render(<FigureForm onSubmit={mockOnSubmit} isLoading={false} />);
 
       expect(screen.getByRole('form')).toHaveAttribute('aria-labelledby');
-      expect(screen.getByLabelText(/MyFigureCollection Link/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Manufacturer/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/MFC Item/i)).toBeInTheDocument();
+      // Note: manufacturer field was removed from form in Schema v3 (replaced by companyRoles)
       expect(screen.getByLabelText(/Figure Name/i)).toBeInTheDocument();
     });
 
@@ -361,7 +464,7 @@ describe('FigureForm Comprehensive Tests', () => {
       mockWatch.mockReturnValue(''); // No MFC link
       render(<FigureForm onSubmit={mockOnSubmit} isLoading={false} />);
 
-      // When no MFC link, manufacturer and name should be required
+      // When no MFC link, name should be required
       const requiredIndicators = screen.getAllByText('*');
       expect(requiredIndicators.length).toBeGreaterThan(0);
     });

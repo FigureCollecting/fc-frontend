@@ -166,17 +166,23 @@ function generateDarkModeStyles() {
       border-color: ${c.border} !important;
     }
 
-    html.dark-theme .chakra-button:hover {
+    /* Ghost/outline buttons get gray hover */
+    html.dark-theme .chakra-button[data-variant="ghost"]:hover,
+    html.dark-theme .chakra-button[data-variant="outline"]:hover {
       background-color: ${c.hover} !important;
     }
 
-    html.dark-theme .chakra-button[data-variant="solid"] {
+    /* Solid buttons (primary action) - blue with darker blue hover */
+    html.dark-theme .chakra-button[data-variant="solid"],
+    html.dark-theme .chakra-button:not([data-variant]) {
       background-color: #3182CE !important;
       color: white !important;
     }
 
-    html.dark-theme .chakra-button[data-variant="solid"]:hover {
+    html.dark-theme .chakra-button[data-variant="solid"]:hover,
+    html.dark-theme .chakra-button:not([data-variant]):hover {
       background-color: #2B6CB0 !important;
+      box-shadow: 0 0 8px rgba(49, 130, 206, 0.5) !important;
     }
 
     /* Inputs - use base bg (darker) to distinguish from cards */
