@@ -58,11 +58,11 @@ export const themeColors = {
     // Darker button bg for better text contrast
     buttonBg: '#1a5a1a',
     buttonText: '#ffffff',
-    // Share Tech Mono is more readable than VT323 while still retro
-    fontFamily: "'Share Tech Mono', 'Fira Code', monospace",
-    fontUrl: 'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap',
-    // Larger base font for readability
-    fontSize: '1.1rem',
+    // IBM Plex Mono - clean, compact monospace with retro feel
+    fontFamily: "'IBM Plex Mono', 'Fira Code', monospace",
+    fontUrl: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap',
+    // Slightly smaller for compactness
+    fontSize: '0.95rem',
     borderRadius: '0px',
     textShadow: '0 0 8px rgba(51, 255, 51, 0.6)',
     // Scanline effect for true retro feel
@@ -179,11 +179,11 @@ export const themeColors = {
     // Gradient button with muted colors for text contrast
     buttonBg: '#6b2a8a',
     buttonText: '#ffffff',
-    // ORBITRON - Blocky futuristic font (user requested more blocky)
-    fontFamily: "'Orbitron', 'Share Tech', sans-serif",
-    fontUrl: 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap',
-    // Larger for impact
-    fontSize: '1rem',
+    // Roboto Mono - clean, compact monospace with techy feel
+    fontFamily: "'Roboto Mono', 'Fira Code', monospace",
+    fontUrl: 'https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap',
+    // Compact for readability
+    fontSize: '0.95rem',
     borderRadius: '2px',
     // Dual-color glow: cyan AND pink
     textShadow: '0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(255, 0, 255, 0.3)',

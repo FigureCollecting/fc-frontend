@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from 'react-query';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Heading,
@@ -27,11 +28,20 @@ import { FaDownload } from 'react-icons/fa';
 import { getFigureStats } from '../api';
 
 const Statistics: React.FC = () => {
+  const navigate = useNavigate();
   const cardBg = useColorModeValue('white', 'gray.800');
   const labelColor = useColorModeValue('gray.600', 'gray.300');
   const helpTextColor = useColorModeValue('gray.500', 'gray.400');
   const headingColor = useColorModeValue('gray.700', 'gray.100');
-  const { data: stats, isLoading, error } = useQuery('figureStats', getFigureStats) || { data: null, isLoading: false, error: null };
+  const rowHoverBg = useColorModeValue('gray.50', 'gray.700');
+  const { data: stats, isLoading, error } = useQuery('figureStats', () => getFigureStats()) || { data: null, isLoading: false, error: null };
+
+  const handleRowClick = (filterType: 'manufacturer' | 'scale' | 'location', value: string) => {
+    if (!value) return;
+    const searchParams = new URLSearchParams();
+    searchParams.set(filterType, value);
+    navigate(`/figures?${searchParams.toString()}`);
+  };
 
   const downloadCsv = () => {
     if (!stats) return;
@@ -153,7 +163,20 @@ const Statistics: React.FC = () => {
               </Thead>
               <Tbody>
                 {stats.manufacturerStats.map((stat) => (
-                  <Tr key={stat._id}>
+                  <Tr
+                    key={stat._id}
+                    onClick={() => stat._id && handleRowClick('manufacturer', stat._id)}
+                    cursor={stat._id ? 'pointer' : 'default'}
+                    _hover={{ bg: stat._id ? rowHoverBg : undefined }}
+                    transition="background-color 0.2s"
+                    role="button"
+                    tabIndex={stat._id ? 0 : undefined}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && stat._id) {
+                        handleRowClick('manufacturer', stat._id);
+                      }
+                    }}
+                  >
                     <Td>{stat._id || 'Unknown'}</Td>
                     <Td isNumeric fontWeight="medium">{stat.count}</Td>
                     <Td isNumeric color="gray.500">
@@ -181,7 +204,20 @@ const Statistics: React.FC = () => {
               </Thead>
               <Tbody>
                 {stats.scaleStats.map((stat) => (
-                  <Tr key={stat._id}>
+                  <Tr
+                    key={stat._id}
+                    onClick={() => stat._id && handleRowClick('scale', stat._id)}
+                    cursor={stat._id ? 'pointer' : 'default'}
+                    _hover={{ bg: stat._id ? rowHoverBg : undefined }}
+                    transition="background-color 0.2s"
+                    role="button"
+                    tabIndex={stat._id ? 0 : undefined}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && stat._id) {
+                        handleRowClick('scale', stat._id);
+                      }
+                    }}
+                  >
                     <Td>{stat._id || 'Unknown'}</Td>
                     <Td isNumeric fontWeight="medium">{stat.count}</Td>
                     <Td isNumeric color="gray.500">
@@ -209,7 +245,20 @@ const Statistics: React.FC = () => {
               </Thead>
               <Tbody>
                 {stats.locationStats.map((stat) => (
-                  <Tr key={stat._id}>
+                  <Tr
+                    key={stat._id}
+                    onClick={() => stat._id && handleRowClick('location', stat._id)}
+                    cursor={stat._id ? 'pointer' : 'default'}
+                    _hover={{ bg: stat._id ? rowHoverBg : undefined }}
+                    transition="background-color 0.2s"
+                    role="button"
+                    tabIndex={stat._id ? 0 : undefined}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && stat._id) {
+                        handleRowClick('location', stat._id);
+                      }
+                    }}
+                  >
                     <Td>{stat._id || 'Unknown'}</Td>
                     <Td isNumeric fontWeight="medium">{stat.count}</Td>
                     <Td isNumeric color="gray.500">

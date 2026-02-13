@@ -168,6 +168,7 @@ export const mockFigure = {
 
 export const mockStatsData = {
   totalCount: 10,
+  statusCounts: { owned: 7, ordered: 2, wished: 1 },
   manufacturerStats: [
     { _id: 'Good Smile Company', count: 5 },
     { _id: 'ALTER', count: 3 },
@@ -182,7 +183,8 @@ export const mockStatsData = {
     { _id: 'Display Case', count: 5 },
     { _id: 'Storage Box', count: 3 },
     { _id: 'Shelf A', count: 2 }
-  ]
+  ],
+  activeStatus: 'owned' as const
 };
 
 export const mockPaginatedResponse = {

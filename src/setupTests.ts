@@ -88,6 +88,15 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 
+// Web Crypto API polyfill for jsdom (not provided by jest-environment-jsdom)
+if (!window.crypto) {
+  const { webcrypto } = require('crypto');
+  Object.defineProperty(window, 'crypto', {
+    writable: true,
+    value: webcrypto,
+  });
+}
+
 // Basic fetch mock
 global.fetch = jest.fn(() =>
   Promise.resolve({
