@@ -91,16 +91,15 @@ jest.mock('react-query', () => {
 describe('Dashboard', () => {
   const mockFiguresData = {
     success: true,
-    count: 4,
+    count: 12,
     page: 1,
     pages: 1,
-    total: 4,
-    data: [
-      { ...mockFigure, _id: '1', name: 'Recent Figure 1' },
-      { ...mockFigure, _id: '2', name: 'Recent Figure 2' },
-      { ...mockFigure, _id: '3', name: 'Recent Figure 3' },
-      { ...mockFigure, _id: '4', name: 'Recent Figure 4' },
-    ],
+    total: 12,
+    data: Array.from({ length: 12 }, (_, i) => ({
+      ...mockFigure,
+      _id: String(i + 1),
+      name: `Recent Figure ${i + 1}`,
+    })),
   };
 
   // Increase timeout for async operations
@@ -121,9 +120,11 @@ describe('Dashboard', () => {
     mockApi.getFigureStats.mockResolvedValue(mockStatsData);
     
     // Mock useQuery to return appropriate data based on query key
+    // Dashboard uses array keys like ['recentFigures', activeStatus]
     const { useQuery } = require('react-query');
-    useQuery.mockImplementation((key: string) => {
-      if (key === 'recentFigures') {
+    useQuery.mockImplementation((key: string | string[]) => {
+      const queryKey = Array.isArray(key) ? key[0] : key;
+      if (queryKey === 'recentFigures') {
         return {
           data: mockFiguresData,
           isLoading: false,
@@ -133,7 +134,7 @@ describe('Dashboard', () => {
           status: 'success',
           refetch: jest.fn(() => Promise.resolve({ data: mockFiguresData })),
         };
-      } else if (key === 'dashboardStats') {
+      } else if (queryKey === 'dashboardStats') {
         return {
           data: mockStatsData,
           isLoading: false,
@@ -144,7 +145,7 @@ describe('Dashboard', () => {
           refetch: jest.fn(() => Promise.resolve({ data: mockStatsData })),
         };
       }
-      
+
       return {
         data: null,
         isLoading: false,
@@ -247,10 +248,11 @@ describe('Dashboard', () => {
     it('should show zero statistics when no data available', async () => {
       // Mock useQuery to return undefined stats data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        if (key === 'recentFigures') {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        if (queryKey === 'recentFigures') {
           return { data: mockEmptyFiguresData, isLoading: false, isError: false };
-        } else if (key === 'dashboardStats') {
+        } else if (queryKey === 'dashboardStats') {
           return { data: undefined, isLoading: false, isError: false };
         }
         return { data: null, isLoading: false, isError: false };
@@ -271,8 +273,10 @@ describe('Dashboard', () => {
         expect(screen.getByText('Good Smile Company')).toBeInTheDocument();
         expect(screen.getByText('ALTER')).toBeInTheDocument();
         expect(screen.getByText('Kotobukiya')).toBeInTheDocument();
-        expect(screen.getByText('5')).toBeInTheDocument(); // GSC count
-        expect(screen.getByText('2')).toBeInTheDocument(); // Kotobukiya count
+        // Use getAllByText since counts like "2" may appear in both
+        // manufacturer stats and status tab badges
+        expect(screen.getAllByText('5').length).toBeGreaterThanOrEqual(1); // GSC count
+        expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(1); // Kotobukiya count
       });
     });
 
@@ -292,10 +296,11 @@ describe('Dashboard', () => {
 
       // Mock useQuery to return extended stats data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        if (key === 'recentFigures') {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        if (queryKey === 'recentFigures') {
           return { data: mockFiguresData, isLoading: false, isError: false };
-        } else if (key === 'dashboardStats') {
+        } else if (queryKey === 'dashboardStats') {
           return { data: extendedStatsData, isLoading: false, isError: false };
         }
         return { data: null, isLoading: false, isError: false };
@@ -319,10 +324,11 @@ describe('Dashboard', () => {
 
       // Mock useQuery to return empty stats data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        if (key === 'recentFigures') {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        if (queryKey === 'recentFigures') {
           return { data: mockFiguresData, isLoading: false, isError: false };
-        } else if (key === 'dashboardStats') {
+        } else if (queryKey === 'dashboardStats') {
           return { data: emptyStatsData, isLoading: false, isError: false };
         }
         return { data: null, isLoading: false, isError: false };
@@ -342,19 +348,19 @@ describe('Dashboard', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('figure-card-1')).toBeInTheDocument();
-        expect(screen.getByTestId('figure-card-2')).toBeInTheDocument();
-        expect(screen.getByTestId('figure-card-3')).toBeInTheDocument();
-        expect(screen.getByTestId('figure-card-4')).toBeInTheDocument();
+        expect(screen.getByTestId('figure-card-6')).toBeInTheDocument();
+        expect(screen.getByTestId('figure-card-12')).toBeInTheDocument();
       });
     });
 
     it('should show empty state when no figures exist', async () => {
       // Mock useQuery to return empty figures data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        if (key === 'recentFigures') {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        if (queryKey === 'recentFigures') {
           return { data: mockEmptyFiguresData, isLoading: false, isError: false };
-        } else if (key === 'dashboardStats') {
+        } else if (queryKey === 'dashboardStats') {
           return { data: mockStatsData, isLoading: false, isError: false };
         }
         return { data: null, isLoading: false, isError: false };
@@ -380,10 +386,11 @@ describe('Dashboard', () => {
     it('should have correct link to add first figure', async () => {
       // Mock useQuery to return empty figures data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        if (key === 'recentFigures') {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        if (queryKey === 'recentFigures') {
           return { data: mockEmptyFiguresData, isLoading: false, isError: false };
-        } else if (key === 'dashboardStats') {
+        } else if (queryKey === 'dashboardStats') {
           return { data: mockStatsData, isLoading: false, isError: false };
         }
         return { data: null, isLoading: false, isError: false };
@@ -459,7 +466,7 @@ describe('Dashboard', () => {
     it('should handle API errors gracefully', async () => {
       // Mock useQuery to return error state
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
+      useQuery.mockImplementation((key: string | string[]) => {
         return { data: undefined, isLoading: false, isError: true, error: new Error('API Error') };
       });
       
@@ -472,7 +479,7 @@ describe('Dashboard', () => {
     it('should display fallback values when API data is undefined', async () => {
       // Mock useQuery to return undefined data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
+      useQuery.mockImplementation((key: string | string[]) => {
         return { data: undefined, isLoading: false, isError: false };
       });
       
@@ -580,10 +587,11 @@ describe('Dashboard', () => {
 
       // Mock useQuery to return partial stats data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        if (key === 'recentFigures') {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        if (queryKey === 'recentFigures') {
           return { data: mockFiguresData, isLoading: false, isError: false };
-        } else if (key === 'dashboardStats') {
+        } else if (queryKey === 'dashboardStats') {
           return { data: partialStatsData, isLoading: false, isError: false };
         }
         return { data: null, isLoading: false, isError: false };
@@ -601,8 +609,9 @@ describe('Dashboard', () => {
     it('should gracefully handle null or undefined query data', async () => {
       // Mock useQuery to return various edge case data scenarios
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        switch(key) {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        switch(queryKey) {
           case 'recentFigures':
             return { data: null, isLoading: false, isError: false };
           case 'dashboardStats':
@@ -673,10 +682,11 @@ describe('Dashboard', () => {
 
       // Mock useQuery to return large stats data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        if (key === 'recentFigures') {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        if (queryKey === 'recentFigures') {
           return { data: mockFiguresData, isLoading: false, isError: false };
-        } else if (key === 'dashboardStats') {
+        } else if (queryKey === 'dashboardStats') {
           return { data: largeStatsData, isLoading: false, isError: false };
         }
         return { data: null, isLoading: false, isError: false };
@@ -701,10 +711,11 @@ describe('Dashboard', () => {
 
       // Mock useQuery to return special characters stats data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        if (key === 'recentFigures') {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        if (queryKey === 'recentFigures') {
           return { data: mockFiguresData, isLoading: false, isError: false };
-        } else if (key === 'dashboardStats') {
+        } else if (queryKey === 'dashboardStats') {
           return { data: specialCharStatsData, isLoading: false, isError: false };
         }
         return { data: null, isLoading: false, isError: false };
@@ -729,10 +740,11 @@ describe('Dashboard', () => {
 
       // Mock useQuery to return long name stats data
       const { useQuery } = require('react-query');
-      useQuery.mockImplementation((key: string) => {
-        if (key === 'recentFigures') {
+      useQuery.mockImplementation((key: string | string[]) => {
+        const queryKey = Array.isArray(key) ? key[0] : key;
+        if (queryKey === 'recentFigures') {
           return { data: mockFiguresData, isLoading: false, isError: false };
-        } else if (key === 'dashboardStats') {
+        } else if (queryKey === 'dashboardStats') {
           return { data: longNameStatsData, isLoading: false, isError: false };
         }
         return { data: null, isLoading: false, isError: false };

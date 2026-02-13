@@ -59,13 +59,17 @@ const theme = extendTheme({
               bg: mode('brand.500', 'brand.400')(props),
               color: mode('white', 'gray.900')(props),
               _hover: {
-                bg: mode('brand.600', 'brand.300')(props),
+                // Dark mode: go darker + add glow instead of lighter (which looks disabled)
+                bg: mode('brand.600', 'brand.500')(props),
+                boxShadow: mode('none', '0 0 8px rgba(33, 134, 235, 0.5)')(props),
                 _disabled: {
                   bg: mode('brand.500', 'brand.400')(props),
+                  boxShadow: 'none',
                 },
               },
               _active: {
-                bg: mode('brand.700', 'brand.200')(props),
+                bg: mode('brand.700', 'brand.600')(props),
+                boxShadow: 'none',
               },
             };
           }

@@ -26,17 +26,20 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { FaUser, FaSignOutAlt, FaLock, FaUnlock } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaLock, FaUnlock, FaCog } from 'react-icons/fa';
 import { useAuthStore } from '../stores/authStore';
 import { useQueryClient } from 'react-query';
 import ThemeToggle from './ThemeToggle';
+import MfcCookiesModal from './MfcCookiesModal';
 import { clearMfcCookies, hasMfcCookies, getStorageType } from '../utils/crypto';
 
 const CookieStatusIndicator: React.FC = () => {
-  const [cookiesStored, setCookiesStored] = React.useState(hasMfcCookies());
-  const [storageType, setStorageType] = React.useState(getStorageType());
+  const user = useAuthStore((state) => state.user);
+  const userId = user?._id;
+  const [cookiesStored, setCookiesStored] = React.useState(hasMfcCookies(userId));
+  const [storageType, setStorageType] = React.useState(getStorageType(userId));
+  const { isOpen: isModalOpen, onOpen: onModalOpen, onClose: onModalClose } = useDisclosure();
   const toast = useToast();
-  const navigate = useNavigate();
   const iconColor = useColorModeValue(
     cookiesStored ? 'green.500' : 'gray.400',
     cookiesStored ? 'green.400' : 'gray.500'
@@ -44,16 +47,18 @@ const CookieStatusIndicator: React.FC = () => {
   const statusTextColor = useColorModeValue('gray.600', 'gray.300');
 
   // Refresh status when cookies might have changed
+  const refreshStatus = React.useCallback(() => {
+    setCookiesStored(hasMfcCookies(userId));
+    setStorageType(getStorageType(userId));
+  }, [userId]);
+
   React.useEffect(() => {
-    const interval = setInterval(() => {
-      setCookiesStored(hasMfcCookies());
-      setStorageType(getStorageType());
-    }, 1000);
+    const interval = setInterval(refreshStatus, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshStatus]);
 
   const handleClearCookies = () => {
-    clearMfcCookies();
+    clearMfcCookies(userId);
     setCookiesStored(false);
     setStorageType(null);
     toast({
@@ -65,46 +70,57 @@ const CookieStatusIndicator: React.FC = () => {
     });
   };
 
+  const handleCookiesChanged = () => {
+    refreshStatus();
+  };
+
   const getTooltipLabel = () => {
     if (!cookiesStored) return 'MFC Cookies: None stored';
-    if (storageType === 'one-time') return 'MFC Cookies: One-time (form session)';
     if (storageType === 'session') return 'MFC Cookies: Session (until logout)';
     if (storageType === 'persistent') return 'MFC Cookies: Persistent (encrypted)';
     return 'MFC Cookies: Unknown';
   };
 
   return (
-    <Menu>
-      <Tooltip label={getTooltipLabel()} placement="bottom">
-        <MenuButton
-          as={IconButton}
-          icon={<Icon as={cookiesStored ? FaLock : FaUnlock} w="16px" h="16px" />}
-          variant="ghost"
-          size="sm"
-          color={iconColor}
-          aria-label="MFC Cookie Status"
-          data-testid="cookie-status-button"
-          minW="32px"
-        />
-      </Tooltip>
-      <MenuList>
-        <Box px={4} py={2}>
-          <Text fontWeight="semibold" fontSize="sm">MFC Cookie Status</Text>
-          <Text fontSize="xs" color={statusTextColor}>
-            {cookiesStored ? `Active (${storageType})` : 'No cookies stored'}
-          </Text>
-        </Box>
-        <MenuDivider />
-        {cookiesStored && (
-          <MenuItem onClick={handleClearCookies} color="red.500">
-            Clear Cookies
+    <>
+      <Menu>
+        <Tooltip label={getTooltipLabel()} placement="bottom">
+          <MenuButton
+            as={IconButton}
+            icon={<Icon as={cookiesStored ? FaLock : FaUnlock} w="16px" h="16px" />}
+            variant="ghost"
+            size="sm"
+            color={iconColor}
+            aria-label="MFC Cookie Status"
+            data-testid="cookie-status-button"
+            minW="32px"
+          />
+        </Tooltip>
+        <MenuList>
+          <Box px={4} py={2}>
+            <Text fontWeight="semibold" fontSize="sm">MFC Cookie Status</Text>
+            <Text fontSize="xs" color={statusTextColor}>
+              {cookiesStored ? `Active (${storageType})` : 'No cookies stored'}
+            </Text>
+          </Box>
+          <MenuDivider />
+          {cookiesStored && (
+            <MenuItem onClick={handleClearCookies} color="red.500">
+              Clear Cookies
+            </MenuItem>
+          )}
+          <MenuItem icon={<FaCog />} onClick={onModalOpen}>
+            Manage
           </MenuItem>
-        )}
-        <MenuItem onClick={() => navigate('/profile')}>
-          Manage in Profile
-        </MenuItem>
-      </MenuList>
-    </Menu>
+        </MenuList>
+      </Menu>
+
+      <MfcCookiesModal
+        isOpen={isModalOpen}
+        onClose={onModalClose}
+        onCookiesChanged={handleCookiesChanged}
+      />
+    </>
   );
 };
 
@@ -428,16 +444,16 @@ const NAV_ITEMS: Array<NavItem> = [
     href: '/',
   },
   {
-    label: 'Figures',
+    label: 'Collection',
     children: [
       {
-        label: 'All Figures',
+        label: 'All Items',
         subLabel: 'View your entire collection',
         href: '/figures',
       },
       {
-        label: 'Add New Figure',
-        subLabel: 'Add a new figure to your collection',
+        label: 'Add New Item',
+        subLabel: 'Add a new item to your collection',
         href: '/figures/add',
       },
     ],

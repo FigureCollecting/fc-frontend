@@ -17,6 +17,20 @@ jest.mock('../../hooks/usePublicConfig', () => ({
   }),
 }));
 
+// Mock useLookupData hook
+jest.mock('../../hooks/useLookupData', () => ({
+  useLookupData: () => ({
+    roleTypes: [
+      { _id: 'role1', name: 'Manufacturer', kind: 'company' },
+      { _id: 'role2', name: 'Sculptor', kind: 'artist' },
+    ],
+    companies: [],
+    artists: [],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 // Mock window.open
 const mockOpen = jest.fn();
 window.open = mockOpen;
@@ -70,7 +84,7 @@ describe('FigureForm Targeted Coverage', () => {
     it('should enable buttons when URLs are valid', async () => {
       renderFigureForm();
 
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
       const imageInput = screen.getByPlaceholderText(/example\.com\/image\.jpg/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/123');
@@ -136,7 +150,7 @@ describe('FigureForm Targeted Coverage', () => {
   describe('Lines 101-103: MFC URL validation conditions', () => {
     it('should validate MFC URL with www prefix', () => {
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i) as HTMLInputElement;
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i) as HTMLInputElement;
 
       fireEvent.change(mfcInput, { target: { value: 'https://www.myfigurecollection.net/item/123' } });
       fireEvent.blur(mfcInput);
@@ -146,7 +160,7 @@ describe('FigureForm Targeted Coverage', () => {
 
     it('should validate MFC URL without www', () => {
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i) as HTMLInputElement;
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i) as HTMLInputElement;
 
       fireEvent.change(mfcInput, { target: { value: 'https://myfigurecollection.net/item/456' } });
       fireEvent.blur(mfcInput);
@@ -156,7 +170,7 @@ describe('FigureForm Targeted Coverage', () => {
 
     it('should reject non-MFC domain', () => {
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i) as HTMLInputElement;
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i) as HTMLInputElement;
 
       fireEvent.change(mfcInput, { target: { value: 'https://example.com/item/123' } });
       fireEvent.blur(mfcInput);
@@ -167,7 +181,7 @@ describe('FigureForm Targeted Coverage', () => {
 
     it('should reject MFC URL without item path', () => {
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i) as HTMLInputElement;
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i) as HTMLInputElement;
 
       fireEvent.change(mfcInput, { target: { value: 'https://myfigurecollection.net/profile/123' } });
       fireEvent.blur(mfcInput);
@@ -185,7 +199,7 @@ describe('FigureForm Targeted Coverage', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/999');
 
@@ -207,7 +221,7 @@ describe('FigureForm Targeted Coverage', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/888');
 
@@ -224,7 +238,7 @@ describe('FigureForm Targeted Coverage', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/777');
 
@@ -253,7 +267,7 @@ describe('FigureForm Targeted Coverage', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/555');
 
@@ -278,9 +292,10 @@ describe('FigureForm Targeted Coverage', () => {
       });
 
       renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
-      await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/444');
+      // Use fireEvent.change to avoid slow character-by-character typing that causes timeouts
+      fireEvent.change(mfcInput, { target: { value: 'https://myfigurecollection.net/item/444' } });
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalled();
@@ -299,7 +314,7 @@ describe('FigureForm Targeted Coverage', () => {
       );
 
       const { unmount } = renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/333');
 
@@ -320,7 +335,7 @@ describe('FigureForm Targeted Coverage', () => {
 
     it('should handle rapid MFC link changes and cleanup', async () => {
       const { unmount } = renderFigureForm();
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
       // Rapidly change the input
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/1');
@@ -338,19 +353,17 @@ describe('FigureForm Targeted Coverage', () => {
     it('should set initial data when provided', () => {
       const initialData = {
         _id: '123',
-        manufacturer: 'Good Smile',
         name: 'Test Figure',
         scale: '1/8',
         mfcLink: 'https://myfigurecollection.net/item/123',
         imageUrl: 'https://example.com/image.jpg',
         location: 'Shelf A',
-        boxNumber: 'B001',
+        storageDetail: 'B001',
       };
 
       renderFigureForm({ initialData });
 
-      // Check that form is populated
-      expect(screen.getByDisplayValue('Good Smile')).toBeInTheDocument();
+      // Check that form is populated (manufacturer field was removed from form)
       expect(screen.getByDisplayValue('Test Figure')).toBeInTheDocument();
       expect(screen.getByDisplayValue('1/8')).toBeInTheDocument();
       expect(screen.getByDisplayValue('https://myfigurecollection.net/item/123')).toBeInTheDocument();
@@ -361,14 +374,12 @@ describe('FigureForm Targeted Coverage', () => {
 
     it('should handle partial initial data', () => {
       const initialData = {
-        manufacturer: 'Partial Co',
         name: 'Partial Figure',
         // Other fields missing
       };
 
       renderFigureForm({ initialData });
 
-      expect(screen.getByDisplayValue('Partial Co')).toBeInTheDocument();
       expect(screen.getByDisplayValue('Partial Figure')).toBeInTheDocument();
 
       // Other fields should be empty
@@ -379,12 +390,12 @@ describe('FigureForm Targeted Coverage', () => {
     it('should handle undefined initial data', () => {
       renderFigureForm({ initialData: undefined });
 
-      // All fields should be empty
-      const manufacturerInput = screen.getByPlaceholderText(/Good Smile Company/i) as HTMLInputElement;
+      // All fields should be empty (manufacturer field was removed from form)
       const nameInput = screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i) as HTMLInputElement;
+      const scaleInput = screen.getByPlaceholderText(/1\/8, 1\/7/i) as HTMLInputElement;
 
-      expect(manufacturerInput.value).toBe('');
       expect(nameInput.value).toBe('');
+      expect(scaleInput.value).toBe('');
     });
   });
 
@@ -424,7 +435,7 @@ describe('FigureForm Targeted Coverage', () => {
       });
 
       // Test 2: Only MFC link filled
-      const mfcInput = screen.getByPlaceholderText(/myfigurecollection\.net/i);
+      const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/123');
 
       fireEvent.submit(form);
@@ -434,13 +445,11 @@ describe('FigureForm Targeted Coverage', () => {
         expect(screen.getByRole('form')).toBeInTheDocument();
       });
 
-      // Test 3: Name and manufacturer filled
+      // Test 3: Name filled (manufacturer field removed from form)
       await userEvent.clear(mfcInput);
       const nameInput = screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i);
-      const manufacturerInput = screen.getByPlaceholderText(/Good Smile Company/i);
 
       await userEvent.type(nameInput, 'Test Figure');
-      await userEvent.type(manufacturerInput, 'Test Co');
 
       fireEvent.submit(form);
 
@@ -454,12 +463,15 @@ describe('FigureForm Targeted Coverage', () => {
     it('should handle loading state button conditions', () => {
       renderFigureForm({ isLoading: true });
 
+      // Look specifically for the Save/Submit button, not Add buttons from array sections
       const buttons = screen.getAllByRole('button');
-      const submitButton = buttons.find(btn =>
-        btn.textContent?.toLowerCase().includes('save') ||
-        btn.textContent?.toLowerCase().includes('submit') ||
-        btn.textContent?.toLowerCase().includes('add')
-      );
+      const submitButton = buttons.find(btn => {
+        const text = btn.textContent?.toLowerCase() || '';
+        const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || '';
+        // Match Save/Submit but exclude Add buttons for array sections
+        return (text.includes('save') || text.includes('submit') || ariaLabel.includes('save')) &&
+               !text.includes('add company') && !text.includes('add artist') && !text.includes('add release');
+      });
 
       if (submitButton) {
         expect(submitButton).toBeDisabled();
@@ -470,14 +482,13 @@ describe('FigureForm Targeted Coverage', () => {
       const onSubmit = jest.fn();
       renderFigureForm({ onSubmit });
 
-      // Fill all fields
-      await userEvent.type(screen.getByPlaceholderText(/Good Smile Company/i), 'Manufacturer');
+      // Fill all fields (manufacturer field was removed from form)
       await userEvent.type(screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i), 'Name');
       await userEvent.type(screen.getByPlaceholderText(/1\/8, 1\/7/i), '1/8');
       await userEvent.type(screen.getByPlaceholderText(/Shelf, Display Case/i), 'Location');
-      await userEvent.type(screen.getByPlaceholderText(/A1, Box 3/i), 'Box');
+      await userEvent.type(screen.getByPlaceholderText(/Shelf A-3, Box #12/i), 'Box');
       await userEvent.type(screen.getByPlaceholderText(/example\.com\/image\.jpg/i), 'https://example.com/img.jpg');
-      await userEvent.type(screen.getByPlaceholderText(/myfigurecollection\.net/i), 'https://myfigurecollection.net/item/1');
+      await userEvent.type(screen.getByPlaceholderText(/item #.*MFC URL/i), 'https://myfigurecollection.net/item/1');
 
       const form = screen.getByRole('form');
       fireEvent.submit(form);
@@ -486,11 +497,10 @@ describe('FigureForm Targeted Coverage', () => {
         // onSubmit is now called with (data, addAnother)
         expect(onSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
-            manufacturer: 'Manufacturer',
             name: 'Name',
             scale: '1/8',
             location: 'Location',
-            boxNumber: 'Box',
+            storageDetail: 'Box',
           }),
           expect.any(Boolean) // addAnother flag
         );

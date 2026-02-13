@@ -31,8 +31,8 @@ describe('Sidebar', () => {
       expect(screen.getByText('Dashboard')).toBeInTheDocument();
 
       // Collection section
-      expect(screen.getByText('All Figures')).toBeInTheDocument();
-      expect(screen.getByText('Add Figure')).toBeInTheDocument();
+      expect(screen.getByText('All Items')).toBeInTheDocument();
+      expect(screen.getByText('Add Item')).toBeInTheDocument();
       expect(screen.getByText('Search')).toBeInTheDocument();
       expect(screen.getByText('Statistics')).toBeInTheDocument();
 
@@ -68,7 +68,7 @@ describe('Sidebar', () => {
       mockUseLocation.mockReturnValue({ pathname: '/figures' });
       render(<Sidebar />);
 
-      const figuresText = screen.getByText('All Figures');
+      const figuresText = screen.getByText('All Items');
       expect(figuresText).toBeInTheDocument();
     });
 
@@ -76,7 +76,7 @@ describe('Sidebar', () => {
       mockUseLocation.mockReturnValue({ pathname: '/figures/add' });
       render(<Sidebar />);
 
-      const addFigureText = screen.getByText('Add Figure');
+      const addFigureText = screen.getByText('Add Item');
       expect(addFigureText).toBeInTheDocument();
     });
   });
@@ -91,8 +91,8 @@ describe('Sidebar', () => {
 
       // Collection section should contain figures-related items
       expect(screen.getByText('COLLECTION')).toBeInTheDocument();
-      expect(screen.getByText('All Figures')).toBeInTheDocument();
-      expect(screen.getByText('Add Figure')).toBeInTheDocument();
+      expect(screen.getByText('All Items')).toBeInTheDocument();
+      expect(screen.getByText('Add Item')).toBeInTheDocument();
       expect(screen.getByText('Search')).toBeInTheDocument();
       expect(screen.getByText('Statistics')).toBeInTheDocument();
 
@@ -117,8 +117,8 @@ describe('Sidebar', () => {
 
       // Ensure all menu items are accessible by screen readers
       expect(screen.getByText('Dashboard')).toBeInTheDocument();
-      expect(screen.getByText('All Figures')).toBeInTheDocument();
-      expect(screen.getByText('Add Figure')).toBeInTheDocument();
+      expect(screen.getByText('All Items')).toBeInTheDocument();
+      expect(screen.getByText('Add Item')).toBeInTheDocument();
       expect(screen.getByText('Search')).toBeInTheDocument();
       expect(screen.getByText('Statistics')).toBeInTheDocument();
       expect(screen.getByText('Profile')).toBeInTheDocument();

@@ -59,10 +59,10 @@ const Sidebar: React.FC = () => {
           COLLECTION
         </Text>
         <MenuItem icon={FaCube} to="/figures">
-          All Figures
+          All Items
         </MenuItem>
         <MenuItem icon={FaPlus} to="/figures/add">
-          Add Figure
+          Add Item
         </MenuItem>
         <MenuItem icon={FaSearch} to="/search">
           Search

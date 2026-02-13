@@ -3,6 +3,8 @@ import { Outlet } from 'react-router-dom';
 import { Box, Container, Text, Flex, Popover, PopoverTrigger, PopoverContent, PopoverBody, VStack, Badge, HStack, useColorModeValue } from '@chakra-ui/react';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import SyncStatusBanner from './SyncStatusBanner';
+import { useSyncEvents } from '../hooks/useSyncEvents';
 
 // Import package.json to get version
 const packageJson = require('../../package.json');
@@ -15,6 +17,9 @@ const Layout: React.FC = () => {
   const footerBorder = useColorModeValue('gray.200', 'gray.700');
   const footerText = useColorModeValue('gray.600', 'gray.400');
   const footerTextHover = useColorModeValue('gray.700', 'gray.300');
+
+  // Global SSE hook - connects when sync is active (managed by syncStore)
+  useSyncEvents();
 
   useEffect(() => {
     const fetchVersionInfo = async (): Promise<void> => {
@@ -52,8 +57,12 @@ const Layout: React.FC = () => {
       <Box data-testid="navbar" flexShrink={0}>
         <Navbar />
       </Box>
+
+      {/* Sync status banner - appears when sync is active or just completed */}
+      <SyncStatusBanner />
+
       <Box flex="1" overflowY="auto">
-        <Container maxW="container.xl" pt={2} pb={2} minHeight="100%">
+        <Container maxW={{ base: "100%", xl: "95%" }} pt={2} pb={2} minHeight="100%">
           <Box display="flex" gap={5} minHeight="100%">
             <Box data-testid="sidebar" w="250px" display={{ base: 'none', md: 'block' }}>
               <Sidebar />
@@ -64,7 +73,7 @@ const Layout: React.FC = () => {
           </Box>
         </Container>
       </Box>
-      
+
       {/* Footer with version info */}
       <Box data-testid="footer" role="contentinfo" as="footer" py={4} borderTop="1px" borderColor={footerBorder} bg={footerBg} flexShrink={0}>
         <Container maxW="container.xl">

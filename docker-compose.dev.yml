@@ -16,9 +16,9 @@ services:
       # These are for nginx, not React
       BACKEND_HOST: backend-dev
       BACKEND_PORT: 5050
-      FRONTEND_PORT: 3000
+      FRONTEND_PORT: 5081
     ports:
-      - "3000:80"
+      - "5081:5081"
     networks:
       - figure-collector
 

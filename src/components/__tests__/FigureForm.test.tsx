@@ -12,6 +12,20 @@ jest.mock('../../hooks/usePublicConfig', () => ({
   }),
 }));
 
+// Mock useLookupData hook
+jest.mock('../../hooks/useLookupData', () => ({
+  useLookupData: () => ({
+    roleTypes: [
+      { _id: 'role1', name: 'Manufacturer', kind: 'company' },
+      { _id: 'role2', name: 'Sculptor', kind: 'artist' },
+    ],
+    companies: [],
+    artists: [],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 // Simple mock for react-hook-form
 jest.mock('react-hook-form', () => ({
   __esModule: true,
@@ -24,7 +38,18 @@ jest.mock('react-hook-form', () => ({
     reset: jest.fn(),
     formState: { errors: {} },
     control: {}
-  })
+  }),
+  FormProvider: ({ children }: any) => children,
+  useFormContext: () => ({
+    register: jest.fn(),
+    control: {},
+  }),
+  useFieldArray: () => ({
+    fields: [],
+    append: jest.fn(),
+    remove: jest.fn(),
+  }),
+  Controller: ({ render }: any) => render({ field: { value: false, onChange: jest.fn() } }),
 }));
 
 const defaultProps = {

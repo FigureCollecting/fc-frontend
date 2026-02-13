@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
-import { Figure, FigureFormData, PaginatedResponse, SearchResult, StatsData, SystemConfig, User } from '../types';
+import { Figure, FigureFormData, PaginatedResponse, SearchResult, StatsData, SystemConfig, User, BulkImportPreviewResponse, BulkImportExecuteResponse } from '../types';
 import { createLogger } from '../utils/logger';
 
 const API_URL = process.env.REACT_APP_API_URL || '/api';
@@ -19,6 +19,10 @@ const api = axios.create({
   },
 });
 
+// Track if we're currently refreshing to prevent concurrent refresh attempts
+let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
+
 // Add auth token to requests
 api.interceptors.request.use((config) => {
   const { user } = useAuthStore.getState();
@@ -31,29 +35,82 @@ api.interceptors.request.use((config) => {
 // Handle response errors and token expiration
 api.interceptors.response.use(
   (response) => {
-    // On successful API calls, check if we got a new token
+    // Record activity on successful API calls
+    const { recordActivity } = useAuthStore.getState();
+    recordActivity();
+
+    // Check if we got a new token in response headers
     const newToken = response.headers['x-new-token'] || response.headers['x-access-token'];
     if (newToken) {
-      const { user, setUser } = useAuthStore.getState();
-      if (user) {
-        // Update the token in the store (refresh token on activity)
-        setUser({ ...user, token: newToken.replace('Bearer ', '') });
-      }
+      const { updateTokens } = useAuthStore.getState();
+      const tokenExpiresAt = Date.now() + (14 * 60 * 1000);
+      updateTokens(newToken.replace('Bearer ', ''), undefined, tokenExpiresAt);
     }
     return response;
   },
-  (error) => {
-    const { user, logout } = useAuthStore.getState();
+  async (error) => {
+    const originalRequest = error.config;
+    const { user, logout, updateTokens } = useAuthStore.getState();
 
     // Handle 401 Unauthorized (expired/invalid token)
-    if (error.response?.status === 401) {
-      // Clear auth state
-      logout();
-      // Clear localStorage
-      localStorage.removeItem('auth-storage');
-      // Redirect to login page
-      window.location.href = '/login';
-      return Promise.reject(error);
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // Don't retry refresh requests themselves
+      if (originalRequest.url?.includes('/auth/refresh')) {
+        logger.warn('Refresh token invalid, logging out');
+        logout();
+        localStorage.removeItem('auth-storage');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      // Try to refresh the token
+      if (user?.refreshToken) {
+        originalRequest._retry = true;
+
+        try {
+          // If already refreshing, wait for that to complete
+          if (isRefreshing && refreshPromise) {
+            const newToken = await refreshPromise;
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return api(originalRequest);
+          }
+
+          // Start refresh
+          isRefreshing = true;
+          logger.verbose('Token expired, attempting refresh...');
+
+          refreshPromise = api.post('/auth/refresh', { refreshToken: user.refreshToken })
+            .then(response => {
+              const data = response.data.data;
+              const newToken = data.accessToken || data.token;
+              const tokenExpiresAt = Date.now() + (14 * 60 * 1000);
+
+              updateTokens(newToken, data.refreshToken, tokenExpiresAt);
+              logger.info('Token refreshed successfully');
+              return newToken;
+            });
+
+          const newToken = await refreshPromise;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+
+        } catch (refreshError) {
+          logger.error('Token refresh failed, logging out');
+          logout();
+          localStorage.removeItem('auth-storage');
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+          refreshPromise = null;
+        }
+      } else {
+        // No refresh token, just logout
+        logout();
+        localStorage.removeItem('auth-storage');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
     }
 
     // Handle 502/503/504 (backend unavailable) - log but don't redirect
@@ -83,12 +140,17 @@ export const loginUser = async (email: string, password: string): Promise<User> 
   }
 
   // Map accessToken to token for frontend compatibility
+  // Calculate token expiry (default 15 min, but we refresh on activity)
+  const tokenExpiresAt = Date.now() + (14 * 60 * 1000); // 14 min (refresh before 15 min expiry)
+
   return {
     _id: userData._id,
     username: userData.username,
     email: userData.email,
     isAdmin: userData.isAdmin,
-    token: userData.accessToken  // Map accessToken to token
+    token: userData.accessToken,
+    refreshToken: userData.refreshToken,
+    tokenExpiresAt,
   };
 };
 
@@ -102,22 +164,34 @@ export const registerUser = async (username: string, email: string, password: st
   }
 
   // Map accessToken to token for frontend compatibility
+  const tokenExpiresAt = Date.now() + (14 * 60 * 1000);
+
   return {
     _id: userData._id,
     username: userData.username,
     email: userData.email,
     isAdmin: userData.isAdmin,
-    token: userData.accessToken  // Map accessToken to token
+    token: userData.accessToken,
+    refreshToken: userData.refreshToken,
+    tokenExpiresAt,
   };
 };
 
-export const refreshToken = async (): Promise<{ token: string }> => {
-  const response = await api.post('/auth/refresh');
+export const refreshAccessToken = async (currentRefreshToken: string): Promise<{
+  token: string;
+  refreshToken?: string;
+  tokenExpiresAt: number;
+}> => {
+  const response = await api.post('/auth/refresh', { refreshToken: currentRefreshToken });
   const data = response.data.data;
 
-  // Map accessToken to token for frontend compatibility
+  // Calculate new expiry
+  const tokenExpiresAt = Date.now() + (14 * 60 * 1000);
+
   return {
-    token: data.accessToken || data.token
+    token: data.accessToken || data.token,
+    refreshToken: data.refreshToken, // Backend may rotate refresh token
+    tokenExpiresAt,
   };
 };
 
@@ -145,8 +219,23 @@ export const updateUserProfile = async (userData: Partial<User>): Promise<User> 
 };
 
 // Figures API
-export const getFigures = async (page = 1, limit = 10): Promise<PaginatedResponse<Figure>> => {
-  const response = await api.get(`/figures?page=${page}&limit=${limit}`);
+export const getFigures = async (
+  page = 1,
+  limit = 10,
+  sortBy = 'createdAt',
+  sortOrder: 'asc' | 'desc' = 'desc',
+  status?: 'owned' | 'ordered' | 'wished'
+): Promise<PaginatedResponse<Figure>> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    sortBy,
+    sortOrder,
+  });
+  if (status) {
+    params.append('status', status);
+  }
+  const response = await api.get(`/figures?${params.toString()}`);
   return response.data;
 };
 
@@ -177,24 +266,31 @@ export const searchFigures = async (query: string): Promise<SearchResult[]> => {
 export const filterFigures = async (
   params: {
     manufacturer?: string;
+    distributor?: string;
     scale?: string;
     location?: string;
+    origin?: string;
+    category?: string;
     boxNumber?: string;
     page?: number;
     limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    status?: 'owned' | 'ordered' | 'wished';
   }
 ): Promise<PaginatedResponse<Figure>> => {
   const queryString = Object.entries(params)
     .filter(([_, value]) => value !== undefined)
     .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
     .join('&');
-    
+
   const response = await api.get(`/figures/filter?${queryString}`);
   return response.data;
 };
 
-export const getFigureStats = async (): Promise<StatsData> => {
-  const response = await api.get('/figures/stats');
+export const getFigureStats = async (status?: 'owned' | 'ordered' | 'wished'): Promise<StatsData> => {
+  const params = status ? { status } : {};
+  const response = await api.get('/figures/stats', { params });
   return response.data.data;
 };
 
@@ -208,4 +304,15 @@ export const getPublicConfig = async (key: string): Promise<SystemConfig | null>
     logger.warn(`Failed to fetch public config '${key}':`, error);
     return null;
   }
+};
+
+// Bulk Import API
+export const previewBulkImport = async (csvContent: string): Promise<BulkImportPreviewResponse> => {
+  const response = await api.post('/figures/bulk-import/preview', { csvContent });
+  return response.data;
+};
+
+export const executeBulkImport = async (csvContent: string, skipDuplicates = true): Promise<BulkImportExecuteResponse> => {
+  const response = await api.post('/figures/bulk-import', { csvContent, skipDuplicates });
+  return response.data;
 };
