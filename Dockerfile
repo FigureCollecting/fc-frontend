@@ -1,14 +1,15 @@
 # Multi-stage Dockerfile for Figure Collector Frontend
 # Supports: base, development, test, builder, production stages
-# Security patch: CVE-2025-9900 (libtiff) via Ubuntu 22.04 latest packages
 
 # ============================================================================
-# BASE STAGE - Ubuntu 22.04 with Node.js and security patches
+# BASE STAGE - Ubuntu 24.04 with Node.js and security patches
 # ============================================================================
 FROM ubuntu:24.04 as base
 
-# Update all packages including libtiff5 security patch (CVE-2025-9900)
-# Target: libtiff5 4.3.0-6ubuntu0.11 → 4.3.0-6ubuntu0.12
+# Cache-bust ARG to invalidate Docker layers when security patches are needed
+ARG CACHE_BUST=2026-02-12-npm-11.10-openssl-glibc-patches
+
+# Update all packages for latest security patches (openssl, glibc, gnupg)
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y \
     curl \
@@ -108,6 +109,9 @@ RUN npm run build
 # ============================================================================
 FROM ubuntu:24.04 as production
 
+# Cache-bust ARG for production stage security patches
+ARG CACHE_BUST=2026-02-12-npm-11.10-openssl-glibc-patches
+
 # Build arguments for OCI labels
 ARG GITHUB_ORG=rpgoldberg
 ARG GITHUB_REPO=fc-frontend
@@ -118,7 +122,7 @@ LABEL org.opencontainers.image.description="React frontend for Figure Collector"
 LABEL org.opencontainers.image.vendor="Figure Collector Services"
 LABEL org.opencontainers.image.source="https://github.com/${GITHUB_ORG}/${GITHUB_REPO}"
 
-# Update all packages including libtiff5 security patch (CVE-2025-9900)
+# Update all packages for latest security patches (openssl, glibc, gnupg)
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y \
     nginx \
