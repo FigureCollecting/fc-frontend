@@ -5,6 +5,15 @@ All notable changes to the fc-frontend service will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.1] - 2026-02-13
+
+### Changed
+- **Organization Migration**: Moved repository from `rpgoldberg` to `FigureCollecting` org
+- **Docker Publish Workflow**: Fixed OCI case-sensitivity bug in image verification step
+- **Security Scan Workflow**: Added `security-events: write` permission for SARIF uploads
+
+---
+
 ## [2.2.0] - 2025-11-30
 
 ### Changed
