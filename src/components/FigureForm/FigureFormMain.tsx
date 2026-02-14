@@ -232,9 +232,6 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
   const lastScrapePromise = useRef<Promise<void> | null>(null);
   const mountedRef = useRef(true);
 
-  // Debug: Log every render to see what's happening (commented out to reduce noise)
-  // console.log('[FRONTEND DEBUG] Component render, mfcLink:', mfcLink);
-
   const openMfcLink = () => {
     if (mfcLink) {
       // Normalize to full URL before opening
@@ -250,31 +247,21 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
   };
 
   const validateUrl = (value: string | undefined) => {
-    console.log('Validating URL:', value);
     if (!value) return true;
-    
+
     try {
       const url = new URL(value);
-      console.log('URL Details:', {
-        protocol: url.protocol,
-        hostname: url.hostname,
-        pathname: url.pathname,
-        search: url.search
-      });
-      // More rigorous checks
       if (!['http:', 'https:'].includes(url.protocol)) {
-        console.log('Invalid protocol');
         return 'URL must use http or https';
       }
       // Ensure the URL has a domain with at least two parts
       const hostParts = url.hostname.split('.');
       if (hostParts.length < 2 || hostParts.some(part => part.length === 0)) {
-        console.log('Invalid domain');
         return 'Please enter a valid URL with a domain';
       }
       return true;
     } catch (e) {
-      console.log('URL validation error:', e);
+      logger.debug('URL validation failed:', e);
       return 'Please enter a valid URL';
     }
   };
@@ -395,7 +382,7 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
           mfcLink: normalizedLink,
           ...(currentMfcAuth && { mfcAuth: currentMfcAuth })
         };
-        console.log('[FRONTEND] Making request to /api/figures/scrape-mfc with body:', requestBody);
+        logger.debug('Making request to /api/figures/scrape-mfc');
 
         const response = await fetch('/api/figures/scrape-mfc', {
           method: 'POST',
@@ -475,7 +462,7 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
               const mappedCompanies = mapScrapedCompaniesToFormData(result.data.companies);
               setValue('companyRoles', mappedCompanies, { shouldValidate: true, shouldDirty: true });
               fieldsPopulated += mappedCompanies.length;
-              console.log('[FRONTEND] Populated company roles:', mappedCompanies);
+              logger.debug('Populated company roles:', mappedCompanies.length);
             }
           }
 
@@ -486,7 +473,7 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
               const mappedArtists = mapScrapedArtistsToFormData(result.data.artists);
               setValue('artistRoles', mappedArtists, { shouldValidate: true, shouldDirty: true });
               fieldsPopulated += mappedArtists.length;
-              console.log('[FRONTEND] Populated artist roles:', mappedArtists);
+              logger.debug('Populated artist roles:', mappedArtists.length);
             }
           }
 
@@ -497,7 +484,7 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
               const mappedReleases = mapScrapedReleasesToFormData(result.data.releases);
               setValue('releases', mappedReleases, { shouldValidate: true, shouldDirty: true });
               fieldsPopulated += mappedReleases.length;
-              console.log('[FRONTEND] Populated releases:', mappedReleases);
+              logger.debug('Populated releases:', mappedReleases.length);
             }
           }
 

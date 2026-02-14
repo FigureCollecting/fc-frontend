@@ -1,5 +1,6 @@
 import { useColorMode } from '@chakra-ui/react';
 import { useEffect } from 'react';
+import { stateLogger } from '../utils/logger';
 
 type ColorMode = 'light' | 'dark';
 
@@ -12,7 +13,7 @@ export const useThemePreference = () => {
       localStorage.setItem('chakra-ui-color-mode', mode);
       setColorMode(mode);
     } catch (error) {
-      console.error('Failed to save theme preference:', error);
+      stateLogger.error('Failed to save theme preference:', error);
     }
   };
 
@@ -24,7 +25,7 @@ export const useThemePreference = () => {
         setColorMode(savedMode);
       }
     } catch (error) {
-      console.error('Failed to load theme preference:', error);
+      stateLogger.error('Failed to load theme preference:', error);
     }
   }, [setColorMode]);
 

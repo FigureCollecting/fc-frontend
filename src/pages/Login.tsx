@@ -28,10 +28,14 @@ interface LoginFormData {
 }
 
 const Login: React.FC = () => {
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const pageBg = useColorModeValue('gray.50', 'gray.900');
+  const cardBg = useColorModeValue('rgba(255, 255, 255, 0.85)', 'rgba(26, 32, 44, 0.75)');
+  const cardBorder = useColorModeValue('rgba(255, 255, 255, 0.6)', 'rgba(255, 255, 255, 0.08)');
   const headingColor = useColorModeValue('gray.800', 'gray.100');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+  const gradientBg = useColorModeValue(
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)'
+  );
   const [showPassword, setShowPassword] = React.useState(false);
   const { setUser } = useAuthStore();
   const navigate = useNavigate();
@@ -92,15 +96,50 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Flex minH="100vh" align="center" justify="center" bg={pageBg}>
+    <Flex
+      minH="100vh"
+      align="center"
+      justify="center"
+      bg={gradientBg}
+      position="relative"
+      overflow="hidden"
+    >
+      <Box
+        position="absolute"
+        top="-20%"
+        right="-10%"
+        w="500px"
+        h="500px"
+        borderRadius="full"
+        bg="whiteAlpha.100"
+        filter="blur(80px)"
+        pointerEvents="none"
+      />
+      <Box
+        position="absolute"
+        bottom="-15%"
+        left="-10%"
+        w="400px"
+        h="400px"
+        borderRadius="full"
+        bg="whiteAlpha.100"
+        filter="blur(60px)"
+        pointerEvents="none"
+      />
       <Box
         data-testid="auth-card"
         bg={cardBg}
+        backdropFilter="blur(12px)"
+        border="1px solid"
+        borderColor={cardBorder}
         p={8}
-        rounded="lg"
-        shadow="lg"
+        rounded="xl"
+        shadow="2xl"
         maxW="md"
         w="full"
+        mx={4}
+        position="relative"
+        zIndex={1}
       >
         <Flex direction="column" align="center" mb={8}>
           <Icon as={FaCube} boxSize={12} color="brand.500" mb={2} />
