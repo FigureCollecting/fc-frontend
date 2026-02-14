@@ -38,6 +38,7 @@ import { useSyncStore } from '../stores/syncStore';
 import { cancelSyncJob, resumeSyncSession, cancelFailedItems } from '../api/scraper';
 import { SyncPhase } from '../types';
 import { useSessionRecovery } from '../hooks/useSessionRecovery';
+import { syncLogger } from '../utils/logger';
 
 /**
  * Get human-readable phase label.
@@ -147,7 +148,7 @@ const SyncStatusBanner: React.FC = () => {
         await cancelSyncJob(orphanedSessionData.sessionId);
         dismissOrphanedSession();
       } catch (error) {
-        console.error('Failed to cancel orphaned session:', error);
+        syncLogger.error('Failed to cancel orphaned session:', error);
         dismissOrphanedSession(); // Dismiss locally anyway
       }
     }
@@ -160,7 +161,7 @@ const SyncStatusBanner: React.FC = () => {
         await cancelSyncJob(sessionId);
         cancelSync();
       } catch (error) {
-        console.error('Failed to cancel sync:', error);
+        syncLogger.error('Failed to cancel sync:', error);
         cancelSync(); // Cancel locally anyway
       }
     }
@@ -173,7 +174,7 @@ const SyncStatusBanner: React.FC = () => {
         await resumeSyncSession(sessionId);
         setIsPaused(false);
       } catch (error) {
-        console.error('Failed to resume sync:', error);
+        syncLogger.error('Failed to resume sync:', error);
       }
     }
   };
@@ -183,11 +184,11 @@ const SyncStatusBanner: React.FC = () => {
     if (sessionId) {
       try {
         const skippedCount = await cancelFailedItems(sessionId);
-        console.log(`Skipped ${skippedCount} failed items`);
+        syncLogger.info('Skipped failed items:', skippedCount);
         // Clear failed items from local state
         // The stats will update via SSE
       } catch (error) {
-        console.error('Failed to skip failed items:', error);
+        syncLogger.error('Failed to skip failed items:', error);
       }
     }
   };

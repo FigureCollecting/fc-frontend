@@ -102,8 +102,17 @@ export function useSyncEvents(options: UseSyncEventsOptions = {}) {
         logger.info('SSE connected:', data);
 
         updateConnectionState('connected');
-        updateProgress(data.phase, data.stats, data.message);
         reconnectAttemptRef.current = 0; // Reset reconnect counter on success
+
+        // If reconnecting to a job that already finished, complete it immediately
+        const terminalPhases = ['completed', 'failed', 'cancelled'];
+        if (terminalPhases.includes(data.phase)) {
+          logger.info('Connected to terminal job, completing:', data.phase);
+          completeSync(data.phase, data.stats, data.message);
+          cleanup();
+        } else {
+          updateProgress(data.phase, data.stats, data.message);
+        }
 
         // Record activity - user is actively watching sync progress
         recordUserActivity();

@@ -3,6 +3,8 @@
  * Uses AES-GCM for authenticated encryption
  */
 
+import { cryptoLogger } from './logger';
+
 const ALGORITHM = 'AES-GCM';
 const KEY_LENGTH = 256;
 const IV_LENGTH = 12; // 96 bits recommended for AES-GCM
@@ -108,7 +110,7 @@ export async function decrypt(ciphertext: string): Promise<string> {
     const decoder = new TextDecoder();
     return decoder.decode(decrypted);
   } catch (error) {
-    console.error('Decryption failed:', error);
+    cryptoLogger.error('Decryption failed');
     throw new Error('Failed to decrypt data');
   }
 }
@@ -199,7 +201,7 @@ export async function retrieveMfcCookies(userId?: string): Promise<string | null
     try {
       return await decrypt(cookies);
     } catch (error) {
-      console.error('Failed to decrypt MFC cookies:', error);
+      cryptoLogger.error('Failed to decrypt MFC cookies');
       clearMfcCookies(userId); // Clear corrupted data
       return null;
     }
