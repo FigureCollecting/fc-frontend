@@ -22,6 +22,7 @@ import {
   Textarea,
   Input,
   Button,
+  IconButton,
   Text,
   HStack,
   VStack,
@@ -36,12 +37,14 @@ import {
   AlertIcon,
   Box,
   Divider,
+  InputGroup,
   useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
-import { FaLock, FaChevronUp, FaChevronDown, FaTrash, FaSave, FaCopy } from 'react-icons/fa';
+import { FaLock, FaChevronUp, FaChevronDown, FaTrash, FaSave, FaCopy, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuthStore } from '../stores/authStore';
 import { getMfcCookieAllowlist, CookieAllowlistResponse } from '../api/scraper';
+import { apiLogger } from '../utils/logger';
 import {
   storeMfcCookies,
   retrieveMfcCookies,
@@ -147,6 +150,8 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
   const [showSecurity, setShowSecurity] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [scriptCopied, setScriptCopied] = useState(false);
+  const [showStep2, setShowStep2] = useState(false);
+  const [showStep3, setShowStep3] = useState(false);
 
   // Allowlist state
   const [allowlist, setAllowlist] = useState<CookieAllowlistResponse | null>(null);
@@ -167,7 +172,7 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
       const result = await getMfcCookieAllowlist();
       setAllowlist(result);
     } catch (err) {
-      console.error('Failed to fetch cookie allowlist:', err);
+      apiLogger.error('Failed to fetch cookie allowlist:', err);
       setAllowlistError('Failed to load cookie configuration');
       // Use defaults if fetch fails
       setAllowlist({
@@ -318,6 +323,8 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
 
   const handleClose = () => {
     setShowSecurity(false);
+    setShowStep2(false);
+    setShowStep3(false);
     onClose();
   };
 
@@ -394,9 +401,18 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
 
             {/* Step 2: Paste console output */}
             <FormControl>
-              <FormLabel fontSize="sm" fontWeight="bold">
-                Step 2: Paste the JSON output here
-              </FormLabel>
+              <HStack justify="space-between" mb={1}>
+                <FormLabel fontSize="sm" fontWeight="bold" mb={0}>
+                  Step 2: Paste the JSON output here
+                </FormLabel>
+                <IconButton
+                  aria-label={showStep2 ? 'Hide cookie values' : 'Show cookie values'}
+                  icon={showStep2 ? <FaEyeSlash /> : <FaEye />}
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => setShowStep2(!showStep2)}
+                />
+              </HStack>
               <Textarea
                 value={consoleOutput}
                 onChange={(e) => handleConsoleOutputChange(e.target.value)}
@@ -405,6 +421,10 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
                 rows={4}
                 fontFamily="mono"
                 fontSize="xs"
+                sx={!showStep2 && consoleOutput ? {
+                  filter: 'blur(5px)',
+                  userSelect: 'none',
+                } : undefined}
               />
               {consoleOutput && !isValidOutput && (
                 <Text fontSize="xs" color="red.500" mt={1}>
@@ -427,20 +447,31 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
 
             {/* Step 3: Manual cf_clearance entry */}
             <FormControl>
-              <FormLabel fontSize="sm" fontWeight="bold">
-                Step 3: Enter cf_clearance (from Application tab)
-              </FormLabel>
+              <HStack justify="space-between" mb={1}>
+                <FormLabel fontSize="sm" fontWeight="bold" mb={0}>
+                  Step 3: Enter cf_clearance (from Application tab)
+                </FormLabel>
+                <IconButton
+                  aria-label={showStep3 ? 'Hide cf_clearance value' : 'Show cf_clearance value'}
+                  icon={showStep3 ? <FaEyeSlash /> : <FaEye />}
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => setShowStep3(!showStep3)}
+                />
+              </HStack>
               <Text fontSize="xs" color="gray.500" mb={2}>
                 In DevTools → Application → Cookies → myfigurecollection.net → find cf_clearance → copy its Value
               </Text>
-              <Input
-                value={cfClearance}
-                onChange={(e) => handleCfClearanceChange(e.target.value)}
-                placeholder="cf_clearance value (required for Cloudflare bypass)"
-                size="sm"
-                fontFamily="mono"
-                fontSize="xs"
-              />
+              <InputGroup size="sm">
+                <Input
+                  type={showStep3 ? 'text' : 'password'}
+                  value={cfClearance}
+                  onChange={(e) => handleCfClearanceChange(e.target.value)}
+                  placeholder="cf_clearance value (required for Cloudflare bypass)"
+                  fontFamily="mono"
+                  fontSize="xs"
+                />
+              </InputGroup>
               {!hasCfClearance && (
                 <Text fontSize="xs" color="orange.500" mt={1}>
                   ⚠️ Without cf_clearance, requests may be blocked by Cloudflare

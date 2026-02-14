@@ -21,6 +21,7 @@ import {
 } from '@chakra-ui/react';
 import { FaCube, FaPlus, FaSearch, FaChartBar, FaBoxOpen, FaSync } from 'react-icons/fa';
 import MfcSyncModal from '../components/MfcSyncModal';
+import MfcCookiesModal from '../components/MfcCookiesModal';
 import CollectionStatusTabs from '../components/CollectionStatusTabs';
 import { useQuery, useQueryClient } from 'react-query';
 import { getFigures, getFigureStats } from '../api';
@@ -34,6 +35,7 @@ const Dashboard: React.FC = () => {
   const queryClient = useQueryClient();
   const cardBg = useColorModeValue('white', 'gray.800');
   const { isOpen: isSyncOpen, onOpen: onSyncOpen, onClose: onSyncClose } = useDisclosure();
+  const { isOpen: isCookiesOpen, onOpen: onCookiesOpen, onClose: onCookiesClose } = useDisclosure();
 
   // Collection status state - controls which slice of data is shown
   const [activeStatus, setActiveStatus] = useState<CollectionStatus>('owned');
@@ -246,6 +248,13 @@ const Dashboard: React.FC = () => {
         isOpen={isSyncOpen}
         onClose={onSyncClose}
         onSyncComplete={handleSyncComplete}
+        onOpenCookiesModal={onCookiesOpen}
+      />
+
+      <MfcCookiesModal
+        isOpen={isCookiesOpen}
+        onClose={onCookiesClose}
+        onCookiesChanged={() => {}}
       />
     </Box>
   );
