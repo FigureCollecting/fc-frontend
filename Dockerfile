@@ -113,7 +113,7 @@ FROM ubuntu:24.04 as production
 ARG CACHE_BUST=2026-02-12-npm-11.10-openssl-glibc-patches
 
 # Build arguments for OCI labels
-ARG GITHUB_ORG=rpgoldberg
+ARG GITHUB_ORG=FigureCollecting
 ARG GITHUB_REPO=fc-frontend
 
 # Add OCI labels
