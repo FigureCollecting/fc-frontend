@@ -33,7 +33,7 @@ jobs:
     steps:
       # Checkout to access .grype.yaml configuration
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # Log in to registry to pull images for scanning
       - name: Log in to GitHub Container Registry
@@ -165,7 +165,7 @@ jobs:
 
       # Upload all reports
       - name: Upload security artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: security-scan-${{ github.run_id }}
           path: |
