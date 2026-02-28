@@ -22,3 +22,23 @@ ignore:
     package:
       name: webpack-dev-server
       type: npm
+
+  # minimatch 10.2.x ReDoS vulnerabilities (GHSA-7r86-cg39-jmmj, GHSA-23c5-xmqv-rm74)
+  # The frontend production image serves static files via nginx. No application node_modules exist.
+  # Node.js + npm are only present for the health check script. minimatch 10.2.2, if detected,
+  # is from the globally installed npm CLI (npm install -g npm@latest), not application code.
+  # npm's minimatch is only used during package installation, which does not happen at runtime.
+  - vulnerability: GHSA-7r86-cg39-jmmj
+    package:
+      name: minimatch
+      type: npm
+    reason: |
+      Production image has no application node_modules. Any minimatch finding is from npm CLI
+      internals (global install), not application code. No glob patterns processed at runtime.
+  - vulnerability: GHSA-23c5-xmqv-rm74
+    package:
+      name: minimatch
+      type: npm
+    reason: |
+      Production image has no application node_modules. Any minimatch finding is from npm CLI
+      internals (global install), not application code. No glob patterns processed at runtime.

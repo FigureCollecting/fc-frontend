@@ -22,9 +22,11 @@ const emptyFilters: FacetedFilters = {
   manufacturers: [],
   distributors: [],
   scales: [],
-  locations: [],
   origins: [],
   categories: [],
+  sculptors: [],
+  illustrators: [],
+  classifications: [],
 };
 
 const mockStats = {
@@ -46,10 +48,6 @@ const mockStats = {
     { _id: '1/7', count: 5 },
     { _id: '1/8', count: 3 },
     { _id: null, count: 2 },
-  ],
-  locationStats: [
-    { _id: 'Display Case A', count: 6 },
-    { _id: 'Box', count: 4 },
   ],
   originStats: [
     { _id: 'Fate', count: 4 },
@@ -89,7 +87,6 @@ describe('FacetedFilterSidebar', () => {
       expect(screen.getByText('Origin')).toBeInTheDocument();
       // 'Scale' appears as both a section header and a category item
       expect(screen.getAllByText('Scale').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('Location')).toBeInTheDocument();
     });
 
     it('should show distributor section when distributor stats available', () => {
@@ -203,7 +200,6 @@ describe('SidebarContent', () => {
       manufacturers: ['Good Smile Company', 'Alter'],
       distributors: ['AmiAmi'],
       scales: ['1/7'],
-      locations: ['Display Case A'],
       origins: ['Fate'],
       categories: ['Scale'],
     };

@@ -183,6 +183,7 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
   const [hasCookiesStored, setHasCookiesStored] = useState(false);
   // Status selection (owned/ordered/wished) - default to all (empty = all)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['owned', 'ordered', 'wished']);
+  const [syncLists, setSyncLists] = useState(true);
 
   const toast = useToast();
   const { user } = useAuthStore();
@@ -303,10 +304,10 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
   // Start the sync and close modal
   const handleStartSync = async () => {
     if (!user?._id || !cookies || !validationResult?.valid) return;
-    if (selectedStatuses.length === 0) {
+    if (selectedStatuses.length === 0 && !syncLists) {
       toast({
-        title: 'No statuses selected',
-        description: 'Please select at least one status (Owned/Ordered/Wished) to sync',
+        title: 'Nothing selected',
+        description: 'Please select at least one status or enable list sync',
         status: 'warning',
         duration: 3000,
       });
@@ -332,11 +333,12 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
       // Create sync job first (enables SSE tracking)
       await createSyncJob({
         sessionId,
-        includeLists: selectedStatuses as ('owned' | 'ordered' | 'wished')[],
+        includeLists: syncLists,
+        statusFilter: selectedStatuses as ('owned' | 'ordered' | 'wished')[],
         skipCached: true,
       });
 
-      logger.info(`Sync started with statuses: ${selectedStatuses.join(', ')}`);
+      logger.info(`Sync started with statuses: ${selectedStatuses.join(', ')}${syncLists ? ', including lists' : ''}`);
 
       // Start sync in global store (triggers SSE connection)
       startSync(sessionId);
@@ -349,7 +351,7 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
         cookies,
         userId: user._id,
         sessionId,
-        includeLists: false,
+        includeLists: syncLists,
         skipCached: true,
         statusFilter: selectedStatuses as ('owned' | 'ordered' | 'wished')[],
       });
@@ -479,6 +481,21 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
             </Checkbox>
           </Stack>
         </CheckboxGroup>
+      </Box>
+
+      {/* Lists Sync Option */}
+      <Box w="100%" p={4} bg="gray.50" borderRadius="md" _dark={{ bg: 'gray.700' }}>
+        <Checkbox
+          isChecked={syncLists}
+          onChange={(e) => setSyncLists(e.target.checked)}
+          colorScheme="orange"
+          data-testid="sync-lists-checkbox"
+        >
+          <Text fontWeight="semibold" color="orange.600">Sync Lists</Text>
+        </Checkbox>
+        <Text fontSize="xs" color="gray.500" mt={1} ml={6}>
+          Import your MFC lists (wishlists, for-sale, custom lists, etc.)
+        </Text>
       </Box>
 
       {error && (

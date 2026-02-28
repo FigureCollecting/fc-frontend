@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import {
   Box,
@@ -28,9 +28,10 @@ import {
   InputGroup,
   InputRightElement,
   Icon,
+  Badge,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaShieldAlt } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { getUserProfile, updateUserProfile } from '../api';
 import { useAuthStore } from '../stores/authStore';
@@ -224,7 +225,45 @@ const Profile: React.FC = () => {
             </FormControl>
             
             <Divider />
-            
+
+            {/* Security Status */}
+            <Box>
+              <HStack justify="space-between" mb={2}>
+                <Heading size="md">Security</Heading>
+                <Button
+                  as={RouterLink}
+                  to="/security"
+                  size="sm"
+                  leftIcon={<Icon as={FaShieldAlt} />}
+                  variant="outline"
+                >
+                  Security Settings
+                </Button>
+              </HStack>
+              <HStack spacing={4}>
+                <HStack>
+                  <Text fontSize="sm">Email:</Text>
+                  <Badge colorScheme={profile?.emailVerified ? 'green' : 'yellow'}>
+                    {profile?.emailVerified ? 'Verified' : 'Not Verified'}
+                  </Badge>
+                </HStack>
+                <HStack>
+                  <Text fontSize="sm">2FA:</Text>
+                  <Badge colorScheme={profile?.twoFactorEnabled ? 'green' : 'gray'}>
+                    {profile?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                  </Badge>
+                </HStack>
+                {(profile?.webauthnCredentialCount ?? 0) > 0 && (
+                  <HStack>
+                    <Text fontSize="sm">Passkeys:</Text>
+                    <Badge colorScheme="blue">{profile?.webauthnCredentialCount}</Badge>
+                  </HStack>
+                )}
+              </HStack>
+            </Box>
+
+            <Divider />
+
             <Heading size="md">Change Password</Heading>
             
             <FormControl isInvalid={!!errors.newPassword}>

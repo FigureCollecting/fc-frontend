@@ -62,10 +62,10 @@ const Register: React.FC = () => {
       onSuccess: (userData) => {
         setUser(userData);
         toast({
-          title: 'Success',
-          description: 'Account created successfully!',
+          title: 'Account created!',
+          description: 'Check your email to verify your account.',
           status: 'success',
-          duration: 5000,
+          duration: 8000,
           isClosable: true,
         });
         navigate('/');

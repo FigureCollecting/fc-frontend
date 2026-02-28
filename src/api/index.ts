@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
-import { Figure, FigureFormData, PaginatedResponse, SearchResult, StatsData, SystemConfig, User, BulkImportPreviewResponse, BulkImportExecuteResponse } from '../types';
+import { Figure, FigureFormData, PaginatedResponse, SearchResult, StatsData, SystemConfig, User, BulkImportPreviewResponse, BulkImportExecuteResponse, MfcList, MfcListFormData, ListPrivacy } from '../types';
 import { createLogger } from '../utils/logger';
 
 const API_URL = process.env.REACT_APP_API_URL || '/api';
@@ -125,12 +125,21 @@ api.interceptors.response.use(
 );
 
 // Auth API
-export const loginUser = async (email: string, password: string): Promise<User> => {
+export const loginUser = async (email: string, password: string): Promise<User | { requiresTwoFactor: true; sessionId: string; methods: string[] }> => {
   logger.verbose('Attempting login to:', API_URL + '/auth/login');
   logger.verbose('Login payload:', { email, password: '***hidden***' }); // NOSONAR '***hidden***' is a placeholder string for logging, not a real password
 
   const response = await api.post('/auth/login', { email, password });
   logger.verbose('Login response received:', response.data);
+
+  // Handle 2FA required response
+  if (response.data?.requiresTwoFactor) {
+    return {
+      requiresTwoFactor: true,
+      sessionId: response.data.data.sessionId,
+      methods: response.data.data.methods,
+    };
+  }
 
   const userData = response.data?.data;
 
@@ -151,6 +160,9 @@ export const loginUser = async (email: string, password: string): Promise<User> 
     token: userData.accessToken,
     refreshToken: userData.refreshToken,
     tokenExpiresAt,
+    emailVerified: userData.emailVerified ?? false,
+    twoFactorEnabled: userData.twoFactorEnabled ?? false,
+    webauthnCredentialCount: userData.webauthnCredentialCount ?? 0,
   };
 };
 
@@ -174,6 +186,9 @@ export const registerUser = async (username: string, email: string, password: st
     token: userData.accessToken,
     refreshToken: userData.refreshToken,
     tokenExpiresAt,
+    emailVerified: userData.emailVerified ?? false,
+    twoFactorEnabled: userData.twoFactorEnabled ?? false,
+    webauthnCredentialCount: userData.webauthnCredentialCount ?? 0,
   };
 };
 
@@ -222,8 +237,8 @@ export const updateUserProfile = async (userData: Partial<User>): Promise<User> 
 export const getFigures = async (
   page = 1,
   limit = 10,
-  sortBy = 'createdAt',
-  sortOrder: 'asc' | 'desc' = 'desc',
+  sortBy = 'activity',
+  sortOrder: 'asc' | 'desc' = 'asc',
   status?: 'owned' | 'ordered' | 'wished'
 ): Promise<PaginatedResponse<Figure>> => {
   const params = new URLSearchParams({
@@ -268,10 +283,8 @@ export const filterFigures = async (
     manufacturer?: string;
     distributor?: string;
     scale?: string;
-    location?: string;
     origin?: string;
     category?: string;
-    boxNumber?: string;
     page?: number;
     limit?: number;
     sortBy?: string;
@@ -315,4 +328,136 @@ export const previewBulkImport = async (csvContent: string): Promise<BulkImportP
 export const executeBulkImport = async (csvContent: string, skipDuplicates = true): Promise<BulkImportExecuteResponse> => {
   const response = await api.post('/figures/bulk-import', { csvContent, skipDuplicates });
   return response.data;
+};
+
+// Lists API
+export const getLists = async (params?: {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  privacy?: ListPrivacy;
+}): Promise<PaginatedResponse<MfcList>> => {
+  const queryParams = new URLSearchParams();
+  if (params?.page) queryParams.set('page', params.page.toString());
+  if (params?.limit) queryParams.set('limit', params.limit.toString());
+  if (params?.sortBy) queryParams.set('sortBy', params.sortBy);
+  if (params?.sortOrder) queryParams.set('sortOrder', params.sortOrder);
+  if (params?.privacy) queryParams.set('privacy', params.privacy);
+
+  const query = queryParams.toString();
+  const response = await api.get(`/lists${query ? `?${query}` : ''}`);
+  return response.data;
+};
+
+export const getListById = async (id: string): Promise<MfcList> => {
+  const response = await api.get(`/lists/${id}`);
+  return response.data.data;
+};
+
+export const createList = async (data: MfcListFormData): Promise<MfcList> => {
+  const response = await api.post('/lists', data);
+  return response.data.data;
+};
+
+export const updateList = async (id: string, data: Partial<MfcListFormData>): Promise<MfcList> => {
+  const response = await api.put(`/lists/${id}`, data);
+  return response.data.data;
+};
+
+export const deleteList = async (id: string): Promise<void> => {
+  await api.delete(`/lists/${id}`);
+};
+
+export const getListsByItem = async (mfcId: number): Promise<{ _id: string; name: string }[]> => {
+  const response = await api.get(`/lists/by-item/${mfcId}`);
+  return response.data.data;
+};
+
+export const addItemsToList = async (listId: string, mfcIds: number[]): Promise<MfcList> => {
+  const response = await api.post(`/lists/${listId}/items`, { mfcIds });
+  return response.data.data;
+};
+
+export const removeItemsFromList = async (listId: string, mfcIds: number[]): Promise<MfcList> => {
+  const response = await api.delete(`/lists/${listId}/items`, { data: { mfcIds } });
+  return response.data.data;
+};
+
+export const syncLists = async (lists: MfcListFormData[]): Promise<{ upserted: number }> => {
+  const response = await api.post('/lists/sync', { lists });
+  return response.data.data;
+};
+
+// Email Verification
+export const verifyEmailToken = async (token: string, userId: string) => {
+  const { data } = await api.post('/auth/verify-email', { token, userId });
+  return data;
+};
+
+export const resendVerificationEmail = async (email: string) => {
+  const { data } = await api.post('/auth/resend-verification', { email });
+  return data;
+};
+
+export const forgotPasswordRequest = async (email: string) => {
+  const { data } = await api.post('/auth/forgot-password', { email });
+  return data;
+};
+
+export const resetPasswordRequest = async (token: string, password: string, userId: string) => {
+  const { data } = await api.post('/auth/reset-password', { token, password, userId });
+  return data;
+};
+
+// Two-Factor
+export const verify2FA = async (sessionId: string, method: string, code: string) => {
+  const { data } = await api.post('/auth/2fa/verify', { sessionId, method, code });
+  return data;
+};
+
+export const setupTOTP = async () => {
+  const { data } = await api.post('/auth/2fa/totp/setup');
+  return data;
+};
+
+export const verifyTOTPSetup = async (code: string) => {
+  const { data } = await api.post('/auth/2fa/totp/verify-setup', { code });
+  return data;
+};
+
+export const disableTOTP = async (code: string) => {
+  const { data } = await api.delete('/auth/2fa/totp', { data: { code } });
+  return data;
+};
+
+export const regenerateBackupCodes = async (code: string) => {
+  const { data } = await api.post('/auth/2fa/backup-codes', { code });
+  return data;
+};
+
+// WebAuthn
+export const getWebAuthnRegisterOptions = async (nickname?: string) => {
+  const { data } = await api.post('/auth/webauthn/register/options', { nickname });
+  return data;
+};
+
+export const verifyWebAuthnRegistration = async (challengeId: string, response: any) => {
+  const { data } = await api.post('/auth/webauthn/register/verify', { challengeId, response });
+  return data;
+};
+
+export const getWebAuthnLoginOptions = async (email?: string) => {
+  const { data } = await api.post('/auth/webauthn/login/options', { email });
+  return data;
+};
+
+export const verifyWebAuthnLogin = async (challengeId: string, response: any) => {
+  const { data } = await api.post('/auth/webauthn/login/verify', { challengeId, response });
+  return data;
+};
+
+export const deleteWebAuthnCredential = async (credentialId: string) => {
+  const { data } = await api.delete(`/auth/webauthn/credential/${credentialId}`);
+  return data;
 };

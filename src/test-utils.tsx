@@ -159,8 +159,8 @@ export const mockFigure = {
   price: 15000,
   mfcLink: 'https://myfigurecollection.net/item/123456',
   imageUrl: 'https://example.com/test.jpg',
-  location: 'Shelf A',
-  boxNumber: 'Box 1',
+  origin: 'Test Series',
+  category: 'Scale Figure',
   userId: '1',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
@@ -179,10 +179,10 @@ export const mockStatsData = {
     { _id: '1/7', count: 3 },
     { _id: '1/6', count: 1 }
   ],
-  locationStats: [
-    { _id: 'Display Case', count: 5 },
-    { _id: 'Storage Box', count: 3 },
-    { _id: 'Shelf A', count: 2 }
+  originStats: [
+    { _id: 'Fate/Grand Order', count: 5 },
+    { _id: 'Vocaloid', count: 3 },
+    { _id: 'Original', count: 2 }
   ],
   activeStatus: 'owned' as const
 };

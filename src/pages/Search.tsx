@@ -58,7 +58,7 @@ const Search: React.FC = () => {
       <Heading size="lg" mb={6}>Search Your Collection</Heading>
       
       <Box mb={6}>
-        <SearchBar onSearch={handleSearch} placeholder="Search by name, manufacturer, location..." />
+        <SearchBar onSearch={handleSearch} placeholder="Search by name, manufacturer, origin..." />
       </Box>
       
       {searchQuery && (
@@ -104,8 +104,8 @@ const Search: React.FC = () => {
                   name: figure.name,
                   scale: figure.scale,
                   mfcLink: figure.mfcLink,
-                  location: figure.location,
-                  boxNumber: figure.boxNumber,
+                  origin: figure.origin,
+                  category: figure.category,
                   imageUrl: figure.imageUrl,
                   userId: '',
                   createdAt: '',

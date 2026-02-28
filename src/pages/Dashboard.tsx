@@ -160,12 +160,12 @@ const Dashboard: React.FC = () => {
           borderLeft="4px solid"
           borderLeftColor="orange.500"
         >
-          <StatLabel>Locations</StatLabel>
+          <StatLabel>Origins</StatLabel>
           <Flex align="center" mt={2}>
             <Icon as={FaSearch} color="orange.500" boxSize={6} mr={2} />
-            <StatNumber>{statsData?.locationStats.length || 0}</StatNumber>
+            <StatNumber>{statsData?.originStats?.length || 0}</StatNumber>
           </Flex>
-          <StatHelpText>Storage areas</StatHelpText>
+          <StatHelpText>Series/Franchises</StatHelpText>
         </Stat>
       </SimpleGrid>
       

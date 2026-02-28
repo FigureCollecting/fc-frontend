@@ -87,7 +87,6 @@ describe('FigureForm Comprehensive Tests', () => {
     scale: '1/8',
     mfcLink: 'https://myfigurecollection.net/item/123456',
     imageUrl: 'https://example.com/miku.jpg',
-    location: 'Shelf A',
     storageDetail: 'B001',
   };
 
@@ -116,7 +115,6 @@ describe('FigureForm Comprehensive Tests', () => {
       expect(screen.getByPlaceholderText(/item #.*MFC URL/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/1\/8, 1\/7/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/Shelf, Display Case/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/Shelf A-3, Box #12/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/example\.com\/image\.jpg/i)).toBeInTheDocument();
     });
@@ -367,7 +365,6 @@ describe('FigureForm Comprehensive Tests', () => {
         name: '',
         scale: '',
         mfcLink: '',
-        location: '',
         storageDetail: '',
         imageUrl: '',
       }));

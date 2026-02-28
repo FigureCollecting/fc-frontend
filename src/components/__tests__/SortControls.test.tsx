@@ -31,11 +31,10 @@ describe('SortControls', () => {
       expect(select).toHaveValue('createdAt');
 
       // Check all options exist
+      expect(screen.getByRole('option', { name: 'Collection Order' })).toBeInTheDocument();
       expect(screen.getByRole('option', { name: 'Date Added' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Last Updated' })).toBeInTheDocument();
       expect(screen.getByRole('option', { name: 'Name' })).toBeInTheDocument();
-      expect(screen.getByRole('option', { name: 'Manufacturer' })).toBeInTheDocument();
-      expect(screen.getByRole('option', { name: 'Scale' })).toBeInTheDocument();
-      expect(screen.getByRole('option', { name: 'Price' })).toBeInTheDocument();
     });
 
     it('should display correct selected sort field', () => {
@@ -105,13 +104,13 @@ describe('SortControls', () => {
     it('should maintain sort field when changing direction', async () => {
       const user = userEvent.setup();
       const onSortChange = jest.fn();
-      render(<SortControls {...defaultProps} sortBy="manufacturer" onSortChange={onSortChange} />);
+      render(<SortControls {...defaultProps} sortBy="updatedAt" onSortChange={onSortChange} />);
 
       const button = screen.getByTestId('sort-direction-button');
       await user.click(button);
 
       expect(onSortChange).toHaveBeenCalledWith({
-        sortBy: 'manufacturer',
+        sortBy: 'updatedAt',
         sortOrder: 'asc',
       });
     });
@@ -122,10 +121,10 @@ describe('SortControls', () => {
       render(<SortControls {...defaultProps} sortOrder="asc" onSortChange={onSortChange} />);
 
       const select = screen.getByTestId('sort-field-select');
-      await user.selectOptions(select, 'scale');
+      await user.selectOptions(select, 'name');
 
       expect(onSortChange).toHaveBeenCalledWith({
-        sortBy: 'scale',
+        sortBy: 'name',
         sortOrder: 'asc',
       });
     });

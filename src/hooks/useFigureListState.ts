@@ -18,6 +18,9 @@
  * - loc: Location filters (comma-separated)
  * - origin: Origin filters (comma-separated)
  * - cat: Category filters (comma-separated)
+ * - scl: Sculptor filters (comma-separated)
+ * - ill: Illustrator filters (comma-separated)
+ * - cls: Classification filters (comma-separated)
  */
 
 import { useCallback, useMemo } from 'react';
@@ -31,15 +34,17 @@ const EMPTY_FACETED_FILTERS: FacetedFilters = {
   manufacturers: [],
   distributors: [],
   scales: [],
-  locations: [],
   origins: [],
   categories: [],
+  sculptors: [],
+  illustrators: [],
+  classifications: [],
 };
 
 // Valid values for type checking
 const VALID_STATUSES: CollectionStatus[] = ['owned', 'ordered', 'wished'];
 const VALID_LAYOUTS: CardLayout[] = ['text-bottom', 'text-left', 'image-only'];
-const VALID_SORT_FIELDS: SortField[] = ['createdAt', 'name', 'manufacturer', 'scale', 'price'];
+const VALID_SORT_FIELDS: SortField[] = ['activity', 'createdAt', 'updatedAt', 'name'];
 const VALID_SORT_ORDERS: SortDirection[] = ['asc', 'desc'];
 const VALID_PAGE_SIZES = PAGE_SIZE_PRESETS.map(p => p.value);
 
@@ -121,28 +126,33 @@ export function useFigureListState(): FigureListState & FigureListActions {
 
     // Parse sort
     const sortParam = searchParams.get('sort') as SortField;
-    const sortBy = VALID_SORT_FIELDS.includes(sortParam) ? sortParam : 'createdAt';
+    const sortBy = VALID_SORT_FIELDS.includes(sortParam) ? sortParam : 'activity';
 
     const orderParam = searchParams.get('order') as SortDirection;
-    const sortOrder = VALID_SORT_ORDERS.includes(orderParam) ? orderParam : 'desc';
+    const sortOrder = VALID_SORT_ORDERS.includes(orderParam) ? orderParam : 'asc';
 
     // Parse status
     const statusParam = searchParams.get('status') as CollectionStatus;
     const activeStatus = VALID_STATUSES.includes(statusParam) ? statusParam : 'owned';
 
-    // Parse faceted filters (comma-separated lists)
+    // Parse faceted filters (pipe-separated lists)
+    // Pipe delimiter avoids collision with commas in values like "Kanojo, Okarishimasu"
     const parseFilterList = (key: string): string[] => {
       const value = searchParams.get(key);
-      return value ? value.split(',').filter(Boolean) : [];
+      if (!value) return [];
+      // Always split on pipe — commas may appear inside values (e.g., "Kanojo, Okarishimasu")
+      return value.split('|').filter(Boolean);
     };
 
     const facetedFilters: FacetedFilters = {
       manufacturers: parseFilterList('mfr'),
       distributors: parseFilterList('dist'),
       scales: parseFilterList('scale'),
-      locations: parseFilterList('loc'),
       origins: parseFilterList('origin'),
       categories: parseFilterList('cat'),
+      sculptors: parseFilterList('scl'),
+      illustrators: parseFilterList('ill'),
+      classifications: parseFilterList('cls'),
     };
 
     return {
@@ -178,35 +188,39 @@ export function useFigureListState(): FigureListState & FigureListActions {
 
   const setPageSize = useCallback((size: PageSizeValue) => {
     try { localStorage.setItem(LS_PAGE_SIZE_KEY, String(size)); } catch { /* noop */ }
+    // Always write size to URL (even for default) to ensure re-render when
+    // switching from a localStorage-based fallback to the default page size
     updateParams({
-      size: size === DEFAULT_PAGE_SIZE ? null : String(size),
+      size: String(size),
       page: null, // Reset to page 1 when changing page size
     });
   }, [updateParams]);
 
   const setCardLayout = useCallback((layout: CardLayout) => {
     try { localStorage.setItem(LS_CARD_LAYOUT_KEY, layout); } catch { /* noop */ }
-    updateParams({ layout: layout === DEFAULT_CARD_LAYOUT ? null : layout });
+    // Always write layout to URL (even for default) to ensure re-render when
+    // switching from a localStorage-based fallback to the default layout
+    updateParams({ layout });
   }, [updateParams]);
 
   const setSortBy = useCallback((field: SortField) => {
     updateParams({
-      sort: field === 'createdAt' ? null : field,
+      sort: field === 'activity' ? null : field,
       page: null, // Reset to page 1 when changing sort
     });
   }, [updateParams]);
 
   const setSortOrder = useCallback((order: SortDirection) => {
     updateParams({
-      order: order === 'desc' ? null : order,
+      order: order === 'asc' ? null : order,
       page: null, // Reset to page 1 when changing sort
     });
   }, [updateParams]);
 
   const setSort = useCallback((field: SortField, order: SortDirection) => {
     updateParams({
-      sort: field === 'createdAt' ? null : field,
-      order: order === 'desc' ? null : order,
+      sort: field === 'activity' ? null : field,
+      order: order === 'asc' ? null : order,
       page: null,
     });
   }, [updateParams]);
@@ -219,16 +233,20 @@ export function useFigureListState(): FigureListState & FigureListActions {
   }, [updateParams]);
 
   const setFacetedFilters = useCallback((filters: FacetedFilters) => {
+    // Use pipe delimiter to avoid collision with commas in values
     const serializeFilter = (arr: string[]): string | null =>
-      arr.length > 0 ? arr.join(',') : null;
+      arr.length > 0 ? arr.join('|') : null;
 
     updateParams({
       mfr: serializeFilter(filters.manufacturers),
       dist: serializeFilter(filters.distributors),
       scale: serializeFilter(filters.scales),
-      loc: serializeFilter(filters.locations),
       origin: serializeFilter(filters.origins),
       cat: serializeFilter(filters.categories),
+      loc: null, // Clear legacy location filter
+      scl: serializeFilter(filters.sculptors),
+      ill: serializeFilter(filters.illustrators),
+      cls: serializeFilter(filters.classifications),
       page: null, // Reset to page 1 when changing filters
     });
   }, [updateParams]);
@@ -241,6 +259,9 @@ export function useFigureListState(): FigureListState & FigureListActions {
       loc: null,
       origin: null,
       cat: null,
+      scl: null,
+      ill: null,
+      cls: null,
       page: null,
     });
   }, [updateParams]);

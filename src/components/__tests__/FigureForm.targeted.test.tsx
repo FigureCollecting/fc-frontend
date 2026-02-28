@@ -357,7 +357,6 @@ describe('FigureForm Targeted Coverage', () => {
         scale: '1/8',
         mfcLink: 'https://myfigurecollection.net/item/123',
         imageUrl: 'https://example.com/image.jpg',
-        location: 'Shelf A',
         storageDetail: 'B001',
       };
 
@@ -368,7 +367,6 @@ describe('FigureForm Targeted Coverage', () => {
       expect(screen.getByDisplayValue('1/8')).toBeInTheDocument();
       expect(screen.getByDisplayValue('https://myfigurecollection.net/item/123')).toBeInTheDocument();
       expect(screen.getByDisplayValue('https://example.com/image.jpg')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('Shelf A')).toBeInTheDocument();
       expect(screen.getByDisplayValue('B001')).toBeInTheDocument();
     });
 
@@ -485,8 +483,7 @@ describe('FigureForm Targeted Coverage', () => {
       // Fill all fields (manufacturer field was removed from form)
       await userEvent.type(screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i), 'Name');
       await userEvent.type(screen.getByPlaceholderText(/1\/8, 1\/7/i), '1/8');
-      await userEvent.type(screen.getByPlaceholderText(/Shelf, Display Case/i), 'Location');
-      await userEvent.type(screen.getByPlaceholderText(/Shelf A-3, Box #12/i), 'Box');
+      await userEvent.type(screen.getByPlaceholderText(/Shelf A-3, Box #12/i), 'StorageSpot');
       await userEvent.type(screen.getByPlaceholderText(/example\.com\/image\.jpg/i), 'https://example.com/img.jpg');
       await userEvent.type(screen.getByPlaceholderText(/item #.*MFC URL/i), 'https://myfigurecollection.net/item/1');
 
@@ -499,8 +496,7 @@ describe('FigureForm Targeted Coverage', () => {
           expect.objectContaining({
             name: 'Name',
             scale: '1/8',
-            location: 'Location',
-            storageDetail: 'Box',
+            storageDetail: 'StorageSpot',
           }),
           expect.any(Boolean) // addAnother flag
         );

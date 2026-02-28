@@ -141,8 +141,8 @@ describe('Register', () => {
     expect(mockSetUser).toHaveBeenCalledWith(userData);
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Success',
-        description: 'Account created successfully!',
+        title: 'Account created!',
+        description: 'Check your email to verify your account.',
         status: 'success',
       })
     );

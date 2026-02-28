@@ -26,9 +26,16 @@ const mockMutate = jest.fn();
 const mockInvalidateQueries = jest.fn();
 const mockToast = jest.fn();
 
+let mockListsByItemReturn: any = { data: undefined, isLoading: false, error: null };
+
 jest.mock('react-query', () => ({
   ...jest.requireActual('react-query'),
-  useQuery: (_key: any, _fn: any, opts: any) => {
+  useQuery: (key: any, _fn: any, opts: any) => {
+    // Second useQuery call is for listsByItem
+    const keyStr = Array.isArray(key) ? key[0] : key;
+    if (keyStr === 'listsByItem') {
+      return mockListsByItemReturn;
+    }
     mockQueryOnErrorCb = opts?.onError;
     return mockQueryReturn;
   },
@@ -83,6 +90,7 @@ describe('FigureDetail', () => {
       isLoading: false,
       error: null,
     };
+    mockListsByItemReturn = { data: undefined, isLoading: false, error: null };
   });
 
   it('renders figure details', () => {
@@ -132,10 +140,12 @@ describe('FigureDetail', () => {
     expect(screen.getByText(enrichedFigure.scale)).toBeInTheDocument();
   });
 
-  it('renders storage location', () => {
+  it('renders origin and category', () => {
     render(<FigureDetail />);
-    expect(screen.getByText('Storage Location:')).toBeInTheDocument();
-    expect(screen.getByText(enrichedFigure.location!)).toBeInTheDocument();
+    expect(screen.getByText('Origin:')).toBeInTheDocument();
+    expect(screen.getByText(enrichedFigure.origin!)).toBeInTheDocument();
+    expect(screen.getByText('Category:')).toBeInTheDocument();
+    expect(screen.getByText(enrichedFigure.category!)).toBeInTheDocument();
   });
 
   it('renders MFC link', () => {

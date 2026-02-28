@@ -4,6 +4,7 @@ import { Box, Container, Text, Flex, Popover, PopoverTrigger, PopoverContent, Po
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import SyncStatusBanner from './SyncStatusBanner';
+import EmailVerificationBanner from './auth/EmailVerificationBanner';
 import { useSyncEvents } from '../hooks/useSyncEvents';
 
 // Import package.json to get version
@@ -57,6 +58,9 @@ const Layout: React.FC = () => {
       <Box data-testid="navbar" flexShrink={0}>
         <Navbar />
       </Box>
+
+      {/* Email verification banner - appears for unverified users */}
+      <EmailVerificationBanner />
 
       {/* Sync status banner - appears when sync is active or just completed */}
       <SyncStatusBanner />
