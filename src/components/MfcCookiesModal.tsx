@@ -44,6 +44,7 @@ import {
 import { FaLock, FaChevronUp, FaChevronDown, FaTrash, FaSave, FaCopy, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuthStore } from '../stores/authStore';
 import { getMfcCookieAllowlist, CookieAllowlistResponse } from '../api/scraper';
+import { usePublicConfig } from '../hooks/usePublicConfig';
 import { apiLogger } from '../utils/logger';
 import {
   storeMfcCookies,
@@ -66,7 +67,7 @@ interface MfcCookiesModalProps {
  */
 function generateExtractionScript(scriptReadable: string[]): string {
   const cookieList = scriptReadable.map(c => `"${c}"`).join(', ');
-  return `(() => { const cookies = [${cookieList}]; const result = {}; cookies.forEach(name => { const match = document.cookie.split(';').find(c => c.trim().startsWith(name + '=')); if (match) result[name] = match.split('=')[1]; }); console.log(JSON.stringify(result, null, 2)); })()`;
+  return `(() => { const cookies = [${cookieList}]; const result = {}; cookies.forEach(name => { const match = document.cookie.split(';').find(c => c.trim().startsWith(name + '=')); if (match) result[name] = match.split('=')[1]; }); copy(JSON.stringify(result, null, 2)); return "Copied to clipboard!"; })()`;
 }
 
 /**
@@ -158,6 +159,12 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
   const [allowlistLoading, setAllowlistLoading] = useState(false);
   const [allowlistError, setAllowlistError] = useState<string | null>(null);
 
+  // SystemConfig override for extraction script (enables dynamic updates without redeploying)
+  const { data: scriptConfig, isLoading: scriptConfigLoading } = usePublicConfig(
+    'mfc_cookie_script',
+    { enabled: isOpen }
+  );
+
 
   // Color mode values
   const codeBg = useColorModeValue('gray.100', 'gray.600');
@@ -220,10 +227,9 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
     }
   }, [isOpen, userId, fetchAllowlist]);
 
-  // Derived values
-  const extractionScript = allowlist
-    ? generateExtractionScript(allowlist.scriptReadable)
-    : '';
+  // Derived values — prefer SystemConfig script (dynamically updatable) over local generation
+  const extractionScript = scriptConfig?.value
+    || (allowlist ? generateExtractionScript(allowlist.scriptReadable) : '');
 
   const parsedOutput = parseScriptOutput(consoleOutput);
   const isValidOutput = parsedOutput !== null;
@@ -368,7 +374,7 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
                 Step 1: Run this script in MFC Console
               </FormLabel>
               <Text fontSize="xs" color="gray.500" mb={2}>
-                Open DevTools (F12) on myfigurecollection.net, go to Console, paste and run:
+                Open DevTools (F12) on myfigurecollection.net, go to Console, paste and run. The cookies will be copied to your clipboard.
               </Text>
               <Box position="relative">
                 <Code
@@ -382,7 +388,7 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
                   maxH="80px"
                   overflow="auto"
                 >
-                  {allowlistLoading ? 'Loading...' : extractionScript}
+                  {(allowlistLoading || scriptConfigLoading) ? 'Loading...' : extractionScript}
                 </Code>
                 <Button
                   size="xs"
@@ -392,7 +398,7 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
                   leftIcon={<FaCopy />}
                   onClick={handleCopyScript}
                   colorScheme={scriptCopied ? 'green' : 'blue'}
-                  isDisabled={allowlistLoading}
+                  isDisabled={allowlistLoading || scriptConfigLoading}
                 >
                   {scriptCopied ? 'Copied!' : 'Copy'}
                 </Button>
@@ -403,7 +409,7 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
             <FormControl>
               <HStack justify="space-between" mb={1}>
                 <FormLabel fontSize="sm" fontWeight="bold" mb={0}>
-                  Step 2: Paste the JSON output here
+                  Step 2: Paste the copied JSON here
                 </FormLabel>
                 <IconButton
                   aria-label={showStep2 ? 'Hide cookie values' : 'Show cookie values'}
@@ -428,7 +434,7 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
               />
               {consoleOutput && !isValidOutput && (
                 <Text fontSize="xs" color="red.500" mt={1}>
-                  Invalid JSON - paste the exact output from the script
+                  Invalid JSON - paste the clipboard contents from running the script
                 </Text>
               )}
               {isValidOutput && !hasRequiredCookies && (
@@ -460,7 +466,7 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
                 />
               </HStack>
               <Text fontSize="xs" color="gray.500" mb={2}>
-                In DevTools → Application → Cookies → myfigurecollection.net → find cf_clearance → copy its Value
+                In DevTools → Application → Cookies → myfigurecollection.net → find cf_clearance → double-click its Value → Ctrl+C to copy
               </Text>
               <InputGroup size="sm">
                 <Input
