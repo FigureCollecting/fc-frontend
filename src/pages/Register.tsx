@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useMutation } from 'react-query';
 import {
@@ -100,6 +101,12 @@ const Register: React.FC = () => {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Create Account — FigureCollecting</title>
+      <meta name="description" content="Create your free FigureCollecting account. Catalog your anime figures, sync your MyFigureCollection data, and organize your collection with powerful tools." />
+      <link rel="canonical" href="https://figurecollecting.com/register" />
+    </Helmet>
     <Flex minH="100vh" align="center" justify="center" bg={pageBg}>
       <Box
         data-testid="auth-card"
@@ -226,6 +233,7 @@ const Register: React.FC = () => {
         </Box>
       </Box>
     </Flex>
+    </>
   );
 };
 

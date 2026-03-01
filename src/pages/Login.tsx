@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useMutation } from 'react-query';
 import {
@@ -162,6 +163,12 @@ const Login: React.FC = () => {
   }
 
   return (
+    <>
+    <Helmet>
+      <title>Sign In — FigureCollecting</title>
+      <meta name="description" content="Sign in to FigureCollecting — your personal figure collection catalog. Sync with MyFigureCollection, search in milliseconds, and organize with flexible layouts." />
+      <link rel="canonical" href="https://figurecollecting.com/login" />
+    </Helmet>
     <Flex minH="100vh" position="relative" overflow="hidden">
       {splashBackground}
 
@@ -327,6 +334,7 @@ const Login: React.FC = () => {
         </Box>
       </Flex>
     </Flex>
+    </>
   );
 };
 

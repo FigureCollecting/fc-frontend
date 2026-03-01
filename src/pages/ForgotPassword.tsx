@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Heading, Text, Input, Button, FormControl, FormLabel, Alert, AlertIcon, VStack, Link } from '@chakra-ui/react';
 import { forgotPasswordRequest } from '../api';
@@ -22,6 +23,12 @@ const ForgotPassword: React.FC = () => {
 
   if (submitted) {
     return (
+      <>
+      <Helmet>
+        <title>Forgot Password — FigureCollecting</title>
+        <meta name="description" content="Reset your FigureCollecting password. Enter your email to receive a password reset link." />
+        <link rel="canonical" href="https://figurecollecting.com/forgot-password" />
+      </Helmet>
       <Box maxW="md" mx="auto" mt={20} p={8}>
         <VStack spacing={6}>
           <Heading size="lg">Check Your Email</Heading>
@@ -34,10 +41,17 @@ const ForgotPassword: React.FC = () => {
           </Link>
         </VStack>
       </Box>
+      </>
     );
   }
 
   return (
+    <>
+    <Helmet>
+      <title>Forgot Password — FigureCollecting</title>
+      <meta name="description" content="Reset your FigureCollecting password. Enter your email to receive a password reset link." />
+      <link rel="canonical" href="https://figurecollecting.com/forgot-password" />
+    </Helmet>
     <Box maxW="md" mx="auto" mt={20} p={8}>
       <VStack spacing={6} as="form" onSubmit={handleSubmit}>
         <Heading size="lg">Forgot Password</Heading>
@@ -59,6 +73,7 @@ const ForgotPassword: React.FC = () => {
         </Link>
       </VStack>
     </Box>
+    </>
   );
 };
 

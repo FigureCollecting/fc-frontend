@@ -4,6 +4,7 @@ import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import { MemoryRouter } from 'react-router-dom';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Mock QueryClient and Provider for testing
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -51,15 +52,17 @@ const AllProviders = ({ children, initialRoutes = ['/'] }: {
   });
 
   return (
-    <CacheProvider value={emotionCache}>
-      <MockQueryClientProvider>
-        <ChakraProvider theme={testTheme}>
-          <MemoryRouter initialEntries={initialRoutes}>
-            {children}
-          </MemoryRouter>
-        </ChakraProvider>
-      </MockQueryClientProvider>
-    </CacheProvider>
+    <HelmetProvider>
+      <CacheProvider value={emotionCache}>
+        <MockQueryClientProvider>
+          <ChakraProvider theme={testTheme}>
+            <MemoryRouter initialEntries={initialRoutes}>
+              {children}
+            </MemoryRouter>
+          </ChakraProvider>
+        </MockQueryClientProvider>
+      </CacheProvider>
+    </HelmetProvider>
   );
 };
 

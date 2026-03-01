@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Box, Heading, Input, Button, FormControl, FormLabel, Alert, AlertIcon, VStack, Text } from '@chakra-ui/react';
 import { resetPasswordRequest } from '../api';
@@ -13,14 +14,25 @@ const ResetPassword: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
+  const helmet = (
+    <Helmet>
+      <title>Reset Password — FigureCollecting</title>
+      <meta name="description" content="Set a new password for your FigureCollecting account." />
+      <link rel="canonical" href="https://figurecollecting.com/reset-password" />
+    </Helmet>
+  );
+
   if (!token || !userId) {
     return (
+      <>
+      {helmet}
       <Box maxW="md" mx="auto" mt={20} p={8}>
         <Alert status="error" borderRadius="md">
           <AlertIcon />
           Invalid reset link. Please request a new one.
         </Alert>
       </Box>
+      </>
     );
   }
 
@@ -48,6 +60,8 @@ const ResetPassword: React.FC = () => {
 
   if (status === 'success') {
     return (
+      <>
+      {helmet}
       <Box maxW="md" mx="auto" mt={20} p={8}>
         <VStack spacing={6}>
           <Heading size="lg">Password Reset</Heading>
@@ -60,10 +74,13 @@ const ResetPassword: React.FC = () => {
           </Button>
         </VStack>
       </Box>
+      </>
     );
   }
 
   return (
+    <>
+    {helmet}
     <Box maxW="md" mx="auto" mt={20} p={8}>
       <VStack spacing={6} as="form" onSubmit={handleSubmit}>
         <Heading size="lg">Reset Password</Heading>
@@ -87,6 +104,7 @@ const ResetPassword: React.FC = () => {
         </Button>
       </VStack>
     </Box>
+    </>
   );
 };
 
