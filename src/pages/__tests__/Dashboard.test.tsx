@@ -188,7 +188,7 @@ describe('Dashboard', () => {
         expect(screen.getByText('Total Figures')).toBeInTheDocument();
         expect(screen.getByText('Manufacturers')).toBeInTheDocument();
         expect(screen.getByText('Scales')).toBeInTheDocument();
-        expect(screen.getByText('Locations')).toBeInTheDocument();
+        expect(screen.getByText('Origins')).toBeInTheDocument();
       });
     });
 
@@ -235,7 +235,7 @@ describe('Dashboard', () => {
           'In your collection',
           'Different brands',
           'Different sizes',
-          'Storage areas'
+          'Series/Franchises'
         ];
 
         descriptionTexts.forEach(text => {
@@ -502,7 +502,7 @@ describe('Dashboard', () => {
         expect(screen.getByText('Total Figures')).toBeInTheDocument();
         expect(screen.getByText('Manufacturers')).toBeInTheDocument();
         expect(screen.getByText('Scales')).toBeInTheDocument();
-        expect(screen.getByText('Locations')).toBeInTheDocument();
+        expect(screen.getByText('Origins')).toBeInTheDocument();
       });
     });
 
@@ -582,7 +582,6 @@ describe('Dashboard', () => {
         totalCount: 5,
         manufacturerStats: [{ _id: 'Test Manufacturer', count: 5 }],
         scaleStats: [],
-        locationStats: [],
       };
 
       // Mock useQuery to return partial stats data
@@ -657,7 +656,6 @@ describe('Dashboard', () => {
         totalCount: null,
         manufacturerStats: null,
         scaleStats: undefined,
-        locationStats: [],
       };
 
       mockApi.getFigureStats.mockResolvedValue(malformedStatsData as any);
@@ -677,7 +675,6 @@ describe('Dashboard', () => {
         totalCount: 999999,
         manufacturerStats: [{ _id: 'Large Manufacturer', count: 999999 }],
         scaleStats: [{ _id: '1/8', count: 500000 }],
-        locationStats: [{ _id: 'Large Storage', count: 100000 }],
       };
 
       // Mock useQuery to return large stats data

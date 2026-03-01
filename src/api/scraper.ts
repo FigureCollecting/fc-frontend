@@ -255,7 +255,8 @@ export const getSyncStatus = async (): Promise<{
 
 export interface CreateSyncJobOptions {
   sessionId: string;
-  includeLists?: string[];
+  includeLists?: boolean;
+  statusFilter?: ('owned' | 'ordered' | 'wished')[];
   skipCached?: boolean;
 }
 
@@ -282,6 +283,7 @@ export const createSyncJob = async (
   const response = await scraperApi.post('/sync/job', {
     sessionId: options.sessionId,
     includeLists: options.includeLists,
+    statusFilter: options.statusFilter,
     skipCached: options.skipCached,
   });
 

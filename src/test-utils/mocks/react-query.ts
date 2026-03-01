@@ -29,9 +29,9 @@ const mockQueryData: MockQueryData = {
       { _id: '1/8', count: 6 },
       { _id: '1/7', count: 3 },
     ],
-    locationStats: [
-      { _id: 'Display Case', count: 5 },
-      { _id: 'Storage Box', count: 3 },
+    originStats: [
+      { _id: 'Fate/Grand Order', count: 5 },
+      { _id: 'Vocaloid', count: 3 },
     ],
   },
 };

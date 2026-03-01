@@ -1,0 +1,73 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { Box, Heading, VStack, Divider, useToast, Spinner, Badge, Text, HStack } from '@chakra-ui/react';
+import { useAuthStore } from '../stores/authStore';
+import { getUserProfile } from '../api';
+import TOTPSetup from '../components/security/TOTPSetup';
+import PasskeyManagement from '../components/security/PasskeyManagement';
+
+const Security: React.FC = () => {
+  const user = useAuthStore((state) => state.user);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const toast = useToast();
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      const data = await getUserProfile();
+      setProfile(data);
+    } catch {
+      toast({ title: 'Failed to load security settings', status: 'error', duration: 5000 });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  if (loading) return <Box textAlign="center" mt={20}><Spinner size="xl" /></Box>;
+
+  return (
+    <Box maxW="2xl" mx="auto" p={8}>
+      <VStack spacing={8} align="stretch">
+        <Heading size="lg">Security Settings</Heading>
+
+        {/* Email Verification Status */}
+        <Box p={4} borderWidth={1} borderRadius="md">
+          <HStack justify="space-between">
+            <Box>
+              <Heading size="sm">Email Verification</Heading>
+              <Text fontSize="sm" mt={1}>{user?.email}</Text>
+            </Box>
+            <Badge colorScheme={profile?.emailVerified ? 'green' : 'yellow'}>
+              {profile?.emailVerified ? 'Verified' : 'Not Verified'}
+            </Badge>
+          </HStack>
+        </Box>
+
+        <Divider />
+
+        {/* TOTP */}
+        <Box p={4} borderWidth={1} borderRadius="md">
+          <TOTPSetup
+            isEnabled={profile?.twoFactorEnabled ?? false}
+            onStatusChange={fetchProfile}
+          />
+        </Box>
+
+        <Divider />
+
+        {/* Passkeys */}
+        <Box p={4} borderWidth={1} borderRadius="md">
+          <PasskeyManagement
+            credentials={profile?.webauthnCredentials || []}
+            onUpdate={fetchProfile}
+          />
+        </Box>
+      </VStack>
+    </Box>
+  );
+};
+
+export default Security;

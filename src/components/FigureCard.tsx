@@ -6,6 +6,7 @@ import { Figure } from '../types';
 import { deleteFigure } from '../api';
 import { useMutation, useQueryClient } from 'react-query';
 import { getDisplayCompanyName } from '../utils/statsUtils';
+import { handleMfcImageError } from '../utils/imageUtils';
 import { CardLayout } from './Pagination';
 
 /**
@@ -151,12 +152,12 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
       mx="auto" // Center when constrained
     >
       <Image
-        src={figure.imageUrl || '/placeholder-figure.png'}
+        src={figure.imageUrl || '/placeholder-figure.svg'}
         alt={figure.name}
         w="100%"
         h="100%"
         objectFit="cover"
-        fallbackSrc="https://via.placeholder.com/300x200?text=No+Image"
+        onError={handleMfcImageError}
       />
     </Box>
   );
@@ -186,19 +187,24 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
       >
         <HighlightedText text={figure.name} query={searchQuery} />
       </Text>
-      <Text fontSize="sm" color="gray.600" mb={compact ? 1 : 2} noOfLines={1}>
+      <Text fontSize="sm" color="gray.600" mb={1} noOfLines={1}>
         <HighlightedText
           text={getDisplayCompanyName(figure.companyRoles, figure.manufacturer)}
           query={searchQuery}
         />
       </Text>
+      {figure.version && (
+        <Text fontSize="xs" color="gray.500" mb={1} noOfLines={1} fontStyle="italic">
+          <HighlightedText text={figure.version} query={searchQuery} />
+        </Text>
+      )}
       <HStack spacing={2} mb={compact ? 1 : 2} flexWrap="wrap">
         <Badge colorScheme="brand" fontSize="xs">
           {figure.scale}
         </Badge>
-        {figure.location && (
+        {figure.origin && (
           <Text fontSize="xs" color="gray.500" noOfLines={1}>
-            <HighlightedText text={figure.location} query={searchQuery} />
+            <HighlightedText text={figure.origin} query={searchQuery} />
           </Text>
         )}
       </HStack>
@@ -230,6 +236,22 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
     </Box>
   );
 
+  // Activity order overlay badge — hidden for now, kept for future use
+  const ActivityOrderBadge = () => figure.mfcActivityOrder !== undefined ? (
+    <Badge
+      display="none"
+      position="absolute"
+      top={1}
+      right={1}
+      colorScheme="purple"
+      fontSize="xs"
+      zIndex={2}
+      title="Collection order (mfcActivityOrder)"
+    >
+      #{figure.mfcActivityOrder}
+    </Badge>
+  ) : null;
+
   // Image-only layout - uses 16:9 aspect ratio
   if (layout === 'image-only') {
     return (
@@ -251,6 +273,7 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
           position="relative"
         >
           <ImageSection />
+          <ActivityOrderBadge />
           {/* Minimal overlay with name on hover */}
           <Box
             position="absolute"
@@ -293,7 +316,9 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
           transition="all 0.3s"
           _hover={{ shadow: 'lg', transform: 'translateY(-2px)' }}
           direction="row"
+          position="relative"
         >
+          <ActivityOrderBadge />
           {/* Text on left - 44% width */}
           <Box w="44%" flexShrink={0}>
             <TextContent compact />
@@ -324,7 +349,9 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
         shadow="md"
         transition="all 0.3s"
         _hover={{ shadow: 'lg', transform: 'translateY(-2px)' }}
+        position="relative"
       >
+        <ActivityOrderBadge />
         <ImageSection />
         <TextContent />
       </Box>

@@ -1,6 +1,6 @@
 {
   "name": "fc-frontend",
-  "version": "3.1.2",
+  "version": "3.2.0",
   "private": true,
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
@@ -8,7 +8,10 @@
     "@chakra-ui/utils": "^2.2.5",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@simplewebauthn/browser": "^13.2.2",
+    "@types/dompurify": "^3.0.5",
     "axios": "^1.13.5",
+    "dompurify": "^3.3.1",
     "framer-motion": "^12.23.24",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -63,6 +66,7 @@
   },
   "overrides": {
     "nth-check": "^2.1.1",
+    "serialize-javascript": ">=7.0.3",
     "postcss": "^8.4.31",
     "qs": "^6.14.1",
     "webpack-dev-server": "^5.2.2",

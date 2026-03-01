@@ -178,7 +178,6 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
       scale: '',
       mfcLink: '',
       mfcAuth: '',
-      location: '',
       storageDetail: '',
       imageUrl: '',
       // Schema v3.0 defaults
@@ -450,10 +449,11 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
             setValue('materials', result.data.materials, { shouldValidate: true, shouldDirty: true });
             fieldsPopulated++;
           }
-          if ((!currentValues.tags || currentValues.tags.length === 0) && result.data.tags && result.data.tags.length > 0) {
-            setValue('tags', result.data.tags, { shouldValidate: true, shouldDirty: true });
-            fieldsPopulated++;
-          }
+          // Tags field disabled — MFC extraction needs refinement (future release)
+          // if ((!currentValues.tags || currentValues.tags.length === 0) && result.data.tags && result.data.tags.length > 0) {
+          //   setValue('tags', result.data.tags, { shouldValidate: true, shouldDirty: true });
+          //   fieldsPopulated++;
+          // }
 
           // Schema v3: Populate company roles from scraped data
           if (result.data.companies && result.data.companies.length > 0) {
@@ -619,7 +619,6 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
         scale: '',
         mfcLink: '',
         mfcAuth: '',
-        location: '',
         storageDetail: '',
         imageUrl: '',
         // Schema v3.0 defaults
@@ -721,7 +720,6 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
       scale: '',
       mfcLink: '',
       mfcAuth: currentMfcAuth, // Preserve MFC auth cookies
-      location: '',
       storageDetail: '',
       imageUrl: '',
       // Schema v3.0 defaults - preserve collection status

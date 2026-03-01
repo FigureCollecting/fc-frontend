@@ -2,7 +2,7 @@
  * FacetedFilterSidebar Component
  *
  * A sidebar component for faceted filtering in the collection view.
- * Displays checkbox-based filters for Manufacturer, Scale, and Location
+ * Displays checkbox-based filters for Manufacturer, Scale, Origin, and Category
  * with counts. Supports multi-select within each facet.
  */
 import React, { useState, useMemo, useCallback } from 'react';
@@ -30,6 +30,9 @@ import {
   WrapItem,
   useColorModeValue,
   Drawer,
+  IconButton,
+  Icon,
+  Tooltip,
   DrawerBody,
   DrawerHeader,
   DrawerOverlay,
@@ -38,7 +41,7 @@ import {
   useDisclosure,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import { FaSearch, FaTimes, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaTimes, FaFilter, FaSortAmountDown, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { StatsData } from '../types';
 import { mergeManufacturerStats } from '../utils/statsUtils';
 
@@ -46,9 +49,11 @@ export interface FacetedFilters {
   manufacturers: string[];
   distributors: string[];
   scales: string[];
-  locations: string[];
   origins: string[];
   categories: string[];
+  sculptors: string[];
+  illustrators: string[];
+  classifications: string[];
 }
 
 interface FacetedFilterSidebarProps {
@@ -57,6 +62,8 @@ interface FacetedFilterSidebarProps {
   onFiltersChange: (filters: FacetedFilters) => void;
   isLoading?: boolean;
 }
+
+type FacetSortMode = 'count-desc' | 'alpha-asc' | 'alpha-desc';
 
 interface FacetSectionProps {
   title: string;
@@ -69,7 +76,7 @@ interface FacetSectionProps {
 }
 
 /**
- * Individual facet section with search, checkboxes, and "show more"
+ * Individual facet section with search, checkboxes, sort toggle, and "show more"
  */
 const FacetSection: React.FC<FacetSectionProps> = ({
   title,
@@ -82,17 +89,47 @@ const FacetSection: React.FC<FacetSectionProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAll, setShowAll] = useState(false);
+  const [sortMode, setSortMode] = useState<FacetSortMode>('count-desc');
 
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const hoverBg = useColorModeValue('gray.50', 'gray.700');
   const searchBg = useColorModeValue('white', 'gray.800');
 
+  const cycleSortMode = useCallback(() => {
+    setSortMode(prev => {
+      if (prev === 'count-desc') return 'alpha-asc';
+      if (prev === 'alpha-asc') return 'alpha-desc';
+      return 'count-desc';
+    });
+  }, []);
+
+  const sortIcon = sortMode === 'count-desc' ? FaSortAmountDown
+    : sortMode === 'alpha-asc' ? FaSortAlphaDown
+    : FaSortAlphaUp;
+
+  const sortLabel = sortMode === 'count-desc' ? 'Sorted by count'
+    : sortMode === 'alpha-asc' ? 'Sorted A→Z'
+    : 'Sorted Z→A';
+
+  // Sort items by current mode
+  const sortedItems = useMemo(() => {
+    const sorted = [...items];
+    if (sortMode === 'count-desc') {
+      sorted.sort((a, b) => b.count - a.count);
+    } else if (sortMode === 'alpha-asc') {
+      sorted.sort((a, b) => (a._id || '').localeCompare(b._id || ''));
+    } else {
+      sorted.sort((a, b) => (b._id || '').localeCompare(a._id || ''));
+    }
+    return sorted;
+  }, [items, sortMode]);
+
   // Filter items by search term
   const filteredItems = useMemo(() => {
-    if (!searchTerm) return items;
+    if (!searchTerm) return sortedItems;
     const lower = searchTerm.toLowerCase();
-    return items.filter(item => item._id?.toLowerCase().includes(lower));
-  }, [items, searchTerm]);
+    return sortedItems.filter(item => item._id?.toLowerCase().includes(lower));
+  }, [sortedItems, searchTerm]);
 
   // Limit visible items unless "show all" is clicked or searching
   const visibleItems = useMemo(() => {
@@ -120,21 +157,34 @@ const FacetSection: React.FC<FacetSectionProps> = ({
 
   return (
     <AccordionItem border="none">
-      <AccordionButton px={0} py={2} _hover={{ bg: 'transparent' }}>
-        <HStack flex="1" justify="space-between">
-          <Text fontWeight="semibold" fontSize="sm">
-            {title}
-          </Text>
-          <HStack spacing={2}>
-            {selectedItems.length > 0 && (
-              <Badge colorScheme="brand" borderRadius="full" px={2}>
-                {selectedItems.length}
-              </Badge>
-            )}
-            <AccordionIcon />
+      <HStack px={0} py={2} spacing={0}>
+        <AccordionButton px={0} py={0} _hover={{ bg: 'transparent' }} flex="1">
+          <HStack flex="1" justify="space-between">
+            <Text fontWeight="semibold" fontSize="sm">
+              {title}
+            </Text>
+            <HStack spacing={2}>
+              {selectedItems.length > 0 && (
+                <Badge colorScheme="brand" borderRadius="full" px={2}>
+                  {selectedItems.length}
+                </Badge>
+              )}
+              <AccordionIcon />
+            </HStack>
           </HStack>
-        </HStack>
-      </AccordionButton>
+        </AccordionButton>
+        <Tooltip label={sortLabel} placement="top" hasArrow>
+          <IconButton
+            aria-label={sortLabel}
+            icon={<Icon as={sortIcon} />}
+            size="xs"
+            variant="ghost"
+            colorScheme="gray"
+            onClick={cycleSortMode}
+            ml={1}
+          />
+        </Tooltip>
+      </HStack>
 
       <AccordionPanel px={0} pb={4}>
         <VStack spacing={2} align="stretch">
@@ -299,13 +349,6 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
     return validScales;
   }, [stats]);
 
-  const locationItems = useMemo(() => {
-    if (!stats?.locationStats) return [];
-    return stats.locationStats
-      .filter(l => l._id != null && l._id !== '')
-      .sort((a, b) => b.count - a.count);
-  }, [stats]);
-
   // Origin/franchise items with "Not Specified" option
   const originItems = useMemo(() => {
     if (!stats?.originStats) return [];
@@ -363,10 +406,6 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
     onFiltersChange({ ...filters, scales: items });
   }, [filters, onFiltersChange]);
 
-  const handleLocationChange = useCallback((items: string[]) => {
-    onFiltersChange({ ...filters, locations: items });
-  }, [filters, onFiltersChange]);
-
   const handleOriginChange = useCallback((items: string[]) => {
     onFiltersChange({ ...filters, origins: items });
   }, [filters, onFiltersChange]);
@@ -375,14 +414,63 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
     onFiltersChange({ ...filters, categories: items });
   }, [filters, onFiltersChange]);
 
+  // Sculptor items from artist roles
+  const sculptorItems = useMemo(() => {
+    if (!stats?.sculptorStats) return [];
+    return stats.sculptorStats
+      .filter(s => s._id != null && s._id !== '')
+      .sort((a, b) => b.count - a.count);
+  }, [stats]);
+
+  // Illustrator items from artist roles
+  const illustratorItems = useMemo(() => {
+    if (!stats?.illustratorStats) return [];
+    return stats.illustratorStats
+      .filter(i => i._id != null && i._id !== '')
+      .sort((a, b) => b.count - a.count);
+  }, [stats]);
+
+  // Classification items with "Not Specified" option
+  const classificationItems = useMemo(() => {
+    if (!stats?.classificationStats) return [];
+
+    const unspecifiedCount = stats.classificationStats
+      .filter(c => c._id == null || c._id === '')
+      .reduce((sum, c) => sum + c.count, 0);
+
+    const validClassifications = stats.classificationStats
+      .filter(c => c._id != null && c._id !== '')
+      .sort((a, b) => b.count - a.count);
+
+    if (unspecifiedCount > 0) {
+      return [...validClassifications, { _id: '__unspecified__', count: unspecifiedCount }];
+    }
+
+    return validClassifications;
+  }, [stats]);
+
+  const handleSculptorChange = useCallback((items: string[]) => {
+    onFiltersChange({ ...filters, sculptors: items });
+  }, [filters, onFiltersChange]);
+
+  const handleIllustratorChange = useCallback((items: string[]) => {
+    onFiltersChange({ ...filters, illustrators: items });
+  }, [filters, onFiltersChange]);
+
+  const handleClassificationChange = useCallback((items: string[]) => {
+    onFiltersChange({ ...filters, classifications: items });
+  }, [filters, onFiltersChange]);
+
   const clearAllFilters = () => {
     onFiltersChange({
       manufacturers: [],
       distributors: [],
       scales: [],
-      locations: [],
       origins: [],
       categories: [],
+      sculptors: [],
+      illustrators: [],
+      classifications: [],
     });
   };
 
@@ -390,9 +478,11 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
     filters.manufacturers.length > 0 ||
     filters.distributors.length > 0 ||
     filters.scales.length > 0 ||
-    filters.locations.length > 0 ||
     filters.origins.length > 0 ||
-    filters.categories.length > 0;
+    filters.categories.length > 0 ||
+    filters.sculptors.length > 0 ||
+    filters.illustrators.length > 0 ||
+    filters.classifications.length > 0;
 
   if (isLoading) {
     return (
@@ -457,18 +547,6 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
                 </Tag>
               </WrapItem>
             ))}
-            {filters.locations.map((l) => (
-              <WrapItem key={`loc-${l}`}>
-                <Tag size="sm" colorScheme="green" borderRadius="full">
-                  <TagLabel>{l}</TagLabel>
-                  <TagCloseButton
-                    onClick={() =>
-                      handleLocationChange(filters.locations.filter((x) => x !== l))
-                    }
-                  />
-                </Tag>
-              </WrapItem>
-            ))}
             {filters.origins.map((o) => (
               <WrapItem key={`origin-${o}`}>
                 <Tag size="sm" colorScheme="orange" borderRadius="full">
@@ -488,6 +566,42 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
                   <TagCloseButton
                     onClick={() =>
                       handleCategoryChange(filters.categories.filter((x) => x !== c))
+                    }
+                  />
+                </Tag>
+              </WrapItem>
+            ))}
+            {filters.sculptors.map((s) => (
+              <WrapItem key={`sculptor-${s}`}>
+                <Tag size="sm" colorScheme="pink" borderRadius="full">
+                  <TagLabel>{s}</TagLabel>
+                  <TagCloseButton
+                    onClick={() =>
+                      handleSculptorChange(filters.sculptors.filter((x) => x !== s))
+                    }
+                  />
+                </Tag>
+              </WrapItem>
+            ))}
+            {filters.illustrators.map((i) => (
+              <WrapItem key={`illustrator-${i}`}>
+                <Tag size="sm" colorScheme="yellow" borderRadius="full">
+                  <TagLabel>{i}</TagLabel>
+                  <TagCloseButton
+                    onClick={() =>
+                      handleIllustratorChange(filters.illustrators.filter((x) => x !== i))
+                    }
+                  />
+                </Tag>
+              </WrapItem>
+            ))}
+            {filters.classifications.map((cl) => (
+              <WrapItem key={`classification-${cl}`}>
+                <Tag size="sm" colorScheme="red" borderRadius="full">
+                  <TagLabel>{cl === '__unspecified__' ? 'Not Specified' : cl}</TagLabel>
+                  <TagCloseButton
+                    onClick={() =>
+                      handleClassificationChange(filters.classifications.filter((x) => x !== cl))
                     }
                   />
                 </Tag>
@@ -556,16 +670,50 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
           emptyMessage="No scales"
         />
 
-        <Box borderTop="1px" borderColor={borderColor} />
+        {sculptorItems.length > 0 && (
+          <>
+            <Box borderTop="1px" borderColor={borderColor} />
 
-        <FacetSection
-          title="Location"
-          items={locationItems}
-          selectedItems={filters.locations}
-          onSelectionChange={handleLocationChange}
-          searchPlaceholder="Search locations..."
-          emptyMessage="No locations"
-        />
+            <FacetSection
+              title="Sculptor"
+              items={sculptorItems}
+              selectedItems={filters.sculptors}
+              onSelectionChange={handleSculptorChange}
+              searchPlaceholder="Search sculptors..."
+              emptyMessage="No sculptors"
+            />
+          </>
+        )}
+
+        {illustratorItems.length > 0 && (
+          <>
+            <Box borderTop="1px" borderColor={borderColor} />
+
+            <FacetSection
+              title="Illustrator"
+              items={illustratorItems}
+              selectedItems={filters.illustrators}
+              onSelectionChange={handleIllustratorChange}
+              searchPlaceholder="Search illustrators..."
+              emptyMessage="No illustrators"
+            />
+          </>
+        )}
+
+        {classificationItems.length > 0 && (
+          <>
+            <Box borderTop="1px" borderColor={borderColor} />
+
+            <FacetSection
+              title="Classification"
+              items={classificationItems}
+              selectedItems={filters.classifications}
+              onSelectionChange={handleClassificationChange}
+              searchPlaceholder="Search classifications..."
+              emptyMessage="No classifications"
+            />
+          </>
+        )}
       </Accordion>
     </VStack>
   );
@@ -592,17 +740,21 @@ const FacetedFilterSidebar: React.FC<FacetedFilterSidebarProps & {
     props.filters.manufacturers.length > 0 ||
     props.filters.distributors.length > 0 ||
     props.filters.scales.length > 0 ||
-    props.filters.locations.length > 0 ||
     props.filters.origins.length > 0 ||
-    props.filters.categories.length > 0;
+    props.filters.categories.length > 0 ||
+    props.filters.sculptors.length > 0 ||
+    props.filters.illustrators.length > 0 ||
+    props.filters.classifications.length > 0;
 
   const filterCount =
     props.filters.manufacturers.length +
     props.filters.distributors.length +
     props.filters.scales.length +
-    props.filters.locations.length +
     props.filters.origins.length +
-    props.filters.categories.length;
+    props.filters.categories.length +
+    props.filters.sculptors.length +
+    props.filters.illustrators.length +
+    props.filters.classifications.length;
 
   // Mobile: Show filter button and drawer
   if (isMobile) {

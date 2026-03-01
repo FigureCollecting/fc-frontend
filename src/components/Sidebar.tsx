@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { Box, Stack, Link, Text, Icon, Flex } from '@chakra-ui/react';
-import { FaHome, FaCube, FaPlus, FaSearch, FaChartBar, FaUser } from 'react-icons/fa';
+import { FaHome, FaCube, FaPlus, FaSearch, FaChartBar, FaListUl, FaUser } from 'react-icons/fa';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
@@ -69,6 +69,9 @@ const Sidebar: React.FC = () => {
         </MenuItem>
         <MenuItem icon={FaChartBar} to="/statistics">
           Statistics
+        </MenuItem>
+        <MenuItem icon={FaListUl} to="/lists">
+          Lists
         </MenuItem>
 
         <Text fontWeight="bold" fontSize="sm" color="gray.500" mt={6} mb={2} px={2}>

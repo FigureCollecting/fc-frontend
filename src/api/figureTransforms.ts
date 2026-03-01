@@ -48,9 +48,7 @@ export interface FigureApiPayload {
   name: string;
   scale: string;
   mfcLink?: string;
-  location?: string;
   storageDetail?: string;
-  boxNumber?: string;
   imageUrl?: string;
   mfcId?: number;
   jan?: string;
@@ -89,9 +87,7 @@ export function formDataToApiPayload(formData: FigureFormData): FigureApiPayload
 
   // Copy optional string fields
   if (formData.mfcLink) payload.mfcLink = formData.mfcLink;
-  if (formData.location) payload.location = formData.location;
   if (formData.storageDetail) payload.storageDetail = formData.storageDetail;
-  if (formData.boxNumber) payload.boxNumber = formData.boxNumber;
   if (formData.imageUrl) payload.imageUrl = formData.imageUrl;
   if (formData.jan) payload.jan = formData.jan;
   if (formData.note) payload.note = formData.note;
@@ -201,9 +197,7 @@ export function apiResponseToFormData(figure: Figure): FigureFormData {
 
   // Copy optional string fields
   if (figure.mfcLink) formData.mfcLink = figure.mfcLink;
-  if (figure.location) formData.location = figure.location;
   if (figure.storageDetail) formData.storageDetail = figure.storageDetail;
-  if (figure.boxNumber) formData.boxNumber = figure.boxNumber;
   if (figure.imageUrl) formData.imageUrl = figure.imageUrl;
   if (figure.jan) formData.jan = figure.jan;
   if (figure.note) formData.note = figure.note;

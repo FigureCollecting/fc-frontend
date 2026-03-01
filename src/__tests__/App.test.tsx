@@ -52,6 +52,18 @@ jest.mock('../pages/Statistics', () => {
   };
 });
 
+jest.mock('../pages/Lists', () => {
+  return function MockLists() {
+    return <div data-testid="lists-page">Lists</div>;
+  };
+});
+
+jest.mock('../pages/ListDetail', () => {
+  return function MockListDetail() {
+    return <div data-testid="list-detail-page">List Detail</div>;
+  };
+});
+
 jest.mock('../pages/Profile', () => {
   return function MockProfile() {
     return <div data-testid="profile-page">Profile</div>;
@@ -263,6 +275,20 @@ describe('App Routing', () => {
       expect(screen.getByTestId('statistics-page')).toBeInTheDocument();
     });
 
+    it('should render lists page at /lists', () => {
+      renderWithRouter(<App />, { initialEntries: ['/lists'] });
+
+      expect(screen.getByTestId('layout')).toBeInTheDocument();
+      expect(screen.getByTestId('lists-page')).toBeInTheDocument();
+    });
+
+    it('should render list detail page at /lists/:id', () => {
+      renderWithRouter(<App />, { initialEntries: ['/lists/abc123'] });
+
+      expect(screen.getByTestId('layout')).toBeInTheDocument();
+      expect(screen.getByTestId('list-detail-page')).toBeInTheDocument();
+    });
+
     it('should render profile page at /profile', () => {
       renderWithRouter(<App />, { initialEntries: ['/profile'] });
 
@@ -389,6 +415,8 @@ describe('App Routing', () => {
         '/figures/edit/123',
         '/search',
         '/statistics',
+        '/lists',
+        '/lists/abc123',
         '/profile',
       ];
 
@@ -506,6 +534,8 @@ describe('App Routing', () => {
         '/figures/edit/123',
         '/search',
         '/statistics',
+        '/lists',
+        '/lists/abc123',
         '/profile',
       ];
 
@@ -660,7 +690,7 @@ describe('App Routing', () => {
       mockUseAuthStore.mockReturnValue(routeTestStore);
       mockGetState.mockReturnValue(routeTestStore);
 
-      const routes = ['/', '/figures', '/search', '/statistics', '/profile'];
+      const routes = ['/', '/figures', '/search', '/statistics', '/lists', '/profile'];
 
       routes.forEach(route => {
         expect(() => {

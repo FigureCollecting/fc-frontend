@@ -2,7 +2,7 @@
  * Core Fields Section Component
  *
  * Extracted from FigureForm.tsx to keep modules under 750 lines.
- * Contains name, scale, location, storage detail, and image URL fields.
+ * Contains name, scale, storage detail, and image URL fields.
  * Note: Company roles have been moved to their own section (Schema v3).
  * Note: Image preview is now rendered in FigureFormMain as a sticky sidebar.
  */
@@ -87,17 +87,6 @@ const CoreFieldsSection: React.FC<CoreFieldsSectionProps> = ({
             _focus={{ borderColor: 'purple.500', boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)' }}
           />
           <FormErrorMessage>{errors.scale?.message}</FormErrorMessage>
-        </FormControl>
-      </GridItem>
-
-      <GridItem>
-        <FormControl isInvalid={!!errors.location}>
-          <FormLabel>Storage Location</FormLabel>
-          <Input
-            {...register('location')} //optional
-            placeholder="e.g., Shelf, Display Case, Storage Room"
-          />
-          <FormErrorMessage>{errors.location?.message}</FormErrorMessage>
         </FormControl>
       </GridItem>
 

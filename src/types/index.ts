@@ -9,6 +9,14 @@ export interface User {
   token?: string;
   refreshToken?: string;
   tokenExpiresAt?: number;  // Unix timestamp for when access token expires
+  emailVerified?: boolean;
+  twoFactorEnabled?: boolean;
+  webauthnCredentialCount?: number;
+  webauthnCredentials?: Array<{
+    credentialId: string;
+    nickname?: string;
+    createdAt: string;
+  }>;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -77,9 +85,7 @@ export interface Figure {
   name: string;
   scale: string;
   mfcLink?: string;
-  location?: string;
   storageDetail?: string; // Specific location within storage (shelf label, box ID, etc.)
-  boxNumber?: string; // Legacy alias for storageDetail (backward compatibility)
   imageUrl?: string;
   userId: string;
   createdAt: string;
@@ -115,8 +121,25 @@ export interface Figure {
   merchant?: IMerchant;
   rating?: number; // 1-10 for owned figures
   wishRating?: number; // 1-5 priority stars for wished figures
+  // Community data (enriched from MFCItem at API level)
+  communityStats?: {
+    ownedCount?: number;
+    wishedCount?: number;
+    orderedCount?: number;
+    listedInCount?: number;
+    averageScore?: number;
+  };
+  relatedItems?: Array<{
+    mfcId: number;
+    relationType?: string;
+    name?: string;
+    imageUrl?: string;
+  }>;
   quantity?: number; // Number of copies owned (default 1)
   note?: string; // Personal notes/comments about this figure
+
+  // Sorting/ordering
+  mfcActivityOrder?: number; // Position in MFC activity-sorted collection
 
   // Condition tracking (figure and box are separate)
   figureCondition?: FigureCondition;
@@ -136,9 +159,7 @@ export interface FigureFormData {
   scale: string;
   mfcLink?: string;
   mfcAuth?: string; // Not stored, only used for scraping
-  location?: string;
   storageDetail?: string; // Specific location within storage (shelf label, box ID, etc.)
-  boxNumber?: string; // Legacy alias for storageDetail (backward compatibility)
   imageUrl?: string;
 
   // Schema v3.0 - Product identification
@@ -233,8 +254,11 @@ export interface SearchResult {
   name: string;
   scale: string;
   mfcLink: string;
-  location: string;
-  boxNumber: string;
+  origin?: string;
+  category?: string;
+  tags?: string[];
+  companyRoles?: Array<{ companyName: string; roleName: string }>;
+  artistRoles?: Array<{ artistName: string; roleName: string }>;
   imageUrl?: string;
   searchScore?: number;
 }
@@ -250,7 +274,6 @@ export interface StatsData {
   statusCounts: StatusCounts;
   manufacturerStats: { _id: string; count: number }[];
   scaleStats: { _id: string; count: number }[];
-  locationStats: { _id: string; count: number }[];
   // Schema v3.0 - Origin/franchise stats
   originStats?: { _id: string; count: number }[];
   // Schema v3.0 - Category/type stats
@@ -259,6 +282,11 @@ export interface StatsData {
   v3ManufacturerStats?: { _id: string; count: number }[];
   // Schema v3.0 - Distributor stats from companyRoles array
   distributorStats?: { _id: string; count: number }[];
+  // Schema v3.0 - Artist role stats
+  sculptorStats?: { _id: string; count: number }[];
+  illustratorStats?: { _id: string; count: number }[];
+  // Schema v3.0 - Classification stats
+  classificationStats?: { _id: string; count: number }[];
   activeStatus: CollectionStatus | null;
 }
 
@@ -439,4 +467,62 @@ export interface SseSyncCompleteEvent {
   phase: SyncPhase;
   stats: SyncJobStats;
   message?: string;
+}
+
+// ============================================================================
+// MFC Lists
+// ============================================================================
+
+export type ListPrivacy = 'public' | 'friends' | 'private';
+
+export const MFC_LIST_LIMITS = {
+  NAME_MAX: 32,
+  TEASER_MAX: 64,
+} as const;
+
+export interface MfcListItem {
+  mfcId: number;
+  name?: string;
+  imageUrl?: string;
+  scale?: string;
+}
+
+export interface MfcList {
+  _id: string;
+  mfcId: number;
+  userId: string;
+  name: string;
+  teaser?: string;
+  description?: string;
+  privacy: ListPrivacy;
+  iconUrl?: string;
+  allowComments: boolean;
+  mailOnSales: boolean;
+  mailOnHunts: boolean;
+  itemCount: number;
+  itemMfcIds: number[];
+  items?: MfcListItem[];
+  mfcCreatedAt?: string;
+  mfcLastEditedAt?: string;
+  lastSyncedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MfcListFormData {
+  mfcId?: number;
+  name: string;
+  teaser?: string;
+  description?: string;
+  privacy?: ListPrivacy;
+  iconUrl?: string;
+  allowComments?: boolean;
+  mailOnSales?: boolean;
+  mailOnHunts?: boolean;
+  itemMfcIds?: number[];
+}
+
+export interface TwoFactorPendingState {
+  sessionId: string;
+  methods: string[];
 }
