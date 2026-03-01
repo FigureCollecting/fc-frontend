@@ -122,7 +122,7 @@ describe('MfcCookiesModal', () => {
     it('should display step 2 instructions for pasting JSON output', async () => {
       render(<MfcCookiesModal {...defaultProps} />);
 
-      expect(screen.getByText(/Step 2: Paste the JSON output here/i)).toBeInTheDocument();
+      expect(screen.getByText(/Step 2: Paste the copied JSON here/i)).toBeInTheDocument();
     });
 
     it('should display step 3 instructions for cf_clearance', async () => {
