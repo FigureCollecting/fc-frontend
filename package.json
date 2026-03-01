@@ -1,6 +1,6 @@
 {
   "name": "fc-frontend",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "private": true,
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
@@ -15,6 +15,7 @@
     "framer-motion": "^12.23.24",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-helmet-async": "^2.0.5",
     "react-hook-form": "^7.65.0",
     "react-icons": "^4.11.0",
     "react-markdown": "^10.1.0",
@@ -26,6 +27,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
+    "postbuild": "node scripts/prerender-meta.js",
     "lint": "echo 'Using eslint via react-scripts'",
     "test": "react-scripts test --coverage --watchAll=false --verbose --testPathIgnorePatterns='cross-service'",
     "test:unit": "react-scripts test --watchAll=false --verbose --testPathIgnorePatterns='cross-service|integration'",
