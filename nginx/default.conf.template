@@ -7,6 +7,9 @@ server {
     server_name _;
     root /usr/share/nginx/html;
     index index.html;
+
+    # Prevent internal port from leaking into redirects (e.g. /login → /login/)
+    absolute_redirect off;
     
     access_log off;
     
