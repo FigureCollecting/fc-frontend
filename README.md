@@ -1,20 +1,36 @@
 # Figure Collector Frontend
 
-React frontend for the Figure Collector application. Provides a user interface for managing figure collections. Features comprehensive test coverage with React Testing Library and Jest.
+React frontend for the Figure Collector application (v3.2.3). Provides a comprehensive user interface for managing figure collections with advanced authentication, real-time MFC synchronization, and accessibility-first testing.
 
 ## Features
 
-- Advanced user authentication (register, login, profile, session management)
+- **Authentication & Security**
+  - Register, login, profile, and session management
   - Token refresh and multiple session support
   - Secure logout options (single and all sessions)
-- Figure management interface (add, edit, delete)
-- Search and filter functionality
-- Statistical dashboard
-- Version display with service health status
-- Real-time service health monitoring
-- **MFC Cookie Authentication** - Secure storage for accessing NSFW and private content
-- **MFC Bulk Import with SSE** - Real-time sync progress via Server-Sent Events
-- **Terminal Retro Theme** - DOS/Osbourne-inspired green/orange theme with Matrix easter egg
+  - Email verification flow with resend support
+  - Password reset flow (forgot password + reset via email link)
+  - WebAuthn/Passkey authentication (@simplewebauthn/browser)
+  - Two-Factor Authentication (TOTP setup + backup codes)
+  - Dedicated Security page for managing 2FA and passkeys
+- **Figure Management**
+  - Add, edit, and delete figures with a multi-section form (CoreFields, CompanyRoles, ArtistRoles, Releases, CollectionDetails, CatalogPurchase, MfcFields)
+  - Faceted filter sidebar with collection status tabs
+  - Search with advanced filtering
+  - Statistical dashboard
+- **MFC Integration**
+  - **MFC Cookie Authentication** - Secure storage for accessing NSFW and private content
+  - **MFC Bulk Import with SSE** - Real-time sync progress via Server-Sent Events
+  - **MFC Lists** - Import and manage MFC lists (/lists, /lists/:id)
+- **Lists Management** - Create, view, and manage figure lists with membership controls
+- **UI & Theming**
+  - Light, Dark, and Terminal retro theme (triple toggle)
+  - Framer Motion animations
+  - Markdown rendering (react-markdown)
+  - XSS protection via DOMPurify
+- **SEO** - react-helmet-async, robots.txt, sitemap.xml, and post-build prerender-meta.js script
+- **Version Display** - Service health status with hover popup showing service details
+- **Real-time Service Health Monitoring**
 
 ## Terminal Retro Theme
 
@@ -71,7 +87,7 @@ The frontend supports optional MyFigureCollection (MFC) cookie authentication fo
 2. **Manage Cookies** (Profile page):
    - View current cookie status and storage type
    - Clear cookies manually at any time
-   - Access via navbar cookie indicator (🔒)
+   - Access via navbar cookie indicator
 
 3. **Automatic Cleanup**:
    - One-time cookies cleared when form closes
@@ -89,9 +105,9 @@ The frontend supports optional MyFigureCollection (MFC) cookie authentication fo
 
 ### Security Notes
 
-- ⚠️ **Never share your MFC cookies** - they provide full access to your MFC account
+- **Never share your MFC cookies** - they provide full access to your MFC account
 - Cookies are **client-side only** and never transmitted to the backend
-- Persistent cookies use **military-grade encryption** (AES-GCM 256-bit)
+- Persistent cookies use **AES-GCM 256-bit encryption**
 - All cookies are automatically cleared when your session expires
 
 ### Technical Implementation
@@ -132,18 +148,66 @@ Real-time synchronization of your MFC collection using Server-Sent Events (SSE) 
 
 ## Technology Stack
 
-- TypeScript
-- React 18
-- Chakra UI
-- React Query
-- React Router
-- React Hook Form
-- Nginx (for static serving and API proxying)
-- **Testing**: React Testing Library + Jest + jest-axe
+| Category | Technology |
+|----------|-----------|
+| Language | TypeScript 4.9.5 |
+| UI Library | React 18.2.0 |
+| UI Framework | Chakra UI v2 |
+| State Management | Zustand (authStore, themeStore, syncStore) |
+| Server State | React Query |
+| Routing | React Router |
+| Forms | React Hook Form |
+| API Client | Axios |
+| Animations | Framer Motion |
+| Markdown | react-markdown |
+| SEO | react-helmet-async |
+| XSS Protection | DOMPurify |
+| WebAuthn | @simplewebauthn/browser |
+| Build Tool | CRACO (wraps Create React App) |
+| Testing | Jest + React Testing Library + jest-axe |
+| Production Server | Nginx |
+
+## Pages & Routes
+
+### Public Routes
+
+| Route | Page | Description |
+|-------|------|-------------|
+| `/login` | Login | User authentication |
+| `/register` | Register | Account creation |
+| `/verify-email` | VerifyEmail | Email verification flow |
+| `/forgot-password` | ForgotPassword | Password reset request |
+| `/reset-password` | ResetPassword | Password reset via token |
+
+### Protected Routes
+
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Dashboard | Collection overview and stats |
+| `/figures` | FigureList | Browse and filter figures |
+| `/figures/:id` | FigureDetail | View figure details |
+| `/figures/add` | AddFigure | Add new figure |
+| `/figures/edit/:id` | EditFigure | Edit existing figure |
+| `/search` | Search | Advanced search |
+| `/statistics` | Statistics | Collection analytics |
+| `/lists` | Lists | MFC lists management |
+| `/lists/:id` | ListDetail | Individual list view |
+| `/profile` | Profile | User profile settings |
+| `/security` | Security | 2FA, passkeys, backup codes |
+| `*` | NotFound | 404 fallback |
+
+## SEO
+
+The frontend includes SEO support for improved search engine visibility:
+
+- **react-helmet-async** for per-page `<title>` and `<meta>` tags
+- **robots.txt** allowing search engine crawling
+- **sitemap.xml** listing public routes
+- **prerender-meta.js** post-build script for static meta tag injection
 
 ## Proxy Requirement
 
-**⚠️ IMPORTANT: This application REQUIRES a proxy to function correctly.**
+**IMPORTANT: This application REQUIRES a proxy to function correctly.**
 
 The frontend makes all API requests to relative paths (e.g., `/api/version`, `/api/figures`) which must be proxied to the backend service. This design:
 - **Avoids CORS issues** by keeping frontend and API on the same origin
@@ -153,11 +217,10 @@ The frontend makes all API requests to relative paths (e.g., `/api/version`, `/a
 ### Development (Automatic)
 The React dev server (`npm start`) automatically proxies `/api/*` requests to the backend using `src/setupProxy.js`. No configuration needed - it just works!
 
-### Production (Nginx Required)
-Nginx must be configured to:
-- Serve the frontend static files
-- Proxy `/api/*` requests to the backend service
-- Example configuration available in `../figure-collector-infra/nginx/`
+### Production (Nginx)
+The production Docker image includes an Nginx configuration that:
+- Serves the frontend static files
+- Proxies `/api/*` requests to the backend service
 
 ### Direct Backend Access
 **Not supported.** The frontend assumes a proxy and uses relative URLs. Accessing the backend directly (e.g., `http://backend:5050`) bypasses the frontend entirely.
@@ -227,7 +290,7 @@ The frontend uses `src/setupProxy.js` to proxy API requests during development:
 - **Target**: `http://backend:5090` (Docker network)
 - **Additional Routes**: `/version` is also proxied for service health information
 
-This mirrors the production nginx configuration, ensuring consistent behavior between development and production environments.
+This mirrors the production Nginx configuration, ensuring consistent behavior between development and production environments.
 
 **Requirements**:
 - `http-proxy-middleware` package (included in dependencies)
@@ -242,7 +305,7 @@ docker logs fc-frontend-dev | grep HPM
 
 ### Authentication Endpoints
 
-The frontend now supports the following authentication endpoints:
+The frontend supports the following authentication endpoints:
 
 - `POST /auth/login`: User login with credentials
   - Returns user data and access token
@@ -291,120 +354,89 @@ The frontend automatically registers its version with the backend service on sta
 - Backend acts as orchestrator for all service version information
 - Version info is displayed in the footer with hover popup showing service details
 
-[... Rest of existing content ...]
+## Testing
 
-## 🧪 Testing
+The frontend has a comprehensive test suite with **~1,105 tests across 67 suites in 97 test files**.
 
-### Continuous Testing Infrastructure Improvements
+### Test Stack
 
-Our frontend testing infrastructure continues to evolve with significant enhancements across multiple areas:
+- **Jest** - Test runner with coverage reporting
+- **React Testing Library** - Component testing with user-centric queries
+- **jest-axe** - Automated accessibility testing (WCAG 2.1 AA compliance)
 
-#### Recent Test Improvements
+### Test Categories
 
-- **Comprehensive Coverage Enhancement** (Latest):
-  - Achieved 80%+ coverage on new/modified code for quality gate compliance
-  - Added 45+ new tests covering critical uncovered lines and conditions
-  - Fixed all failing tests in api/index.ts and FigureForm components
-  - Enhanced Layout component tests with version management scenarios
+- **Component Tests** - UI rendering, user interactions, state changes
+- **API Tests** - Axios interceptors, auth functions, error handling
+- **Store Tests** - Zustand store behavior (auth, theme, sync)
+- **Hook Tests** - Custom hook logic (SSE events, form state)
+- **Accessibility Tests** - WCAG 2.1 AA compliance via jest-axe
+- **Form Tests** - Validation, submission, multi-section form interactions
 
-- **Accessibility Testing**:
-  - Enhanced jest-axe integration across all components
-  - Comprehensive WCAG 2.1 AA compliance checks
-  - Improved screen reader compatibility testing
+### Key Test Files
 
-- **Component Test Stability**:
-  - Fixed test utilities for Layout and FigureList components
-  - Improved mocking strategies for more realistic testing
-  - Simplified Login component tests with focused input validation
-  - Added comprehensive FigureForm validation and scraping tests
-
-- **API Test Configuration**:
-  - Improved Axios mocking configuration
-  - Enhanced error scenario testing
-  - More robust API interceptor tests
-  - Complete coverage of auth functions (refreshToken, logout, sessions)
-
-- **Test Reliability Enhancements**:
-  - Resolved hanging promises in asynchronous tests
-  - Improved async/await patterns
-  - Better error tracking and state management
-  - Fixed localStorage and window.location mocking issues
-
-#### Key Testing Focus Areas
-
-1. **Realistic User Interactions**
-   - More precise form interaction simulations
-   - Enhanced keyboard navigation testing
-   - Comprehensive input validation scenarios
-
-2. **Error Handling**
-   - Extended coverage for error state testing
-   - Improved fallback and error boundary tests
-   - More sophisticated network error simulations
-
-3. **Performance and Stability**
-   - Reduced test flakiness
-   - Optimized test execution time
-   - Improved test isolation techniques
-
-#### Test Coverage Files
-
-Key test files providing comprehensive coverage:
 - `src/api/__tests__/index.test.ts` - API interceptors and auth functions
 - `src/components/__tests__/Layout.test.tsx` - Version management and UI
 - `src/components/__tests__/FigureForm.*.test.tsx` - Form validation, scraping, conditions
 - `src/test-utils.tsx` - Shared testing utilities and providers
 
-#### Recommended Testing Workflow
+### Running Tests
 
 ```bash
-# Run comprehensive test suite
+# Run full test suite with coverage
 npm test
 
 # Run tests for a specific component
 npm test ComponentName.test.tsx
 
-# Generate test coverage report
+# Generate coverage report
 npm test -- --coverage
 
-# Run tests without coverage (faster)
+# Run without coverage (faster)
 npm test -- --no-coverage
 
-# Run specific test suite
+# Run a specific test file
 npm test -- src/api/__tests__/index.test.ts
+
+# Watch mode for development
+npm test:watch
+
+# CI mode
+npm test:ci
 ```
 
-**Note**: Our continuous testing approach ensures high-quality, reliable, and accessible frontend components across all user interaction scenarios.
+## CI/CD
+
+Seven GitHub Actions workflows automate build, test, security, and release processes:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| **Build and Test** | PR, push to develop/main | Runs test suite with coverage, uploads to Codecov |
+| **CodeQL Security Analysis** | PR, push, scheduled | Static analysis for security vulnerabilities |
+| **Build, Scan, and Push Docker Image** | Push to main | Builds production image, scans with Trivy, pushes to GHCR |
+| **Create Release** | Manual dispatch | Creates GitHub release with changelog |
+| **SBOM and Security Scanning** | Push to main | Generates Software Bill of Materials, runs Trivy scan |
+| **Scheduled Security Rescan** | Cron schedule | Periodic vulnerability rescanning |
+| **Security Vulnerability Scan** | PR | Dependency and container vulnerability scanning |
 
 ## Docker Deployment
 
 ### Production Container
+
+The production image uses a multi-stage Docker build:
+
+1. **Build stage** - Node 24 LTS compiles the React application
+2. **Production stage** - Ubuntu 24.04 with Nginx serves static files and proxies API requests
+
 ```bash
 # Build production image
 docker build -t frontend .
 
-# Run container
-docker run -p 3008:3008 frontend
+# Run container (Nginx serves on port 80 internally)
+docker run -p 5051:80 frontend
 ```
 
-### Test Container (Toggleable)
-The test container (`Dockerfile.test`) can run in two modes:
-
-```bash
-# Build test image
-docker build -f Dockerfile.test -t frontend:test .
-
-# Mode 1: Run tests (default)
-docker run frontend:test
-
-# Mode 2: Run as service (for integration testing)
-docker run -e RUN_SERVER=1 -p 3013:3013 frontend:test
-```
-
-**Features:**
-- Default mode runs test suite with coverage
-- Setting `RUN_SERVER=1` starts the development server instead
-- Useful for integration testing scenarios
-- Consistent behavior across all services
-
-[... Rest of existing content remains the same ...]
+The Nginx configuration handles:
+- Serving the built React static files
+- Proxying `/api/*` requests to the backend service
+- SPA fallback routing (all paths serve `index.html`)
