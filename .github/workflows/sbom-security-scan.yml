@@ -33,7 +33,7 @@ jobs:
     steps:
       # Checkout to access .grype.yaml configuration
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # Log in to registry to pull images for scanning
       - name: Log in to GitHub Container Registry
@@ -84,7 +84,7 @@ jobs:
 
       # Attach SBOM to the container image as attestation
       - name: Attach SBOM attestation
-        uses: actions/attest-sbom@v3
+        uses: actions/attest-sbom@v4
         with:
           subject-name: ${{ inputs.image-name }}
           subject-digest: ${{ inputs.image-digest }}
@@ -165,7 +165,7 @@ jobs:
 
       # Upload all reports
       - name: Upload security artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: security-scan-${{ github.run_id }}
           path: |
