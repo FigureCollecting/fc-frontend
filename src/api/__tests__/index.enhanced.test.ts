@@ -470,7 +470,7 @@ describe('Enhanced API Integration Tests', () => {
 
         await getFigures(-1, 0);
 
-        expect(mockApiInstance.get).toHaveBeenCalledWith('/figures?page=-1&limit=0&sortBy=createdAt&sortOrder=desc');
+        expect(mockApiInstance.get).toHaveBeenCalledWith('/figures?page=-1&limit=0&sortBy=activity&sortOrder=asc');
       });
 
       it('should handle very large page numbers', async () => {
@@ -478,7 +478,7 @@ describe('Enhanced API Integration Tests', () => {
 
         await getFigures(999999, 1000);
 
-        expect(mockApiInstance.get).toHaveBeenCalledWith('/figures?page=999999&limit=1000&sortBy=createdAt&sortOrder=desc');
+        expect(mockApiInstance.get).toHaveBeenCalledWith('/figures?page=999999&limit=1000&sortBy=activity&sortOrder=asc');
       });
 
       it('should handle server returning empty data array', async () => {

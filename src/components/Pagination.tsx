@@ -40,22 +40,29 @@ export const CARD_LAYOUT_OPTIONS: { value: CardLayout; label: string; icon: Reac
 export const DEFAULT_CARD_LAYOUT: CardLayout = 'text-bottom';
 
 // Grid-based page size presets: value -> { cols, rows, label }
-// Labels are in rows×cols format (e.g., "5×1" = 5 rows, 1 column)
+// Labels are in cols×rows format (e.g., "1×5" = 1 across, 5 down)
 export const PAGE_SIZE_PRESETS = [
-  { value: 5, cols: 1, rows: 5, label: '5 (5×1)' },
-  { value: 6, cols: 2, rows: 3, label: '6 (3×2)' },
-  { value: 12, cols: 3, rows: 4, label: '12 (4×3)' },
-  { value: 18, cols: 3, rows: 6, label: '18 (6×3)' },
-  { value: 24, cols: 4, rows: 6, label: '24 (6×4)' },
-  { value: 36, cols: 4, rows: 9, label: '36 (9×4)' },
-  { value: 50, cols: 5, rows: 10, label: '50 (10×5)' },
-  { value: 72, cols: 6, rows: 12, label: '72 (12×6)' },
-  { value: 96, cols: 8, rows: 12, label: '96 (12×8)' },
+  { value: 5, cols: 1, rows: 5, label: '5 (1×5)' },
+  { value: 6, cols: 2, rows: 3, label: '6 (2×3)' },
+  { value: 12, cols: 3, rows: 4, label: '12 (3×4)' },
+  { value: 18, cols: 3, rows: 6, label: '18 (3×6)' },
+  { value: 24, cols: 4, rows: 6, label: '24 (4×6)' },
+  { value: 36, cols: 4, rows: 9, label: '36 (4×9)' },
+  { value: 50, cols: 5, rows: 10, label: '50 (5×10)' },
+  { value: 72, cols: 6, rows: 12, label: '72 (6×12)' },
+  { value: 96, cols: 8, rows: 12, label: '96 (8×12)' },
 ] as const;
 
 export type PageSizeValue = typeof PAGE_SIZE_PRESETS[number]['value'];
 
 export const DEFAULT_PAGE_SIZE: PageSizeValue = 12;
+
+/** Controls which sections to render:
+ * - 'full': All sections (default, backward compatible)
+ * - 'top-controls': Slider, page size, and card layout selectors only
+ * - 'page-nav': Page number buttons with prev/next arrows only
+ */
+export type PaginationVariant = 'full' | 'top-controls' | 'page-nav';
 
 interface PaginationProps {
   currentPage: number;
@@ -73,6 +80,8 @@ interface PaginationProps {
   onCardLayoutChange?: (layout: CardLayout) => void;
   /** Show card layout selector */
   showCardLayoutSelector?: boolean;
+  /** Which sections to render */
+  variant?: PaginationVariant;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -85,6 +94,7 @@ const Pagination: React.FC<PaginationProps> = ({
   cardLayout = DEFAULT_CARD_LAYOUT,
   onCardLayoutChange,
   showCardLayoutSelector = true,
+  variant = 'full',
 }) => {
   const activeBg = useColorModeValue('brand.600', 'brand.400');
   const activeColor = 'white';
@@ -213,12 +223,97 @@ const Pagination: React.FC<PaginationProps> = ({
   };
 
   // Don't render pagination if there's only one page and no page size selector
-  if (totalPages <= 1 && !showPageSizeSelector) return null;
+  if (totalPages <= 1 && !showPageSizeSelector && variant !== 'top-controls') return null;
+
+  const showPageNav = variant === 'full' || variant === 'page-nav';
+  const showControls = variant === 'full' || variant === 'top-controls';
 
   return (
-    <Flex direction="column" align="center" mt={8} mb={4} gap={4}>
-      {/* Page buttons row */}
-      {totalPages > 1 && (
+    <Flex direction="column" align="center" mt={showPageNav ? 8 : 0} mb={4} gap={showControls && showPageNav ? 4 : 2}>
+      {/* Top controls: slider, page size, card layout */}
+      {showControls && (
+        <>
+          {/* Page slider (when > 5 pages) */}
+          {totalPages > 5 && (
+            <Box w="100%" maxW="300px" px={4}>
+              <Slider
+                aria-label="Page slider"
+                value={currentPage}
+                min={1}
+                max={totalPages}
+                step={1}
+                onChange={handleSliderChange}
+                focusThumbOnChange={false}
+              >
+                <SliderTrack bg={sliderTrackBg} h="6px" borderRadius="full">
+                  <SliderFilledTrack bg={sliderFilledBg} />
+                </SliderTrack>
+                <Tooltip
+                  label={`Page ${currentPage}`}
+                  placement="top"
+                  hasArrow
+                  isOpen={undefined}
+                >
+                  <SliderThumb boxSize={5} bg={activeBg} />
+                </Tooltip>
+              </Slider>
+            </Box>
+          )}
+
+          {/* Page info, page size selector, and card layout */}
+          <HStack spacing={4} fontSize="sm" color="gray.600" flexWrap="wrap" justify="center">
+            <Text fontWeight="medium">
+              Page {currentPage} of {totalPages}
+            </Text>
+
+            {showPageSizeSelector && onPageSizeChange && (
+              <>
+                <Text color="gray.400">•</Text>
+                <HStack spacing={2}>
+                  <FaTh size={12} />
+                  <Select
+                    size="sm"
+                    value={pageSize}
+                    onChange={handlePageSizeChange}
+                    width="auto"
+                    minW="110px"
+                    variant="filled"
+                    borderRadius="md"
+                  >
+                    {PAGE_SIZE_PRESETS.map((preset) => (
+                      <option key={preset.value} value={preset.value}>
+                        {preset.label}
+                      </option>
+                    ))}
+                  </Select>
+                </HStack>
+              </>
+            )}
+
+            {showCardLayoutSelector && onCardLayoutChange && (
+              <>
+                <Text color="gray.400">•</Text>
+                <ButtonGroup size="sm" isAttached variant="outline">
+                  {CARD_LAYOUT_OPTIONS.map((option) => (
+                    <Tooltip key={option.value} label={option.label} placement="top" hasArrow>
+                      <IconButton
+                        aria-label={option.label}
+                        icon={<Icon as={option.icon} />}
+                        onClick={() => onCardLayoutChange(option.value)}
+                        variant={cardLayout === option.value ? 'solid' : 'outline'}
+                        colorScheme={cardLayout === option.value ? 'brand' : 'gray'}
+                      />
+                    </Tooltip>
+                  ))}
+                </ButtonGroup>
+              </>
+            )}
+          </HStack>
+        </>
+      )}
+
+      {/* Page navigation: prev/next arrows and page number buttons */}
+      {showPageNav && totalPages > 1 && (
         <Flex justify="center" align="center">
           <IconButton
             aria-label="Previous page"
@@ -243,83 +338,6 @@ const Pagination: React.FC<PaginationProps> = ({
           />
         </Flex>
       )}
-
-      {/* Page slider (when > 5 pages) */}
-      {totalPages > 5 && (
-        <Box w="100%" maxW="300px" px={4}>
-          <Slider
-            aria-label="Page slider"
-            value={currentPage}
-            min={1}
-            max={totalPages}
-            step={1}
-            onChange={handleSliderChange}
-            focusThumbOnChange={false}
-          >
-            <SliderTrack bg={sliderTrackBg} h="6px" borderRadius="full">
-              <SliderFilledTrack bg={sliderFilledBg} />
-            </SliderTrack>
-            <Tooltip
-              label={`Page ${currentPage}`}
-              placement="top"
-              hasArrow
-              isOpen={undefined}
-            >
-              <SliderThumb boxSize={5} bg={activeBg} />
-            </Tooltip>
-          </Slider>
-        </Box>
-      )}
-
-      {/* Page info and page size selector row */}
-      <HStack spacing={4} fontSize="sm" color="gray.600" flexWrap="wrap" justify="center">
-        <Text fontWeight="medium">
-          Page {currentPage} of {totalPages}
-        </Text>
-
-        {showPageSizeSelector && onPageSizeChange && (
-          <>
-            <Text color="gray.400">•</Text>
-            <HStack spacing={2}>
-              <FaTh size={12} />
-              <Select
-                size="sm"
-                value={pageSize}
-                onChange={handlePageSizeChange}
-                width="auto"
-                minW="110px"
-                variant="filled"
-                borderRadius="md"
-              >
-                {PAGE_SIZE_PRESETS.map((preset) => (
-                  <option key={preset.value} value={preset.value}>
-                    {preset.label}
-                  </option>
-                ))}
-              </Select>
-            </HStack>
-          </>
-        )}
-
-        {showCardLayoutSelector && onCardLayoutChange && (
-          <>
-            <Text color="gray.400">•</Text>
-            <ButtonGroup size="sm" isAttached variant="outline">
-              {CARD_LAYOUT_OPTIONS.map((option) => (
-                <Tooltip key={option.value} label={option.label} placement="top" hasArrow>
-                  <IconButton
-                    aria-label={option.label}
-                    icon={<Icon as={option.icon} />}
-                    onClick={() => onCardLayoutChange(option.value)}
-                    variant={cardLayout === option.value ? 'solid' : 'outline'}
-                    colorScheme={cardLayout === option.value ? 'brand' : 'gray'}
-                  />
-                </Tooltip>
-              ))}
-            </ButtonGroup>
-          </>
-        )}
-      </HStack>
     </Flex>
   );
 };

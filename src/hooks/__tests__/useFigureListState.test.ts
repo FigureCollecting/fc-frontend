@@ -24,8 +24,8 @@ describe('useFigureListState', () => {
       });
 
       expect(result.current.page).toBe(1);
-      expect(result.current.sortBy).toBe('createdAt');
-      expect(result.current.sortOrder).toBe('desc');
+      expect(result.current.sortBy).toBe('activity');
+      expect(result.current.sortOrder).toBe('asc');
       expect(result.current.activeStatus).toBe('owned');
       expect(result.current.facetedFilters).toEqual(EMPTY_FACETED_FILTERS);
     });
@@ -59,12 +59,11 @@ describe('useFigureListState', () => {
 
     it('should parse faceted filters from URL', () => {
       const { result } = renderHook(() => useFigureListState(), {
-        wrapper: createWrapper(['/?mfr=GSC,ALTER&scale=1/7&loc=Display+Case']),
+        wrapper: createWrapper(['/?mfr=GSC|ALTER&scale=1/7']),
       });
 
       expect(result.current.facetedFilters.manufacturers).toEqual(['GSC', 'ALTER']);
       expect(result.current.facetedFilters.scales).toEqual(['1/7']);
-      expect(result.current.facetedFilters.locations).toEqual(['Display Case']);
     });
 
     it('should handle invalid page gracefully', () => {
@@ -88,7 +87,7 @@ describe('useFigureListState', () => {
         wrapper: createWrapper(['/?sort=invalid']),
       });
 
-      expect(result.current.sortBy).toBe('createdAt');
+      expect(result.current.sortBy).toBe('activity');
     });
 
     it('should handle invalid layout gracefully', () => {
@@ -111,7 +110,7 @@ describe('useFigureListState', () => {
 
     it('should parse distributor filters', () => {
       const { result } = renderHook(() => useFigureListState(), {
-        wrapper: createWrapper(['/?dist=AmiAmi,Solaris']),
+        wrapper: createWrapper(['/?dist=AmiAmi|Solaris']),
       });
 
       expect(result.current.facetedFilters.distributors).toEqual(['AmiAmi', 'Solaris']);
@@ -174,10 +173,10 @@ describe('useFigureListState', () => {
       });
 
       act(() => {
-        result.current.setSortBy('manufacturer');
+        result.current.setSortBy('updatedAt');
       });
 
-      expect(result.current.sortBy).toBe('manufacturer');
+      expect(result.current.sortBy).toBe('updatedAt');
     });
 
     it('should set sortOrder independently', () => {
@@ -226,9 +225,11 @@ describe('useFigureListState', () => {
           manufacturers: ['GSC'],
           distributors: [],
           scales: ['1/7'],
-          locations: [],
           origins: ['Fate'],
           categories: [],
+          sculptors: [],
+          illustrators: [],
+          classifications: [],
         });
       });
 
@@ -309,9 +310,11 @@ describe('useFigureListState', () => {
       expect(EMPTY_FACETED_FILTERS.manufacturers).toEqual([]);
       expect(EMPTY_FACETED_FILTERS.distributors).toEqual([]);
       expect(EMPTY_FACETED_FILTERS.scales).toEqual([]);
-      expect(EMPTY_FACETED_FILTERS.locations).toEqual([]);
       expect(EMPTY_FACETED_FILTERS.origins).toEqual([]);
       expect(EMPTY_FACETED_FILTERS.categories).toEqual([]);
+      expect(EMPTY_FACETED_FILTERS.sculptors).toEqual([]);
+      expect(EMPTY_FACETED_FILTERS.illustrators).toEqual([]);
+      expect(EMPTY_FACETED_FILTERS.classifications).toEqual([]);
     });
   });
 });

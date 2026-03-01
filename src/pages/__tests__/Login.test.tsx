@@ -63,7 +63,7 @@ describe('Login', () => {
   it('renders login form', () => {
     render(<Login />);
     expect(screen.getByRole('heading', { name: 'FigureCollecting' })).toBeInTheDocument();
-    expect(screen.getByText('Sign in to manage your collection')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Sign In' })).toBeInTheDocument();
   });
 
   it('renders email and password inputs', () => {
@@ -188,6 +188,10 @@ describe('Login', () => {
     const emailInput = screen.getByLabelText(/email/i);
     await user.click(emailInput);
     expect(emailInput).toHaveFocus();
+
+    await user.tab();
+    // "Forgot password?" link receives focus before the password input
+    expect(screen.getByText(/forgot password/i)).toHaveFocus();
 
     await user.tab();
     expect(screen.getByLabelText(/password/i)).toHaveFocus();

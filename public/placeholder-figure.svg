@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#2D3748"/>
+  <g transform="translate(200,180)" text-anchor="middle">
+    <text fill="#718096" font-family="system-ui,sans-serif" font-size="48" dy="0">📷</text>
+    <text fill="#718096" font-family="system-ui,sans-serif" font-size="16" dy="40">No Image</text>
+  </g>
+</svg>

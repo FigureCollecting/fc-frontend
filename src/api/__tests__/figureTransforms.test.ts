@@ -17,7 +17,6 @@ describe('formDataToApiPayload - Form to API Transform', () => {
       manufacturer: 'Good Smile Company',
       name: 'Test Figure',
       scale: '1/7',
-      location: 'Display Case A',
     };
 
     const result = formDataToApiPayload(formData);
@@ -25,7 +24,6 @@ describe('formDataToApiPayload - Form to API Transform', () => {
     expect(result.manufacturer).toBe('Good Smile Company');
     expect(result.name).toBe('Test Figure');
     expect(result.scale).toBe('1/7');
-    expect(result.location).toBe('Display Case A');
   });
 
   it('should convert flat release fields to releases array', () => {

@@ -178,7 +178,6 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
       scale: '',
       mfcLink: '',
       mfcAuth: '',
-      location: '',
       storageDetail: '',
       imageUrl: '',
       // Schema v3.0 defaults
@@ -619,7 +618,6 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
         scale: '',
         mfcLink: '',
         mfcAuth: '',
-        location: '',
         storageDetail: '',
         imageUrl: '',
         // Schema v3.0 defaults
@@ -721,7 +719,6 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
       scale: '',
       mfcLink: '',
       mfcAuth: currentMfcAuth, // Preserve MFC auth cookies
-      location: '',
       storageDetail: '',
       imageUrl: '',
       // Schema v3.0 defaults - preserve collection status

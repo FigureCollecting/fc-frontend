@@ -47,8 +47,7 @@ describe('FigureCard', () => {
   const mockFigureWithAllData = {
     ...mockFigure,
     mfcLink: 'https://myfigurecollection.net/item/123',
-    location: 'Display Case A',
-    boxNumber: 'A1',
+    origin: 'Test Series',
     imageUrl: 'https://example.com/image.jpg',
   };
 
@@ -58,8 +57,8 @@ describe('FigureCard', () => {
 
       expect(screen.getByText(mockFigureWithAllData.name)).toBeInTheDocument();
       expect(screen.getByText(mockFigureWithAllData.scale)).toBeInTheDocument();
-      // Location is displayed without prefix or box number
-      expect(screen.getByText(mockFigureWithAllData.location)).toBeInTheDocument();
+      // Origin is displayed on the card
+      expect(screen.getByText(mockFigureWithAllData.origin)).toBeInTheDocument();
     });
 
     it('should render MFC link when provided', () => {
@@ -85,12 +84,8 @@ describe('FigureCard', () => {
 
       const image = screen.getByRole('img', { name: mockFigureWithAllData.name });
       expect(image).toBeInTheDocument();
-      // In test environment, external images may fail to load and use fallback
-      const imageSrc = image.getAttribute('src');
-      expect(
-        imageSrc === mockFigureWithAllData.imageUrl ||
-        imageSrc === 'https://via.placeholder.com/300x200?text=No+Image'
-      ).toBe(true);
+      // Without fallbackSrc, the image src should be the figure's imageUrl directly
+      expect(image).toHaveAttribute('src', mockFigureWithAllData.imageUrl);
     });
 
     it('should use placeholder when no image URL provided', () => {
@@ -325,15 +320,14 @@ describe('FigureCard', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle missing location gracefully', () => {
-      const figureWithoutLocation = {
+    it('should handle missing origin gracefully', () => {
+      const figureWithoutOrigin = {
         ...mockFigure,
-        location: undefined,
-        boxNumber: undefined
+        origin: undefined,
       };
 
-      // Component conditionally renders location only if truthy
-      expect(() => render(<FigureCard figure={figureWithoutLocation} />)).not.toThrow();
+      // Component conditionally renders origin only if truthy
+      expect(() => render(<FigureCard figure={figureWithoutOrigin} />)).not.toThrow();
     });
 
     it('should truncate long figure names', () => {
@@ -358,8 +352,7 @@ describe('FigureCard', () => {
         ...mockFigure,
         manufacturer: '',
         scale: '',
-        location: '',
-        boxNumber: '',
+        origin: '',
       };
 
       expect(() => render(<FigureCard figure={minimalFigure} />)).not.toThrow();

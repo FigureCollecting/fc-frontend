@@ -20,7 +20,7 @@ import {
   Spacer,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import { FaPlus, FaFileImport, FaSync, FaChevronDown } from 'react-icons/fa';
+import { FaPlus, FaSync, FaChevronDown } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
 import { getFigures, filterFigures, getFigureStats } from '../api';
 import FigureCard from '../components/FigureCard';
@@ -59,7 +59,7 @@ const FigureList: React.FC = () => {
 
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { isOpen: isImportOpen, onOpen: onImportOpen, onClose: onImportClose } = useDisclosure();
+  const { isOpen: isImportOpen, onClose: onImportClose } = useDisclosure();
   const { isOpen: isSyncOpen, onOpen: onSyncOpen, onClose: onSyncClose } = useDisclosure();
   const { isOpen: isCookiesOpen, onOpen: onCookiesOpen, onClose: onCookiesClose } = useDisclosure();
 
@@ -67,21 +67,22 @@ const FigureList: React.FC = () => {
   const isMobile = useBreakpointValue({ base: true, lg: false });
 
   // Calculate grid columns based on selected page size preset
+  // Each breakpoint allows progressively more columns to honor the preset intent
   const gridColumns = useMemo(() => {
     const preset = PAGE_SIZE_PRESETS.find(p => p.value === pageSize);
     const cols = preset?.cols ?? 4;
-    // Cap columns at 6 for lg, use preset cols for xl, but always responsive on smaller screens
     return {
       base: 1,
-      sm: 2,
+      sm: Math.min(cols, 2),
       md: Math.min(cols, 3),
-      lg: Math.min(cols, 4),
+      lg: Math.min(cols, 5),
       xl: Math.min(cols, 6),
+      '2xl': Math.min(cols, 8),
     };
   }, [pageSize]);
 
   // Get the actual column count at current breakpoint for card sizing
-  const currentColumns = useBreakpointValue(gridColumns) ?? gridColumns.xl;
+  const currentColumns = useBreakpointValue(gridColumns) ?? gridColumns['2xl'];
 
   // Calculate viewport-aware card sizing to prevent clipping
   const { maxCardHeight } = useCardSize({
@@ -124,10 +125,11 @@ const FigureList: React.FC = () => {
     }
   }, [syncStats, phase, isActive, queryClient]);
 
-  // Also refresh immediately when sync completes
+  // Also refresh immediately when sync completes (figures + lists)
   useEffect(() => {
     if (phase === 'completed') {
       queryClient.invalidateQueries(['figures']);
+      queryClient.invalidateQueries(['lists']);
     }
   }, [phase, queryClient]);
 
@@ -146,29 +148,40 @@ const FigureList: React.FC = () => {
     facetedFilters.manufacturers.length > 0 ||
     facetedFilters.distributors.length > 0 ||
     facetedFilters.scales.length > 0 ||
-    facetedFilters.locations.length > 0 ||
     facetedFilters.origins.length > 0 ||
-    facetedFilters.categories.length > 0;
+    facetedFilters.categories.length > 0 ||
+    facetedFilters.sculptors.length > 0 ||
+    facetedFilters.illustrators.length > 0 ||
+    facetedFilters.classifications.length > 0;
+
+  // Use pipe delimiter to avoid collision with commas in values (e.g., "Kanojo, Okarishimasu")
+  const joinFilter = (arr: string[]) => arr.join('|');
 
   const apiFilters = hasActiveFilters
     ? {
         ...(facetedFilters.manufacturers.length > 0 && {
-          manufacturer: facetedFilters.manufacturers.join(','),
+          manufacturer: joinFilter(facetedFilters.manufacturers),
         }),
         ...(facetedFilters.distributors.length > 0 && {
-          distributor: facetedFilters.distributors.join(','),
+          distributor: joinFilter(facetedFilters.distributors),
         }),
         ...(facetedFilters.scales.length > 0 && {
-          scale: facetedFilters.scales.join(','),
-        }),
-        ...(facetedFilters.locations.length > 0 && {
-          location: facetedFilters.locations.join(','),
+          scale: joinFilter(facetedFilters.scales),
         }),
         ...(facetedFilters.origins.length > 0 && {
-          origin: facetedFilters.origins.join(','),
+          origin: joinFilter(facetedFilters.origins),
         }),
         ...(facetedFilters.categories.length > 0 && {
-          category: facetedFilters.categories.join(','),
+          category: joinFilter(facetedFilters.categories),
+        }),
+        ...(facetedFilters.sculptors.length > 0 && {
+          sculptor: joinFilter(facetedFilters.sculptors),
+        }),
+        ...(facetedFilters.illustrators.length > 0 && {
+          illustrator: joinFilter(facetedFilters.illustrators),
+        }),
+        ...(facetedFilters.classifications.length > 0 && {
+          classification: joinFilter(facetedFilters.classifications),
         }),
       }
     : {};
@@ -281,9 +294,11 @@ const FigureList: React.FC = () => {
               <MenuItem icon={<Icon as={FaSync} />} onClick={onSyncOpen}>
                 Sync MFC Account
               </MenuItem>
+              {/* CSV import hidden until fully implemented
               <MenuItem icon={<Icon as={FaFileImport} />} onClick={onImportOpen}>
                 Import CSV File
               </MenuItem>
+              */}
             </MenuList>
           </Menu>
         </HStack>
@@ -324,6 +339,20 @@ const FigureList: React.FC = () => {
             />
           </Flex>
 
+          {/* Top controls: slider, page size, card layout (above grid) */}
+          {data && data.total > 0 && (
+            <Pagination
+              variant="top-controls"
+              currentPage={page}
+              totalPages={data?.pages || 1}
+              onPageChange={handlePageChange}
+              pageSize={pageSize}
+              onPageSizeChange={handlePageSizeChange}
+              cardLayout={cardLayout}
+              onCardLayoutChange={handleCardLayoutChange}
+            />
+          )}
+
           {/* Figure grid or empty state */}
           {data?.total === 0 ? (
             hasActiveFilters ? (
@@ -342,14 +371,12 @@ const FigureList: React.FC = () => {
                 ))}
               </SimpleGrid>
 
+              {/* Bottom navigation: page number arrows only */}
               <Pagination
+                variant="page-nav"
                 currentPage={page}
                 totalPages={data?.pages || 1}
                 onPageChange={handlePageChange}
-                pageSize={pageSize}
-                onPageSizeChange={handlePageSizeChange}
-                cardLayout={cardLayout}
-                onCardLayoutChange={handleCardLayoutChange}
               />
             </>
           )}
