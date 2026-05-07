@@ -4,7 +4,7 @@
 # ============================================================================
 # BASE STAGE - Ubuntu 24.04 with Node.js and security patches
 # ============================================================================
-FROM ubuntu:24.04 as base
+FROM ubuntu:26.04 as base
 
 # Cache-bust ARG to invalidate Docker layers when security patches are needed
 ARG CACHE_BUST=2026-02-12-npm-11.10-openssl-glibc-patches
@@ -107,7 +107,7 @@ RUN npm run build
 # ============================================================================
 # PRODUCTION STAGE - Nginx server with built React app
 # ============================================================================
-FROM ubuntu:24.04 as production
+FROM ubuntu:26.04 as production
 
 # Cache-bust ARG for production stage security patches
 ARG CACHE_BUST=2026-02-12-npm-11.10-openssl-glibc-patches
