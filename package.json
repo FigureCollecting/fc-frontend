@@ -10,7 +10,7 @@
     "@emotion/styled": "^11.11.0",
     "@simplewebauthn/browser": "^13.2.2",
     "@types/dompurify": "^3.0.5",
-    "axios": "^1.13.5",
+    "axios": "^1.15.2",
     "dompurify": "^3.3.1",
     "framer-motion": "^12.23.24",
     "react": "^18.2.0",
