@@ -5,13 +5,13 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^2.10.9",
-    "@chakra-ui/utils": "^2.2.5",
+    "@chakra-ui/utils": "^2.2.6",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@simplewebauthn/browser": "^13.2.2",
-    "@types/dompurify": "^3.0.5",
+    "@types/dompurify": "^3.2.0",
     "axios": "^1.16.1",
-    "dompurify": "^3.4.0",
+    "dompurify": "^3.4.10",
     "framer-motion": "^12.40.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -20,9 +20,9 @@
     "react-icons": "^4.11.0",
     "react-markdown": "^10.1.0",
     "react-query": "^3.39.3",
-    "react-router-dom": "^6.30.3",
+    "react-router-dom": "^6.30.4",
     "web-vitals": "^5.1.0",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.14"
   },
   "scripts": {
     "start": "craco start",
@@ -77,8 +77,8 @@
     "webpack": "^5.105.2"
   },
   "devDependencies": {
-    "@babel/plugin-transform-runtime": "^7.28.3",
-    "@babel/preset-env": "^7.28.3",
+    "@babel/plugin-transform-runtime": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
     "@craco/craco": "^7.1.0",
