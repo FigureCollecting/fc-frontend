@@ -463,13 +463,17 @@ describe('FigureForm Uncovered Conditions', () => {
       renderFigureForm();
       const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
-      await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/1003');
+      // Deliver the value via fireEvent.change so RHF's watch fires immediately
+      // (userEvent.type resets the debounce timer on each keystroke).
+      fireEvent.change(mfcInput, { target: { value: 'https://myfigurecollection.net/item/1003' } });
       fireEvent.blur(mfcInput);
 
+      // Item ID "1003" is 4 digits (< 5) so the scrape debounce is 2000ms;
+      // the async fetch + setValue then follow, so wait beyond the debounce.
       await waitFor(() => {
         const nameInput = screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i) as HTMLInputElement;
         expect(nameInput.value).toBe('Scraped');
-      }, { timeout: 2000 });
+      }, { timeout: 4000 });
     });
 
     it('should cover line 177 condition', async () => {

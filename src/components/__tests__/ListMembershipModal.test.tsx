@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ChakraProvider } from '@chakra-ui/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { render } from '@testing-library/react';
@@ -121,13 +122,16 @@ describe('ListMembershipModal', () => {
       expect(screen.getByTestId('list-checkbox-list1')).toBeInTheDocument();
     });
 
+    // checkedListIds is populated by an effect that runs after the
+    // getListsByItem query resolves, so the reflected `checked` state on the
+    // hidden input arrives asynchronously — wait for it.
     // Wishlist (list1) should be checked since figure 100 is in it
     const wishlistCheckbox = screen.getByTestId('list-checkbox-list1').querySelector('input');
-    expect(wishlistCheckbox).toBeChecked();
+    await waitFor(() => expect(wishlistCheckbox).toBeChecked());
 
     // For Sale (list2) should NOT be checked
     const forSaleCheckbox = screen.getByTestId('list-checkbox-list2').querySelector('input');
-    expect(forSaleCheckbox).not.toBeChecked();
+    await waitFor(() => expect(forSaleCheckbox).not.toBeChecked());
   });
 
   it('save button disabled when no changes', async () => {
@@ -163,10 +167,13 @@ describe('ListMembershipModal', () => {
       expect(screen.getByTestId('list-checkbox-list2')).toBeInTheDocument();
     });
 
-    // Toggle "For Sale" list on
-    fireEvent.click(screen.getByTestId('list-checkbox-list2'));
+    // Toggle "For Sale" list on. userEvent.click reliably fires Zag's
+    // onCheckedChange (fireEvent on the root div does not).
+    await userEvent.click(screen.getByTestId('list-checkbox-list2'));
 
-    expect(screen.getByTestId('membership-save-btn')).not.toBeDisabled();
+    await waitFor(() =>
+      expect(screen.getByTestId('membership-save-btn')).not.toBeDisabled()
+    );
   });
 
   it('calls addItemsToList when adding to a new list', async () => {
@@ -184,9 +191,14 @@ describe('ListMembershipModal', () => {
       expect(screen.getByTestId('list-checkbox-list2')).toBeInTheDocument();
     });
 
-    // Check "For Sale"
-    fireEvent.click(screen.getByTestId('list-checkbox-list2'));
-    // Click save
+    // Check "For Sale" (userEvent.click fires Zag's onCheckedChange so the
+    // save button enables; fireEvent on the root div does not).
+    await userEvent.click(screen.getByTestId('list-checkbox-list2'));
+    await waitFor(() =>
+      expect(screen.getByTestId('membership-save-btn')).not.toBeDisabled()
+    );
+    // Click save. fireEvent (not userEvent) on this plain button avoids Zag's
+    // press handling that references win.PointerEvent (absent in jsdom).
     fireEvent.click(screen.getByTestId('membership-save-btn'));
 
     await waitFor(() => {
@@ -209,9 +221,19 @@ describe('ListMembershipModal', () => {
       expect(screen.getByTestId('list-checkbox-list1')).toBeInTheDocument();
     });
 
-    // Uncheck "Wishlist" (currently checked)
-    fireEvent.click(screen.getByTestId('list-checkbox-list1'));
-    // Click save
+    // Wait for the pre-check to apply (checkedListIds populated by effect after
+    // getListsByItem resolves) before toggling it off.
+    const wishlistInput = screen.getByTestId('list-checkbox-list1').querySelector('input');
+    await waitFor(() => expect(wishlistInput).toBeChecked());
+
+    // Uncheck "Wishlist" (currently checked). userEvent.click fires Zag's
+    // onCheckedChange; fireEvent on the root div does not.
+    await userEvent.click(screen.getByTestId('list-checkbox-list1'));
+    await waitFor(() =>
+      expect(screen.getByTestId('membership-save-btn')).not.toBeDisabled()
+    );
+    // Click save. fireEvent (not userEvent) on this plain button avoids Zag's
+    // press handling that references win.PointerEvent (absent in jsdom).
     fireEvent.click(screen.getByTestId('membership-save-btn'));
 
     await waitFor(() => {

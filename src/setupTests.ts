@@ -117,6 +117,39 @@ if (typeof (global as any).ResizeObserver === 'undefined') {
   };
 }
 
+// jsdom does not implement PointerEvent, which Ark UI / Zag.js press
+// interactions reference (e.g. when driving Chakra v3 Buttons via userEvent).
+// Without it, userEvent.click throws "win.PointerEvent is not a constructor".
+if (typeof window !== 'undefined' && typeof (window as any).PointerEvent === 'undefined') {
+  class PointerEventPolyfill extends MouseEvent {
+    public pointerId?: number;
+    public pointerType?: string;
+    public isPrimary?: boolean;
+    constructor(type: string, params: any = {}) {
+      super(type, params);
+      this.pointerId = params.pointerId;
+      this.pointerType = params.pointerType;
+      this.isPrimary = params.isPrimary;
+    }
+  }
+  (window as any).PointerEvent = PointerEventPolyfill as any;
+  (global as any).PointerEvent = PointerEventPolyfill as any;
+}
+
+// jsdom does not implement these element methods that Ark UI uses for pointer
+// capture during press/drag interactions.
+if (typeof window !== 'undefined') {
+  if (!window.HTMLElement.prototype.hasPointerCapture) {
+    window.HTMLElement.prototype.hasPointerCapture = () => false;
+  }
+  if (!window.HTMLElement.prototype.setPointerCapture) {
+    window.HTMLElement.prototype.setPointerCapture = function () {};
+  }
+  if (!window.HTMLElement.prototype.releasePointerCapture) {
+    window.HTMLElement.prototype.releasePointerCapture = function () {};
+  }
+}
+
 // jsdom does not implement scrollIntoView, which Ark UI menus/selects call.
 if (typeof window !== 'undefined' && !window.HTMLElement.prototype.scrollIntoView) {
   window.HTMLElement.prototype.scrollIntoView = function () {};

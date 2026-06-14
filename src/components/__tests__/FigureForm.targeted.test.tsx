@@ -88,19 +88,33 @@ describe('FigureForm Targeted Coverage', () => {
       const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
       const imageInput = screen.getByPlaceholderText(/example\.com\/image\.jpg/i);
 
-      await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/123');
-      await userEvent.type(imageInput, 'https://example.com/image.jpg');
+      // fireEvent.change delivers the values instantly so RHF's watch updates
+      // mfcLink/imageUrl and the link buttons enable. (userEvent.type is slow
+      // and races the debounced scrape, which swaps the MFC button for a
+      // spinner while a fetch is in flight.)
+      fireEvent.change(mfcInput, { target: { value: 'https://myfigurecollection.net/item/123' } });
+      fireEvent.change(imageInput, { target: { value: 'https://example.com/image.jpg' } });
 
-      const buttons = screen.getAllByRole('button');
-      const mfcButton = buttons.find(btn =>
-        btn.getAttribute('aria-label')?.includes('Open MFC link')
-      );
-      const imageButton = buttons.find(btn =>
-        btn.getAttribute('aria-label')?.includes('Open image')
-      );
+      // The image button enables on imageUrl alone (no async). Assert it once
+      // RHF's watch has propagated.
+      await waitFor(() => {
+        const imageButton = screen.getAllByRole('button').find(btn =>
+          btn.getAttribute('aria-label')?.includes('Open image')
+        );
+        expect(imageButton).not.toBeDisabled();
+      });
 
-      expect(mfcButton).not.toBeDisabled();
-      expect(imageButton).not.toBeDisabled();
+      // The MFC "Open link" button enables on mfcLink, but a valid item URL
+      // triggers the debounced scrape which temporarily swaps the button for a
+      // spinner. Assert the button is present and enabled, retrying across that
+      // transient spinner window.
+      await waitFor(() => {
+        const mfcButton = screen.getAllByRole('button').find(btn =>
+          btn.getAttribute('aria-label')?.includes('Open MFC link')
+        );
+        expect(mfcButton).toBeDefined();
+        expect(mfcButton).not.toBeDisabled();
+      });
     });
   });
 
@@ -202,11 +216,14 @@ describe('FigureForm Targeted Coverage', () => {
       renderFigureForm();
       const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
-      await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/999');
+      // Deliver the value in one shot so the debounce isn't reset per keystroke.
+      fireEvent.change(mfcInput, { target: { value: 'https://myfigurecollection.net/item/999' } });
 
+      // Item ID "999" is < 5 digits so the scrape debounce is 2000ms; wait
+      // beyond it (plus async fetch dispatch) before asserting fetch fired.
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalled();
-      }, { timeout: 3000 });
+      }, { timeout: 4000 });
 
       // Should handle error gracefully
       expect(screen.getByRole('form')).toBeInTheDocument();
