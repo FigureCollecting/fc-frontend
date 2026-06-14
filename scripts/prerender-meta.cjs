@@ -9,10 +9,10 @@
  * No external dependencies — uses only Node.js built-ins.
  *
  * How it works:
- *   1. Reads build/index.html (the CRA output)
+ *   1. Reads dist/index.html (the Vite build output)
  *   2. For each public route, replaces <title>, <meta description>,
  *      <link canonical>, og:*, and twitter:* tags with route-specific values
- *   3. Writes build/{route}/index.html
+ *   3. Writes dist/{route}/index.html
  *
  * nginx serves these via `try_files $uri $uri/ /index.html` — a request
  * to /login resolves to login/index.html before falling back to root.
@@ -21,7 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const BUILD_DIR = path.join(__dirname, '..', 'build');
+const BUILD_DIR = path.join(__dirname, '..', 'dist');
 const BASE_URL = 'https://figurecollecting.com';
 
 const routes = {
@@ -100,7 +100,7 @@ function main() {
   const indexPath = path.join(BUILD_DIR, 'index.html');
 
   if (!fs.existsSync(indexPath)) {
-    console.error('Error: build/index.html not found. Run "npm run build" first.');
+    console.error('Error: dist/index.html not found. Run "npm run build" first.');
     process.exit(1);
   }
 

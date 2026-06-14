@@ -2,14 +2,14 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 import { Figure, FigureFormData, PaginatedResponse, SearchResult, StatsData, SystemConfig, User, BulkImportPreviewResponse, BulkImportExecuteResponse, MfcList, MfcListFormData, ListPrivacy } from '../types';
 import { createLogger } from '../utils/logger';
+import { API_URL, MODE } from '../config/env';
 
-const API_URL = process.env.REACT_APP_API_URL || '/api';
 const logger = createLogger('API');
 
 // DEBUGGING: Log the API URL being used
 logger.info('API_URL configured as:', API_URL);
-logger.info('Environment:', process.env.NODE_ENV);
-logger.verbose('Full REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+logger.info('Environment:', MODE);
+logger.verbose('Full API_URL:', API_URL);
 
 // Create axios instance
 const api = axios.create({

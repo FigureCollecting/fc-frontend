@@ -16,10 +16,10 @@ import {
   MfcSyncStats,
 } from '../types';
 import { createLogger } from '../utils/logger';
+import { SYNC_URL } from '../config/env';
 
 // Sync routes go through the backend (which proxies to scraper)
 // This ensures auth is centralized and cookies remain ephemeral
-const SYNC_URL = process.env.REACT_APP_SYNC_URL || '/api';
 const logger = createLogger('SCRAPER_API');
 
 logger.info('Sync API URL configured as:', SYNC_URL);

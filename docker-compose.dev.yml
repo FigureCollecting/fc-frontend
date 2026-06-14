@@ -10,7 +10,7 @@ services:
         # CRITICAL: Set at BUILD TIME
         # Always use /api when nginx proxy is present (both dev and prod)
         # Only use http://backend:port/api for local development without nginx
-        REACT_APP_API_URL: /api
+        VITE_API_URL: /api
         NODE_ENV: development
     environment:
       # These are for nginx, not React

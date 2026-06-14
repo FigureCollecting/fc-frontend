@@ -13,7 +13,7 @@ const IV_LENGTH = 12; // 96 bits recommended for AES-GCM
  * Generates a cryptographic key from a password using PBKDF2
  * The password is derived from a combination of user-specific data
  */
-async function deriveKey(salt: Uint8Array): Promise<CryptoKey> {
+async function deriveKey(salt: Uint8Array<ArrayBuffer>): Promise<CryptoKey> {
   // Use a combination of factors for the key derivation
   // In a real app, this might include user ID, but for client-side only we use a fixed pepper
   const pepper = 'figurecollector-mfc-cookie-encryption-v1';
