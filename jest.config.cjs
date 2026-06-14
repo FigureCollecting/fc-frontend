@@ -36,8 +36,7 @@ module.exports = {
   ],
   modulePaths: [],
   moduleNameMapper: {
-    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
-    '@chakra-ui/utils/context': '<rootDir>/node_modules/@chakra-ui/utils/dist/cjs/context.cjs'
+    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy'
   },
   moduleFileExtensions: ['web.js', 'js', 'web.ts', 'ts', 'web.tsx', 'tsx', 'json', 'web.jsx', 'jsx', 'node'],
   resetMocks: true

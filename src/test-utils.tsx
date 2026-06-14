@@ -1,10 +1,12 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { Steps, ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import { MemoryRouter } from 'react-router-dom';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { HelmetProvider } from 'react-helmet-async';
+import { ColorModeProvider } from './components/ui/color-mode';
+import system from './theme';
 
 // Mock QueryClient and Provider for testing
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -36,45 +38,17 @@ const AllProviders = ({ children, initialRoutes = ['/'] }: {
 }) => {
   // Ensure emotion cache is unique for testing
   const emotionCache = createCache({ key: 'custom' });
-// Removed extractCritical
-
-
-  // Create theme with proper breakpoints for testing
-  const testTheme = createSystem(defaultConfig, {
-    theme: {
-      tokens: {
-        breakpoints: {
-          base: {
-            value: '0px',
-          },
-          sm: {
-            value: '320px',
-          }, 
-          md: {
-            value: '768px',
-          },
-          lg: {
-            value: '960px',
-          },
-          xl: {
-            value: '1200px',
-          },
-          '2xl': {
-            value: '1536px',
-          },
-        },
-      },
-    },
-  });
 
   return (
     <HelmetProvider>
       <CacheProvider value={emotionCache}>
         <MockQueryClientProvider>
-          <ChakraProvider value={testTheme}>
-            <MemoryRouter initialEntries={initialRoutes}>
-              {children}
-            </MemoryRouter>
+          <ChakraProvider value={system}>
+            <ColorModeProvider>
+              <MemoryRouter initialEntries={initialRoutes}>
+                {children}
+              </MemoryRouter>
+            </ColorModeProvider>
           </ChakraProvider>
         </MockQueryClientProvider>
       </CacheProvider>
