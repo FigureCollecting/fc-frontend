@@ -38,13 +38,14 @@ jest.mock('react-query', () => ({
   },
 }));
 
-jest.mock('@chakra-ui/react', () => {
-  const actual = jest.requireActual('@chakra-ui/react');
-  return {
-    ...actual,
-    useToast: () => mockToast,
-  };
-});
+jest.mock('../../components/ui/toaster', () => ({
+  toaster: {
+    create: (...args: any[]) => mockToast(...args),
+    dismiss: jest.fn(),
+    update: jest.fn(),
+  },
+  Toaster: () => null,
+}));
 
 describe('Login', () => {
   const mockSetUser = jest.fn();
@@ -69,7 +70,7 @@ describe('Login', () => {
   it('renders email and password inputs', () => {
     render(<Login />);
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Password', { selector: 'input' })).toBeInTheDocument();
   });
 
   it('renders sign in button', () => {
@@ -91,25 +92,21 @@ describe('Login', () => {
 
   it('toggles password visibility', () => {
     render(<Login />);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText('Password', { selector: 'input' });
     expect(passwordInput).toHaveAttribute('type', 'password');
 
-    // Find the toggle button (the button inside the password InputGroup)
-    const buttons = screen.getAllByRole('button');
-    const toggleBtn = buttons.find(btn => btn !== screen.getByRole('button', { name: /sign in/i }));
-    if (toggleBtn) {
-      fireEvent.click(toggleBtn);
-      expect(passwordInput).toHaveAttribute('type', 'text');
+    // Toggle button is the IconButton with the "Show password" aria-label
+    fireEvent.click(screen.getByRole('button', { name: /show password/i }));
+    expect(passwordInput).toHaveAttribute('type', 'text');
 
-      fireEvent.click(toggleBtn);
-      expect(passwordInput).toHaveAttribute('type', 'password');
-    }
+    fireEvent.click(screen.getByRole('button', { name: /hide password/i }));
+    expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
   it('has proper autocomplete attributes', () => {
     render(<Login />);
     expect(screen.getByLabelText(/email/i)).toHaveAttribute('autoComplete', 'email');
-    expect(screen.getByLabelText(/password/i)).toHaveAttribute('autoComplete', 'current-password');
+    expect(screen.getByLabelText('Password', { selector: 'input' })).toHaveAttribute('autoComplete', 'current-password');
   });
 
   it('has proper form structure', () => {
@@ -123,7 +120,7 @@ describe('Login', () => {
     render(<Login />);
 
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText('Password', { selector: 'input' });
 
     fireEvent.change(emailInput, { target: { value: 'user@test.com' } });
     fireEvent.change(passwordInput, { target: { value: 'pass123' } });
@@ -147,7 +144,7 @@ describe('Login', () => {
       expect.objectContaining({
         title: 'Success',
         description: 'You are now logged in!',
-        status: 'success',
+        type: 'success',
       })
     );
     expect(mockNavigate).toHaveBeenCalledWith('/');
@@ -163,7 +160,7 @@ describe('Login', () => {
       expect.objectContaining({
         title: 'Error',
         description: 'Invalid credentials',
-        status: 'error',
+        type: 'error',
       })
     );
   });
@@ -176,7 +173,7 @@ describe('Login', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         description: 'Invalid email or password',
-        status: 'error',
+        type: 'error',
       })
     );
   });
@@ -194,6 +191,6 @@ describe('Login', () => {
     expect(screen.getByText(/forgot password/i)).toHaveFocus();
 
     await user.tab();
-    expect(screen.getByLabelText(/password/i)).toHaveFocus();
+    expect(screen.getByLabelText('Password', { selector: 'input' })).toHaveFocus();
   });
 });

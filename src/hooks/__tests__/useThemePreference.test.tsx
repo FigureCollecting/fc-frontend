@@ -1,10 +1,13 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { useThemePreference } from '../useThemePreference';
+import { ColorModeProvider } from '../../components/ui/color-mode';
 import system from '../../theme';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <ChakraProvider value={system}>{children}</ChakraProvider>
+  <ChakraProvider value={system}>
+    <ColorModeProvider>{children}</ColorModeProvider>
+  </ChakraProvider>
 );
 
 describe('useThemePreference', () => {
@@ -76,8 +79,11 @@ describe('useThemePreference', () => {
     expect(result.current.colorMode).toBeDefined();
   });
 
-  it('should toggle color mode when toggleColorMode is called', () => {
+  it('should toggle color mode when toggleColorMode is called', async () => {
     const { result } = renderHook(() => useThemePreference(), { wrapper });
+
+    // next-themes resolves to 'light' by default (matchMedia mocked matches:false)
+    await waitFor(() => expect(result.current.colorMode).toBe('light'));
 
     const initialMode = result.current.colorMode;
 
@@ -85,7 +91,8 @@ describe('useThemePreference', () => {
       result.current.toggleColorMode();
     });
 
-    expect(result.current.colorMode).not.toBe(initialMode);
+    // next-themes setTheme is async; the resolved colorMode flips on a later tick
+    await waitFor(() => expect(result.current.colorMode).not.toBe(initialMode));
   });
 
   it('should handle getItem errors gracefully', () => {

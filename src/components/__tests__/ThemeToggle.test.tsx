@@ -107,8 +107,8 @@ describe('ThemeToggle', () => {
       expect(screen.getByText('Easy on the eyes')).toBeInTheDocument();
     });
 
-    // Find and click the Dark menu item
-    const darkOption = screen.getByText('Dark').closest('button');
+    // Find and click the Dark menu item (Ark UI Menu.Item renders role="menuitem")
+    const darkOption = screen.getByText('Dark').closest('[role="menuitem"]');
     expect(darkOption).toBeInTheDocument();
 
     await act(async () => {
@@ -136,8 +136,8 @@ describe('ThemeToggle', () => {
       expect(screen.getByText('Retro CRT with scanlines')).toBeInTheDocument();
     });
 
-    // Find and click the Terminal menu item
-    const terminalOption = screen.getByText('Terminal').closest('button');
+    // Find and click the Terminal menu item (Ark UI Menu.Item renders role="menuitem")
+    const terminalOption = screen.getByText('Terminal').closest('[role="menuitem"]');
     expect(terminalOption).toBeInTheDocument();
 
     await act(async () => {

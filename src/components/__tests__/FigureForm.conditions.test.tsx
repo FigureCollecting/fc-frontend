@@ -239,6 +239,10 @@ describe('FigureForm Uncovered Conditions', () => {
       renderFigureForm();
       const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
+      // Scraping is triggered by a debounced effect watching mfcLink, not by blur.
+      // Short item IDs (< 5 digits) use a 2000ms debounce, so the waitFor timeout
+      // must exceed that plus the time userEvent.type takes (it resets the timer
+      // on each keystroke). 4000ms gives reliable headroom.
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/123');
       fireEvent.blur(mfcInput);
 
@@ -251,7 +255,7 @@ describe('FigureForm Uncovered Conditions', () => {
             body: JSON.stringify({ mfcLink: 'https://myfigurecollection.net/item/123' }),
           })
         );
-      }, { timeout: 2000 });
+      }, { timeout: 4000 });
     });
 
     it('should cover line 183 - response.success is false', async () => {
@@ -278,7 +282,7 @@ describe('FigureForm Uncovered Conditions', () => {
             body: JSON.stringify({ mfcLink: 'https://myfigurecollection.net/item/456' }),
           })
         );
-      }, { timeout: 2000 });
+      }, { timeout: 4000 });
     });
 
     it('should cover line 187 - catch block', async () => {
@@ -299,7 +303,7 @@ describe('FigureForm Uncovered Conditions', () => {
             body: JSON.stringify({ mfcLink: 'https://myfigurecollection.net/item/789' }),
           })
         );
-      }, { timeout: 2000 });
+      }, { timeout: 4000 });
     });
   });
 

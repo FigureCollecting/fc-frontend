@@ -102,15 +102,16 @@ describe('FigureForm - Quantity Field (Schema v3.0)', () => {
 
   describe('Validation', () => {
     it('should not allow quantity less than 1', async () => {
+      const user = userEvent.setup();
       renderFigureForm();
 
       const quantityInput = screen.getByRole('spinbutton', { name: /quantity/i }) as HTMLInputElement;
 
-      // Chakra NumberInput enforces min via component logic, not HTML attribute
-      // When value goes below min, it resets to min on blur
-      // Use fireEvent for more direct control
-      fireEvent.change(quantityInput, { target: { value: '0' } });
-      fireEvent.blur(quantityInput);
+      // Chakra v3 NumberInput (Zag) commits via onValueChange on keystroke, not on a
+      // raw fireEvent.change. Min is enforced (min={1} + component clamp) on blur.
+      await user.clear(quantityInput);
+      await user.type(quantityInput, '0');
+      await user.tab();
 
       // Wait for Chakra's validation to enforce min value
       await waitFor(() => {
@@ -138,9 +139,11 @@ describe('FigureForm - Quantity Field (Schema v3.0)', () => {
       // Fill required field (name is required when no mfcLink)
       await userEvent.type(screen.getByLabelText(/figure name/i), 'Test Figure');
 
-      // Set quantity to 2 - use fireEvent.change for direct value setting
+      // Set quantity to 2 - Chakra v3 NumberInput (Zag) commits via onValueChange
+      // on keystroke, so drive it with userEvent rather than fireEvent.change.
       const quantityInput = screen.getByRole('spinbutton', { name: /quantity/i });
-      fireEvent.change(quantityInput, { target: { value: '2' } });
+      await userEvent.clear(quantityInput);
+      await userEvent.type(quantityInput, '2');
 
       // Submit form
       const submitButton = screen.getByRole('button', { name: /^save$/i });
@@ -286,9 +289,11 @@ describe('FigureForm - Quantity and Note Integration', () => {
     // Fill required field (name is required when no mfcLink)
     await userEvent.type(screen.getByLabelText(/figure name/i), 'Limited Edition Figure');
 
-    // Set quantity - use fireEvent.change for direct value setting
+    // Set quantity - Chakra v3 NumberInput (Zag) commits via onValueChange on
+    // keystroke, so drive it with userEvent rather than fireEvent.change.
     const quantityInput = screen.getByRole('spinbutton', { name: /quantity/i });
-    fireEvent.change(quantityInput, { target: { value: '2' } });
+    await userEvent.clear(quantityInput);
+    await userEvent.type(quantityInput, '2');
 
     // Add note
     const noteInput = screen.getByRole('textbox', { name: /^note$/i });

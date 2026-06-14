@@ -373,14 +373,22 @@ describe('MfcCookiesModal', () => {
   });
 
   describe('Modal close', () => {
-    it('should call onClose when modal is closed', () => {
+    it('should call onClose when modal is closed', async () => {
+      const user = userEvent.setup();
       render(<MfcCookiesModal {...defaultProps} />);
 
-      // Click the close button (X button on modal)
-      const closeButton = screen.getByLabelText('Close');
-      fireEvent.click(closeButton);
+      // Chakra v3 renders the close control as Dialog.CloseTrigger
+      // (data-scope="dialog" data-part="close-trigger"), which has no
+      // accessible label, so query it via its dialog part attributes.
+      const closeButton = document.body.querySelector(
+        '[data-scope="dialog"][data-part="close-trigger"]'
+      ) as HTMLElement;
+      expect(closeButton).toBeInTheDocument();
+      await user.click(closeButton);
 
-      expect(defaultProps.onClose).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(defaultProps.onClose).toHaveBeenCalled();
+      });
     });
   });
 });

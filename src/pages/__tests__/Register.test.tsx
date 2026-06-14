@@ -37,13 +37,14 @@ jest.mock('react-query', () => ({
   },
 }));
 
-jest.mock('@chakra-ui/react', () => {
-  const actual = jest.requireActual('@chakra-ui/react');
-  return {
-    ...actual,
-    useToast: () => mockToast,
-  };
-});
+jest.mock('../../components/ui/toaster', () => ({
+  toaster: {
+    create: (...args: any[]) => mockToast(...args),
+    dismiss: jest.fn(),
+    update: jest.fn(),
+  },
+  Toaster: () => null,
+}));
 
 describe('Register', () => {
   const mockSetUser = jest.fn();
@@ -143,7 +144,7 @@ describe('Register', () => {
       expect.objectContaining({
         title: 'Account created!',
         description: 'Check your email to verify your account.',
-        status: 'success',
+        type: 'success',
       })
     );
     expect(mockNavigate).toHaveBeenCalledWith('/');
@@ -159,7 +160,7 @@ describe('Register', () => {
       expect.objectContaining({
         title: 'Error',
         description: 'Email already exists',
-        status: 'error',
+        type: 'error',
       })
     );
   });
@@ -172,7 +173,7 @@ describe('Register', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         description: 'Registration failed',
-        status: 'error',
+        type: 'error',
       })
     );
   });

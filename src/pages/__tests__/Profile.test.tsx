@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { render, mockUser } from '../../test-utils';
 import Profile from '../Profile';
 import { useAuthStore } from '../../stores/authStore';
@@ -29,7 +30,7 @@ let mockMutationOnSuccessCb: any;
 let mockMutationOnErrorCb: any;
 const mockMutate = jest.fn();
 const mockInvalidateQueries = jest.fn();
-const mockToast = jest.fn();
+const mockToastCreate = jest.fn();
 
 jest.mock('react-query', () => ({
   ...jest.requireActual('react-query'),
@@ -49,14 +50,11 @@ jest.mock('react-query', () => ({
   }),
 }));
 
-// Mock useToast
-jest.mock('@chakra-ui/react', () => {
-  const actual = jest.requireActual('@chakra-ui/react');
-  return {
-    ...actual,
-    useToast: () => mockToast,
-  };
-});
+// Mock the v3 toaster module the component imports (../components/ui/toaster)
+jest.mock('../../components/ui/toaster', () => ({
+  toaster: { create: (...args: any[]) => mockToastCreate(...args), dismiss: jest.fn(), update: jest.fn() },
+  Toaster: () => null,
+}));
 
 describe('Profile', () => {
   const mockLogout = jest.fn();
@@ -120,20 +118,26 @@ describe('Profile', () => {
     expect(signOutButtons.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('opens logout confirmation modal when Sign Out clicked', () => {
+  it('opens logout confirmation modal when Sign Out clicked', async () => {
+    const user = userEvent.setup();
     render(<Profile />);
     const signOutButtons = screen.getAllByRole('button', { name: /sign out/i });
-    fireEvent.click(signOutButtons[0]);
-    expect(screen.getByText('Are you sure you want to sign out?')).toBeInTheDocument();
+    await user.click(signOutButtons[0]);
+    // The confirmation dialog is a Chakra v3 Dialog rendered in a Portal (to document.body)
+    expect(await screen.findByText('Are you sure you want to sign out?')).toBeInTheDocument();
   });
 
-  it('calls logout and navigates on confirm sign out', () => {
+  it('calls logout and navigates on confirm sign out', async () => {
+    const user = userEvent.setup();
     render(<Profile />);
     const signOutButtons = screen.getAllByRole('button', { name: /sign out/i });
-    fireEvent.click(signOutButtons[0]);
+    await user.click(signOutButtons[0]);
 
+    // Wait for the dialog (Portal) to open, then click the confirm "Sign Out"
+    // button inside the dialog footer (the last matching button).
+    await screen.findByText('Are you sure you want to sign out?');
     const modalSignOut = screen.getAllByRole('button', { name: /sign out/i });
-    fireEvent.click(modalSignOut[modalSignOut.length - 1]);
+    await user.click(modalSignOut[modalSignOut.length - 1]);
 
     expect(mockLogout).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith('/login');
@@ -161,10 +165,10 @@ describe('Profile', () => {
       })
     );
     expect(mockInvalidateQueries).toHaveBeenCalledWith('userProfile');
-    expect(mockToast).toHaveBeenCalledWith(
+    expect(mockToastCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Success',
-        status: 'success',
+        type: 'success',
       })
     );
   });
@@ -175,11 +179,11 @@ describe('Profile', () => {
     const error = { response: { data: { message: 'Username taken' } } };
     mockMutationOnErrorCb(error);
 
-    expect(mockToast).toHaveBeenCalledWith(
+    expect(mockToastCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Error',
         description: 'Username taken',
-        status: 'error',
+        type: 'error',
       })
     );
   });
@@ -190,10 +194,10 @@ describe('Profile', () => {
     const error = {};
     mockMutationOnErrorCb(error);
 
-    expect(mockToast).toHaveBeenCalledWith(
+    expect(mockToastCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         description: 'Failed to update profile',
-        status: 'error',
+        type: 'error',
       })
     );
   });
@@ -264,14 +268,16 @@ describe('Profile', () => {
     });
   });
 
-  it('closes cancel modal without logging out', () => {
+  it('closes cancel modal without logging out', async () => {
+    const user = userEvent.setup();
     render(<Profile />);
     const signOutButtons = screen.getAllByRole('button', { name: /sign out/i });
-    fireEvent.click(signOutButtons[0]);
+    await user.click(signOutButtons[0]);
 
-    // Click Cancel in the modal
+    // Wait for the dialog (Portal) to open, then click Cancel in the footer
+    await screen.findByText('Are you sure you want to sign out?');
     const cancelBtn = screen.getByRole('button', { name: /cancel/i });
-    fireEvent.click(cancelBtn);
+    await user.click(cancelBtn);
 
     expect(mockLogout).not.toHaveBeenCalled();
   });
