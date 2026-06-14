@@ -163,7 +163,7 @@ Real-time synchronization of your MFC collection using Server-Sent Events (SSE) 
 | SEO | react-helmet-async |
 | XSS Protection | DOMPurify |
 | WebAuthn | @simplewebauthn/browser |
-| Build Tool | CRACO (wraps Create React App) |
+| Build Tool | Vite |
 | Testing | Jest + React Testing Library + jest-axe |
 | Production Server | Nginx |
 
@@ -203,7 +203,7 @@ The frontend includes SEO support for improved search engine visibility:
 - **react-helmet-async** for per-page `<title>` and `<meta>` tags
 - **robots.txt** allowing search engine crawling
 - **sitemap.xml** listing public routes
-- **prerender-meta.js** post-build script for static meta tag injection
+- **prerender-meta.cjs** post-build script for static meta tag injection
 
 ## Proxy Requirement
 
@@ -215,7 +215,7 @@ The frontend makes all API requests to relative paths (e.g., `/api/version`, `/a
 - **Enhances security** by not exposing the backend directly
 
 ### Development (Automatic)
-The React dev server (`npm start`) automatically proxies `/api/*` requests to the backend using `src/setupProxy.js`. No configuration needed - it just works!
+The Vite dev server (`npm run dev` / `npm start`) automatically proxies `/api/*` requests to the backend using the `server.proxy` config in `vite.config.ts`. No configuration needed - it just works!
 
 ### Production (Nginx)
 The production Docker image includes an Nginx configuration that:
@@ -230,7 +230,7 @@ The production Docker image includes an Nginx configuration that:
 **Configuration Files:**
 - `.env.example` - Template showing all environment variables
 - `.env.local` - Your local overrides (gitignored, optional)
-- `.env` - Auto-created by Create React App (gitignored)
+- `.env` - Local environment variables, `VITE_`-prefixed (gitignored)
 
 **Quick Start:**
 ```bash
@@ -271,20 +271,20 @@ npm test:ci
 See `.env.example` for complete configuration template.
 
 **API Configuration:**
-- `REACT_APP_API_URL`: API endpoint URL (default: `/api`)
+- `VITE_API_URL`: API endpoint URL (default: `/api`)
   - Local dev with proxy: `/api` (recommended)
   - Docker/Coolify: `/api`
   - Direct backend: `http://localhost:5080/api` (not typical)
 
 **Optional:**
-- `REACT_APP_BACKEND_URL`: Direct backend URL (debugging only, not typically needed)
-- `REACT_APP_DEBUG`: Enable debug logging in browser console (default: false)
-- `REACT_APP_DEBUG_LEVEL`: Debug verbosity (`info`, `verbose`, `debug`)
-- `REACT_APP_DEBUG_MODULES`: Comma-separated modules to debug (e.g., `auth,api`)
+- `VITE_BACKEND_URL`: Direct backend URL (debugging only, not typically needed)
+- `VITE_DEBUG`: Enable debug logging in browser console (default: false)
+- `VITE_DEBUG_LEVEL`: Debug verbosity (`info`, `verbose`, `debug`)
+- `VITE_DEBUG_MODULES`: Comma-separated modules to debug (e.g., `auth,api`)
 
 ### Development Proxy
 
-The frontend uses `src/setupProxy.js` to proxy API requests during development:
+The frontend uses the `server.proxy` config in `vite.config.ts` to proxy API requests during development:
 
 - **Path Rewriting**: Requests to `/api/*` are rewritten to `/*` when forwarded to the backend
 - **Target**: `http://backend:5090` (Docker network)
@@ -293,15 +293,9 @@ The frontend uses `src/setupProxy.js` to proxy API requests during development:
 This mirrors the production Nginx configuration, ensuring consistent behavior between development and production environments.
 
 **Requirements**:
-- `http-proxy-middleware` package (included in dependencies)
 - Backend service must be running on port 5080 (local) or 5090 (Docker dev)
 
-**Verify proxy is working**:
-```bash
-# In Docker dev environment
-docker logs fc-frontend-dev | grep HPM
-# Should show: [HPM] Proxy created and [HPM] Proxy rewrite rule created
-```
+The proxy is built into Vite's dev server (`server.proxy` in `vite.config.ts`); no extra middleware package is required.
 
 ### Authentication Endpoints
 

@@ -43,9 +43,9 @@ RUN npm install --no-audit --no-fund
 # Copy source code
 COPY . .
 
-# Accept build arguments for React environment variables
-ARG REACT_APP_API_URL=/api
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
+# Accept build arguments for Vite environment variables
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
 ENV NODE_ENV=development
 
 EXPOSE 5081
@@ -54,7 +54,8 @@ EXPOSE 5081
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD node -e "const req = require('http').get('http://localhost:5081', { timeout: 5000 }, (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }); req.on('timeout', () => { req.destroy(); process.exit(1); }); req.on('error', () => process.exit(1));"
 
-CMD ["npm", "start"]
+# Bind Vite to all interfaces so the dev server is reachable from outside the container
+CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "5081"]
 
 # ============================================================================
 # TEST STAGE - For running tests in CI/CD
@@ -95,13 +96,13 @@ RUN npm install --no-audit --no-fund
 # Copy source code
 COPY . .
 
-# Accept build arguments for React environment variables
-ARG REACT_APP_API_URL=/api
+# Accept build arguments for Vite environment variables
+ARG VITE_API_URL=/api
 ARG NODE_ENV=production
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 ENV NODE_ENV=$NODE_ENV
 
-# Build React app
+# Build React app (Vite -> dist/)
 RUN npm run build
 
 # ============================================================================
@@ -152,8 +153,8 @@ RUN useradd --system --no-create-home --shell /bin/false nginx \
     && chown -R nginx:nginx /var/lib/nginx \
     && chown -R nginx:nginx /run/nginx
 
-# Copy built React app from builder
-COPY --from=builder /app/build /usr/share/nginx/html
+# Copy built React app from builder (Vite output dir)
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy nginx template
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template

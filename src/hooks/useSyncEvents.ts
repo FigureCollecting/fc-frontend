@@ -23,11 +23,11 @@ import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { createLogger } from '../utils/logger';
 import { recordUserActivity } from './useTokenRefresh';
+import { SYNC_URL } from '../config/env';
 
 const logger = createLogger('SYNC_EVENTS');
 
 // Base URL for SSE endpoint (same as API since it's proxied)
-const SYNC_URL = process.env.REACT_APP_SYNC_URL || '/api';
 
 export interface UseSyncEventsOptions {
   /** Called when an item finishes processing */

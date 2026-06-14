@@ -75,7 +75,7 @@ RUN NODE_VERSION=v24.8.0 \
 
 ### React Build Security
 
-- **Environment Variables**: Only `REACT_APP_*` prefixed variables are embedded in build
+- **Environment Variables**: Only `VITE_*` prefixed variables are embedded in build
 - **Production Build**: Minified and optimized, no source maps exposed
 - **Static Assets**: Served via nginx with appropriate security headers
 

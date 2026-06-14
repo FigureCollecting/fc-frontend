@@ -6,29 +6,37 @@
  * - localStorage.setItem('DEBUG_MODULES', 'auth,api,state')
  *
  * Or in development:
- * - REACT_APP_DEBUG=true
- * - REACT_APP_DEBUG_LEVEL=verbose
+ * - VITE_DEBUG=true
+ * - VITE_DEBUG_LEVEL=verbose
  *
  * Security: Uses sanitizeLogValue to prevent log injection attacks (CWE-117)
  */
 
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isTest = process.env.NODE_ENV === 'test';
+import {
+  IS_DEV,
+  IS_TEST,
+  DEBUG as ENV_DEBUG,
+  DEBUG_LEVEL as ENV_DEBUG_LEVEL,
+  DEBUG_MODULES as ENV_DEBUG_MODULES,
+} from '../config/env';
+
+const isDevelopment = IS_DEV;
+const isTest = IS_TEST;
 
 // Check both localStorage and environment variables
 const DEBUG =
   (typeof window !== 'undefined' && localStorage.getItem('DEBUG') === 'true') ||
-  process.env.REACT_APP_DEBUG === 'true' ||
+  ENV_DEBUG === 'true' ||
   isDevelopment;
 
 const DEBUG_LEVEL =
   (typeof window !== 'undefined' && localStorage.getItem('DEBUG_LEVEL')) ||
-  process.env.REACT_APP_DEBUG_LEVEL ||
+  ENV_DEBUG_LEVEL ||
   (isDevelopment ? 'info' : 'error');
 
 const DEBUG_MODULES =
   (typeof window !== 'undefined' && localStorage.getItem('DEBUG_MODULES')?.split(',')) ||
-  process.env.REACT_APP_DEBUG_MODULES?.split(',') ||
+  ENV_DEBUG_MODULES?.split(',') ||
   [];
 
 type LogLevel = 'verbose' | 'info' | 'warn' | 'error';
