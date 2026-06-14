@@ -1,7 +1,7 @@
 import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
 import { Steps, HStack, NativeSelect, IconButton, Field } from '@chakra-ui/react';
-import { Tooltip } from 'ui/tooltip';
+import { Tooltip } from './ui/tooltip';
 import { FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 
 export type SortField = 'activity' | 'createdAt' | 'updatedAt' | 'name';

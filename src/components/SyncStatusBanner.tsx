@@ -22,7 +22,7 @@ import {
   useDisclosure,
   Icon,
 } from '@chakra-ui/react';
-import { Tooltip } from 'ui/tooltip';
+import { Tooltip } from './ui/tooltip';
 import {
   FaSync,
   FaTimes,
