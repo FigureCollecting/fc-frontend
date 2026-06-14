@@ -3,9 +3,7 @@ import { useColorModeValue } from "../components/ui/color-mode";
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useMutation } from 'react-query';
-import {
-  Steps,
-  Box,
+import { Box,
   Button,
   Input,
   Heading,

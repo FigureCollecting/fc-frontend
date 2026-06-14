@@ -1,8 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import {
-  Steps,
-  Box,
+import { Box,
   Heading,
   Text,
   Spinner,

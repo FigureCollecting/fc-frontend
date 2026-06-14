@@ -1,8 +1,6 @@
 import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import {
-  Steps,
-  Box,
+import { Box,
   Heading,
   Flex,
   Table,

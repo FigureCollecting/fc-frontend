@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Steps, Box, Heading, Text, Button, VStack, Icon } from '@chakra-ui/react';
+import { Box, Heading, Text, Button, VStack, Icon } from '@chakra-ui/react';
 import { FaExclamationTriangle, FaHome } from 'react-icons/fa';
 
 const NotFound: React.FC = () => {

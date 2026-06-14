@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Steps,
-  Checkbox,
+import { Checkbox,
   Button,
   Text,
   VStack,

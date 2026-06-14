@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Steps,
-  Box,
+import { Box,
   Heading,
   VStack,
   Spinner,

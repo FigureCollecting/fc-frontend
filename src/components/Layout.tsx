@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useColorModeValue } from "./ui/color-mode";
 import { Outlet } from 'react-router-dom';
-import {
-  Steps,
-  Box,
+import { Box,
   Container,
   Text,
   Flex,

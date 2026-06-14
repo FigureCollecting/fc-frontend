@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Steps,
-  VStack,
+import { VStack,
   Heading,
   Text,
   Button,

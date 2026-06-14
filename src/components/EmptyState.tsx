@@ -1,6 +1,6 @@
 import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import { Steps, Box, Text, Button, VStack, Icon } from '@chakra-ui/react';
+import { Box, Text, Button, VStack, Icon } from '@chakra-ui/react';
 import { FaPlus, FaCube, FaSearch, FaTimes, FaFilter } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
 

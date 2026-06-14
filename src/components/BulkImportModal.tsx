@@ -1,8 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import {
-  Steps,
-  Button,
+import { Button,
   VStack,
   HStack,
   Text,

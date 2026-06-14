@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useColorModeValue } from "../ui/color-mode";
 import { toaster } from '../ui/toaster';
 import { createLogger } from '../../utils/logger';
-import {
-  Steps,
-  Box,
+import { Box,
   Button,
   Input,
   VStack,

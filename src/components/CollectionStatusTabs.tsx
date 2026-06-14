@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import { Steps, Tabs, Badge, HStack } from '@chakra-ui/react';
+import { Tabs, Badge, HStack } from '@chakra-ui/react';
 import { FaBox, FaTruck, FaStar } from 'react-icons/fa';
 import { CollectionStatus, StatusCounts } from '../types';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '../test-utils';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { Steps, Box, Heading, Text } from '@chakra-ui/react';
+import { Box, Heading, Text } from '@chakra-ui/react';
 import Navbar from '../components/Navbar';
 
 // Extend Jest expect to include accessibility checks

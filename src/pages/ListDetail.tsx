@@ -2,9 +2,7 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
-import {
-  Steps,
-  Box,
+import { Box,
   Heading,
   Text,
   Spinner,

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Steps, Box, Heading, Input, Button, Alert, VStack, Text, Field } from '@chakra-ui/react';
+import { Box, Heading, Input, Button, Alert, VStack, Text, Field } from '@chakra-ui/react';
 import { resetPasswordRequest } from '../api';
 
 const ResetPassword: React.FC = () => {

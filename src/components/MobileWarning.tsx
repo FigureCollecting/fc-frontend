@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Steps, Box, Button, Heading, Text, VStack, Icon } from '@chakra-ui/react';
+import { Box, Button, Heading, Text, VStack, Icon } from '@chakra-ui/react';
 import { FaDesktop } from 'react-icons/fa';
 
 const MOBILE_BREAKPOINT = 768; // px — matches Chakra's "md" breakpoint

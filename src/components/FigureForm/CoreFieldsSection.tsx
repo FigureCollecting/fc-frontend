@@ -7,9 +7,7 @@
  * Note: Image preview is now rendered in FigureFormMain as a sticky sidebar.
  */
 import React from 'react';
-import {
-  Steps,
-  Input,
+import { Input,
   Grid,
   GridItem,
   InputGroup,

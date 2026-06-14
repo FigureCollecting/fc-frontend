@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import {
-  Steps,
-  Box,
+import { Box,
   Heading,
   SimpleGrid,
   Button,

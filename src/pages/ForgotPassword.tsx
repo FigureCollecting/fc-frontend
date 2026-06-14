@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link as RouterLink } from 'react-router-dom';
-import { Steps, Box, Heading, Text, Input, Button, Alert, VStack, Link, Field } from '@chakra-ui/react';
+import { Box, Heading, Text, Input, Button, Alert, VStack, Link, Field } from '@chakra-ui/react';
 import { forgotPasswordRequest } from '../api';
 
 const ForgotPassword: React.FC = () => {

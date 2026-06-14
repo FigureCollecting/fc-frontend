@@ -2,9 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useColorModeValue } from "../components/ui/color-mode";
 import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import {
-  Steps,
-  Box,
+import { Box,
   Heading,
   SimpleGrid,
   Spinner,

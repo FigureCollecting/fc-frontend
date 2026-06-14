@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Steps,
-  Box,
+import { Box,
   VStack,
   Heading,
   Text,

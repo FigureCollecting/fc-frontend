@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Steps, Alert, Button, HStack, Text } from '@chakra-ui/react';
+import { Alert, Button, HStack, Text } from '@chakra-ui/react';
 import { toaster } from '../ui/toaster';
 import { useAuthStore } from '../../stores/authStore';
 import { resendVerificationEmail, getUserProfile } from '../../api';

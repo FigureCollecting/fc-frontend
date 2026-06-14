@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useColorModeValue } from "../components/ui/color-mode";
 import { Link as RouterLink } from 'react-router-dom';
-import {
-  Steps,
-  Box,
+import { Box,
   Heading,
   SimpleGrid,
   Stat,

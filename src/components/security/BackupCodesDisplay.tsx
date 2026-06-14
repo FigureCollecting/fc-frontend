@@ -7,7 +7,7 @@
  See: https://chakra-ui.com/docs/get-started/migration#hooks
 */
 import React from 'react';
-import { Steps, Box, Heading, SimpleGrid, Code, Button, VStack, Alert } from '@chakra-ui/react';
+import { Box, Heading, SimpleGrid, Code, Button, VStack, Alert } from '@chakra-ui/react';
 
 interface BackupCodesDisplayProps {
   codes: string[];

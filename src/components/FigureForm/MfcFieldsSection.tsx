@@ -7,9 +7,7 @@
  * - tags (as badges/chips)
  */
 import React from 'react';
-import {
-  Steps,
-  Input,
+import { Input,
   Grid,
   GridItem,
   Tag,

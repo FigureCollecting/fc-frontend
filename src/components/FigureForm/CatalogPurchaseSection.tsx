@@ -5,9 +5,7 @@
  * Contains collapsible panels for Catalog Details and Purchase Information.
  */
 import React, { useState } from 'react';
-import {
-  Steps,
-  Box,
+import { Box,
   Button,
   Input,
   Grid,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Steps, Input, Textarea, NativeSelect, Button, Field, Dialog, Portal } from '@chakra-ui/react';
+import { Input, Textarea, NativeSelect, Button, Field, Dialog, Portal } from '@chakra-ui/react';
 import { MfcList, MfcListFormData, MFC_LIST_LIMITS, ListPrivacy } from '../types';
 
 interface ListFormModalProps {

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { useColorModeValue } from "../components/ui/color-mode";
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
-import { Steps, Box, Heading, Button, Flex, Breadcrumb, Icon } from '@chakra-ui/react';
+import { Box, Heading, Button, Flex, Breadcrumb, Icon } from '@chakra-ui/react';
 import { toaster } from '../components/ui/toaster';
 import { FaArrowLeft } from 'react-icons/fa';
 import { createFigure } from '../api';

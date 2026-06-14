@@ -7,9 +7,7 @@
  */
 import React, { useState, useMemo, useCallback } from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import {
-  Steps,
-  Box,
+import { Box,
   VStack,
   Text,
   Checkbox,

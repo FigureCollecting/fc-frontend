@@ -10,9 +10,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import {
-  Steps,
-  Textarea,
+import { Textarea,
   Input,
   Button,
   IconButton,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Steps, Button } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 import { toaster } from '../ui/toaster';
 import { getWebAuthnLoginOptions, verifyWebAuthnLogin } from '../../api';
 import { startAuthentication } from '@simplewebauthn/browser';

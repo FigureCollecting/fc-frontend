@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Steps, Box, Heading, Spinner, Alert, Button, VStack } from '@chakra-ui/react';
+import { Box, Heading, Spinner, Alert, Button, VStack } from '@chakra-ui/react';
 import { verifyEmailToken } from '../api';
 
 const VerifyEmail: React.FC = () => {

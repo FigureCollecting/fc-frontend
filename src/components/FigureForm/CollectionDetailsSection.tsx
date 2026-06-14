@@ -5,9 +5,7 @@
  * Contains collection status, ratings, conditions, quantity, and notes.
  */
 import React from 'react';
-import {
-  Steps,
-  Box,
+import { Box,
   Textarea,
   Grid,
   GridItem,
