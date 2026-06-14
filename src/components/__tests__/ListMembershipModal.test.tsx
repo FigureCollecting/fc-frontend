@@ -1,11 +1,11 @@
 import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { Steps, ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { render } from '@testing-library/react';
 import ListMembershipModal from '../ListMembershipModal';
 import * as api from '../../api';
-import theme from '../../theme';
+import system from '../../theme';
 
 jest.mock('../../api');
 

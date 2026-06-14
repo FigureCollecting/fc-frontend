@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen, waitFor } from '../../test-utils';
 import { fireEvent } from '@testing-library/react';
 import ThemeToggle from '../ThemeToggle';
-import { Steps, ChakraProvider } from '@chakra-ui/react';
-import theme from '../../theme';
+import { ChakraProvider } from '@chakra-ui/react';
+import system from '../../theme';
 import { act } from 'react-dom/test-utils';
 
 // Mock scrollTo for Chakra Menu

@@ -1,10 +1,10 @@
 import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
-import { Steps, ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import { render } from '@testing-library/react';
 import ListFormModal from '../ListFormModal';
 import { MfcList, MFC_LIST_LIMITS } from '../../types';
-import theme from '../../theme';
+import system from '../../theme';
 
 const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <ChakraProvider value={system}>{children}</ChakraProvider>

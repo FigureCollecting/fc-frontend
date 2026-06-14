@@ -368,9 +368,9 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
 
                 {/* Step 1: Copy and run script */}
                 <Box>
-                  <Field.Label fontSize="sm" fontWeight="bold">
+                  <Text fontSize="sm" fontWeight="bold">
                     Step 1: Run this script in MFC Console
-                  </Field.Label>
+                  </Text>
                   <Text fontSize="xs" color="gray.500" mb={2}>
                     Open DevTools (F12) on myfigurecollection.net, go to Console, paste and run. The cookies will be copied to your clipboard.
                   </Text>

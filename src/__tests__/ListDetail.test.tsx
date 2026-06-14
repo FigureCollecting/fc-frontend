@@ -2,11 +2,11 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { Steps, ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import ListDetail from '../pages/ListDetail';
 import * as api from '../api';
 import { MfcList } from '../types';
-import theme from '../theme';
+import system from '../theme';
 
 // Mock the API module
 jest.mock('../api');

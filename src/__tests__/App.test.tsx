@@ -2,12 +2,12 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { Steps, ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import { render } from '../test-utils';
 import App from '../App';
 import { useAuthStore } from '../stores/authStore';
 import { mockUser } from '../test-utils';
-import theme from '../theme';
+import system from '../theme';
 
 // Mock all page components
 jest.mock('../pages/Dashboard', () => {
