@@ -23,7 +23,7 @@ import {
   useToast,
   Separator,
 } from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip } from '../components/ui/tooltip';
 import { FaArrowLeft, FaComments, FaBell, FaSearch, FaEdit } from 'react-icons/fa';
 import { getListById, updateList } from '../api';
 import { MfcListFormData } from '../types';

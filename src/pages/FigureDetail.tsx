@@ -128,10 +128,10 @@ const FigureDetail: React.FC = () => {
           <Breadcrumb.Item>
             <Breadcrumb.Link asChild><RouterLink to="/">Dashboard</RouterLink></Breadcrumb.Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Separator>></Breadcrumb.Separator><Breadcrumb.Item>
+          <Breadcrumb.Separator>{'>'}</Breadcrumb.Separator><Breadcrumb.Item>
             <Breadcrumb.Link asChild><RouterLink to="/figures">Figures</RouterLink></Breadcrumb.Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Separator>></Breadcrumb.Separator><Breadcrumb.Item>
+          <Breadcrumb.Separator>{'>'}</Breadcrumb.Separator><Breadcrumb.Item>
             <Breadcrumb.Link>{figure.name}</Breadcrumb.Link>
           </Breadcrumb.Item>
         </Breadcrumb.List>

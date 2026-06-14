@@ -20,7 +20,7 @@ import {
   useToast,
   useDisclosure,
 } from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip } from '../components/ui/tooltip';
 import { FaTrash, FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { getLists, deleteList, createList } from '../api';

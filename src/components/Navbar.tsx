@@ -20,7 +20,7 @@ import {
   useToast,
   Portal,
 } from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip } from 'ui/tooltip';
 import { FaUser, FaSignOutAlt, FaLock, FaUnlock, FaCog } from 'react-icons/fa';
 import { useAuthStore } from '../stores/authStore';
 import { useQueryClient } from 'react-query';

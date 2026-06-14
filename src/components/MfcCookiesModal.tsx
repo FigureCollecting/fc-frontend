@@ -34,7 +34,7 @@ import {
   Dialog,
   Portal,
 } from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip } from 'ui/tooltip';
 import { FaLock, FaChevronUp, FaChevronDown, FaTrash, FaSave, FaCopy, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuthStore } from '../stores/authStore';
 import { getMfcCookieAllowlist, CookieAllowlistResponse } from '../api/scraper';

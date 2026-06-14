@@ -33,7 +33,7 @@ import {
   useBreakpointValue,
   Portal,
 } from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip } from 'ui/tooltip';
 import { FaSearch, FaTimes, FaFilter, FaSortAmountDown, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { StatsData } from '../types';
 import { mergeManufacturerStats } from '../utils/statsUtils';

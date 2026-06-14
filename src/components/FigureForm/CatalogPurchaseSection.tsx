@@ -20,7 +20,7 @@ import {
   NumberInputField,
   Field,
 } from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip } from '../ui/tooltip';
 import { FaChevronDown, FaChevronUp, FaQuestionCircle } from 'react-icons/fa';
 import { UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { FigureFormData } from '../../types';

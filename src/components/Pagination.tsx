@@ -26,7 +26,7 @@ import {
   ButtonGroup,
   Icon,
 } from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip } from 'ui/tooltip';
 import { FaChevronLeft, FaChevronRight, FaTh, FaImage, FaAlignLeft, FaAlignJustify } from 'react-icons/fa';
 
 // Card layout options
