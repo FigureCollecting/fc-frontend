@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { ChakraProvider } from '@chakra-ui/react';
+import { Steps, ChakraProvider } from '@chakra-ui/react';
 import Lists from '../pages/Lists';
 import * as api from '../api';
 import { MfcList, PaginatedResponse } from '../types';
@@ -112,7 +112,7 @@ function renderLists() {
   const user = userEvent.setup();
   const result = render(
     <QueryClientProvider client={queryClient}>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider value={system}>
         <MemoryRouter>
           <Lists />
         </MemoryRouter>

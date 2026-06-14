@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { ChakraProvider } from '@chakra-ui/react';
+import { Steps, ChakraProvider } from '@chakra-ui/react';
 import { render } from '../test-utils';
 import App from '../App';
 import { useAuthStore } from '../stores/authStore';

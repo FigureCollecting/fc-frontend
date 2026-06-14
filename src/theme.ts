@@ -1,6 +1,6 @@
-import { extendTheme, type ThemeConfig } from '@chakra-ui/react';
-import { mode } from '@chakra-ui/theme-tools';
-import type { StyleFunctionProps } from '@chakra-ui/styled-system';
+import { type ThemeConfig, createSystem, defaultConfig } from '@chakra-ui/react';
+import { mode, createSystem, defaultConfig } from '@chakra-ui/react';
+import type { StyleFunctionProps, createSystem, defaultConfig } from '@chakra-ui/react';
 
 const config: ThemeConfig = {
   initialColorMode: 'light',
@@ -17,35 +17,63 @@ const terminalColors = {
   highlight: '#003300',
 };
 
-const theme = extendTheme({
-  config,
-  colors: {
-    brand: {
-      50: '#e6f7ff',
-      100: '#bae3ff',
-      200: '#7cc4fa',
-      300: '#47a3f3',
-      400: '#2186eb',
-      500: '#0967d2',
-      600: '#0552b5',
-      700: '#03449e',
-      800: '#01337d',
-      900: '#002159',
+const system = createSystem(defaultConfig, {
+  globalCss: (props: StyleFunctionProps) => ({
+    body: {
+      bg: mode('white', 'gray.800')(props),
+      color: mode('gray.900', 'gray.100')(props),
     },
-    terminal: terminalColors,
-  },
-  fonts: {
-    heading: 'Inter, sans-serif',
-    body: 'Inter, sans-serif',
-  },
-  styles: {
-    global: (props: StyleFunctionProps) => ({
-      body: {
-        bg: mode('white', 'gray.800')(props),
-        color: mode('gray.900', 'gray.100')(props),
+  }),
+
+  theme: {
+    tokens: {
+      colors: {
+        brand: {
+          50: {
+            value: '#e6f7ff',
+          },
+          100: {
+            value: '#bae3ff',
+          },
+          200: {
+            value: '#7cc4fa',
+          },
+          300: {
+            value: '#47a3f3',
+          },
+          400: {
+            value: '#2186eb',
+          },
+          500: {
+            value: '#0967d2',
+          },
+          600: {
+            value: '#0552b5',
+          },
+          700: {
+            value: '#03449e',
+          },
+          800: {
+            value: '#01337d',
+          },
+          900: {
+            value: '#002159',
+          },
+        },
+        terminal: terminalColors,
       },
-    }),
+
+      fonts: {
+        heading: {
+          value: 'Inter, sans-serif',
+        },
+        body: {
+          value: 'Inter, sans-serif',
+        },
+      },
+    },
   },
+
   components: {
     Button: {
       defaultProps: {

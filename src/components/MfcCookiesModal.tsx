@@ -9,16 +9,9 @@
  * cookie allowlist, ensuring the UI stays in sync with backend requirements.
  */
 import React, { useState, useEffect, useCallback } from 'react';
+import { useColorModeValue } from "./ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  FormControl,
-  FormLabel,
+  Steps,
   Textarea,
   Input,
   Button,
@@ -27,20 +20,21 @@ import {
   HStack,
   VStack,
   Badge,
-  Tooltip,
-  Collapse,
+  Collapsible,
   Code,
   RadioGroup,
   Radio,
   Stack,
   Alert,
-  AlertIcon,
   Box,
-  Divider,
   InputGroup,
-  useColorModeValue,
   useToast,
+  Separator,
+  Field,
+  Dialog,
+  Portal,
 } from '@chakra-ui/react';
+import { Tooltip } from '@/components/ui/tooltip';
 import { FaLock, FaChevronUp, FaChevronDown, FaTrash, FaSave, FaCopy, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuthStore } from '../stores/authStore';
 import { getMfcCookieAllowlist, CookieAllowlistResponse } from '../api/scraper';
@@ -335,255 +329,249 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          <HStack spacing={2}>
-            <FaLock />
-            <Text>MFC Session Cookies</Text>
-            {cookiesStored && (
-              <Badge colorScheme="green" fontSize="xs">
-                <HStack spacing={1}>
-                  <FaLock size={10} />
-                  <Text>Stored</Text>
-                </HStack>
-              </Badge>
-            )}
-          </HStack>
-        </ModalHeader>
-        <ModalCloseButton />
+    <Dialog.Root open={isOpen} size='xl' scrollBehavior="inside" onOpenChange={e => {
+      if (!e.open) {
+        handleClose();
+      }
+    }}>
+      <Portal>
 
-        <ModalBody>
-          <VStack spacing={4} align="stretch">
-            {/* Description */}
-            <Text fontSize="sm" color="gray.500">
-              Required for accessing NSFW/Private content from MyFigureCollection
-            </Text>
-
-            {allowlistError && (
-              <Alert status="warning" borderRadius="md" size="sm">
-                <AlertIcon />
-                <Text fontSize="sm">{allowlistError} - using defaults</Text>
-              </Alert>
-            )}
-
-            {/* Step 1: Copy and run script */}
-            <Box>
-              <FormLabel fontSize="sm" fontWeight="bold">
-                Step 1: Run this script in MFC Console
-              </FormLabel>
-              <Text fontSize="xs" color="gray.500" mb={2}>
-                Open DevTools (F12) on myfigurecollection.net, go to Console, paste and run. The cookies will be copied to your clipboard.
-              </Text>
-              <Box position="relative">
-                <Code
-                  fontSize="xs"
-                  p={2}
-                  display="block"
-                  whiteSpace="pre-wrap"
-                  wordBreak="break-all"
-                  bg={codeBg}
-                  borderRadius="md"
-                  maxH="80px"
-                  overflow="auto"
-                >
-                  {(allowlistLoading || scriptConfigLoading) ? 'Loading...' : extractionScript}
-                </Code>
-                <Button
-                  size="xs"
-                  position="absolute"
-                  top={1}
-                  right={1}
-                  leftIcon={<FaCopy />}
-                  onClick={handleCopyScript}
-                  colorScheme={scriptCopied ? 'green' : 'blue'}
-                  isDisabled={allowlistLoading || scriptConfigLoading}
-                >
-                  {scriptCopied ? 'Copied!' : 'Copy'}
-                </Button>
-              </Box>
-            </Box>
-
-            {/* Step 2: Paste console output */}
-            <FormControl>
-              <HStack justify="space-between" mb={1}>
-                <FormLabel fontSize="sm" fontWeight="bold" mb={0}>
-                  Step 2: Paste the copied JSON here
-                </FormLabel>
-                <IconButton
-                  aria-label={showStep2 ? 'Hide cookie values' : 'Show cookie values'}
-                  icon={showStep2 ? <FaEyeSlash /> : <FaEye />}
-                  size="xs"
-                  variant="ghost"
-                  onClick={() => setShowStep2(!showStep2)}
-                />
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <HStack gap={2}>
+                <FaLock />
+                <Text>MFC Session Cookies</Text>
+                {cookiesStored && (
+                  <Badge colorPalette="green" fontSize="xs">
+                    <HStack gap={1}>
+                      <FaLock size={10} />
+                      <Text>Stored</Text>
+                    </HStack>
+                  </Badge>
+                )}
               </HStack>
-              <Textarea
-                value={consoleOutput}
-                onChange={(e) => handleConsoleOutputChange(e.target.value)}
-                placeholder='{"PHPSESSID": "abc123", "sesUID": "12345", "sesDID": "67890"}'
-                size="sm"
-                rows={4}
-                fontFamily="mono"
-                fontSize="xs"
-                sx={!showStep2 && consoleOutput ? {
-                  filter: 'blur(5px)',
-                  userSelect: 'none',
-                } : undefined}
-              />
-              {consoleOutput && !isValidOutput && (
-                <Text fontSize="xs" color="red.500" mt={1}>
-                  Invalid JSON - paste the clipboard contents from running the script
+            </Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>
+              <VStack gap={4} align="stretch">
+                {/* Description */}
+                <Text fontSize="sm" color="gray.500">
+                  Required for accessing NSFW/Private content from MyFigureCollection
                 </Text>
-              )}
-              {isValidOutput && !hasRequiredCookies && (
-                <Text fontSize="xs" color="orange.500" mt={1}>
-                  Missing required cookies: {requiredCookies.filter(c => !(c in parsedOutput!)).join(', ')}
-                </Text>
-              )}
-              {isValidOutput && hasRequiredCookies && (
-                <Text fontSize="xs" color="green.500" mt={1}>
-                  ✓ Valid - found {Object.keys(parsedOutput!).length} cookies
-                </Text>
-              )}
-            </FormControl>
 
-            <Divider />
+                {allowlistError && (
+                  <Alert.Root status="warning" borderRadius="md" size="sm">
+                    <Alert.Indicator />
+                    <Text fontSize="sm">{allowlistError} - using defaults</Text>
+                  </Alert.Root>
+                )}
 
-            {/* Step 3: Manual cf_clearance entry */}
-            <FormControl>
-              <HStack justify="space-between" mb={1}>
-                <FormLabel fontSize="sm" fontWeight="bold" mb={0}>
-                  Step 3: Enter cf_clearance (from Application tab)
-                </FormLabel>
-                <IconButton
-                  aria-label={showStep3 ? 'Hide cf_clearance value' : 'Show cf_clearance value'}
-                  icon={showStep3 ? <FaEyeSlash /> : <FaEye />}
-                  size="xs"
-                  variant="ghost"
-                  onClick={() => setShowStep3(!showStep3)}
-                />
-              </HStack>
-              <Text fontSize="xs" color="gray.500" mb={2}>
-                In DevTools → Application → Cookies → myfigurecollection.net → find cf_clearance → double-click its Value → Ctrl+C to copy
-              </Text>
-              <InputGroup size="sm">
-                <Input
-                  type={showStep3 ? 'text' : 'password'}
-                  value={cfClearance}
-                  onChange={(e) => handleCfClearanceChange(e.target.value)}
-                  placeholder="cf_clearance value (required for Cloudflare bypass)"
-                  fontFamily="mono"
-                  fontSize="xs"
-                />
-              </InputGroup>
-              {!hasCfClearance && (
-                <Text fontSize="xs" color="orange.500" mt={1}>
-                  ⚠️ Without cf_clearance, requests may be blocked by Cloudflare
-                </Text>
-              )}
-              {hasCfClearance && (
-                <Text fontSize="xs" color="green.500" mt={1}>
-                  ✓ cf_clearance provided
-                </Text>
-              )}
-            </FormControl>
-
-            {/* Storage Options */}
-            <FormControl>
-              <FormLabel fontSize="sm">
-                Storage Option:
-                <Text as="span" ml={2} color={storageTextColor} fontWeight="normal">
-                  {storageType === 'session' && '(cleared on logout)'}
-                  {storageType === 'persistent' && '(encrypted, persistent)'}
-                </Text>
-              </FormLabel>
-              <RadioGroup value={storageType} onChange={(v) => handleStorageTypeChange(v as StorageType)}>
-                <Stack direction="column" spacing={2}>
-                  <Radio value="session" size="sm">
-                    <Tooltip label="Stored in browser session - cleared when you log out">
-                      <Text fontSize="sm">Remember for this session (cleared on logout)</Text>
-                    </Tooltip>
-                  </Radio>
-                  <Radio value="persistent" size="sm">
-                    <Tooltip label="Encrypted and stored in browser - persists until manually cleared">
-                      <Text fontSize="sm">Remember until cleared (encrypted storage)</Text>
-                    </Tooltip>
-                  </Radio>
-                </Stack>
-              </RadioGroup>
-            </FormControl>
-
-            {/* Collapsible Security Section */}
-            <Box>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setShowSecurity(!showSecurity)}
-                rightIcon={showSecurity ? <FaChevronUp /> : <FaChevronDown />}
-                width="full"
-                justifyContent="space-between"
-              >
-                <HStack>
-                  <FaLock />
-                  <Text>Security & Privacy</Text>
-                </HStack>
-              </Button>
-              <Collapse in={showSecurity} animateOpacity>
-                <Alert status="info" mt={2} borderRadius="md">
-                  <AlertIcon />
-                  <Box fontSize="xs">
-                    <Text fontWeight="bold" mb={2}>🔒 Security & Privacy</Text>
-                    <Text mb={2}>
-                      MFC cookies are encrypted and stored only in your browser.
-                      They are securely transmitted when scraping, as MFC requires your
-                      authenticated session for:
-                    </Text>
-                    <Text as="ul" pl={4} mb={2}>
-                      <li>NSFW/NSFW+ restricted content</li>
-                      <li>Your MFC Manager catalog (for bulk import/sync)</li>
-                      <li>Other private or restricted items on MFC</li>
-                    </Text>
-                    <Text mb={2}>
-                      <strong>Our services immediately discard your cookies after use</strong>—they
-                      are never stored on our servers.
-                    </Text>
-                    <Text fontWeight="bold" color={warningColor}>
-                      ⚠️ Never share your MFC cookies with anyone—they provide access to your MFC account.
-                    </Text>
+                {/* Step 1: Copy and run script */}
+                <Box>
+                  <Field.Label fontSize="sm" fontWeight="bold">
+                    Step 1: Run this script in MFC Console
+                  </Field.Label>
+                  <Text fontSize="xs" color="gray.500" mb={2}>
+                    Open DevTools (F12) on myfigurecollection.net, go to Console, paste and run. The cookies will be copied to your clipboard.
+                  </Text>
+                  <Box position="relative">
+                    <Code
+                      fontSize="xs"
+                      p={2}
+                      display="block"
+                      whiteSpace="pre-wrap"
+                      wordBreak="break-all"
+                      bg={codeBg}
+                      borderRadius="md"
+                      maxH="80px"
+                      overflow="auto"
+                    >
+                      {(allowlistLoading || scriptConfigLoading) ? 'Loading...' : extractionScript}
+                    </Code>
+                    <Button
+                      size="xs"
+                      position="absolute"
+                      top={1}
+                      right={1}
+                      onClick={handleCopyScript}
+                      colorPalette={scriptCopied ? 'green' : 'blue'}
+                      disabled={allowlistLoading || scriptConfigLoading}><FaCopy />{scriptCopied ? 'Copied!' : 'Copy'}</Button>
                   </Box>
-                </Alert>
-              </Collapse>
-            </Box>
-          </VStack>
-        </ModalBody>
+                </Box>
 
-        <ModalFooter>
-          <HStack spacing={3}>
-            <Button
-              size="sm"
-              leftIcon={<FaTrash />}
-              colorScheme="red"
-              variant="outline"
-              onClick={handleClear}
-              isDisabled={!cookiesStored && !consoleOutput.trim() && !cfClearance.trim()}
-            >
-              Clear Cookies
-            </Button>
-            <Button
-              size="sm"
-              leftIcon={<FaSave />}
-              colorScheme="blue"
-              onClick={handleSave}
-              isDisabled={!isValidOutput || !hasRequiredCookies || !hasChanges}
-            >
-              Save
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+                {/* Step 2: Paste console output */}
+                <Field.Root>
+                  <HStack justify="space-between" mb={1}>
+                    <Field.Label fontSize="sm" fontWeight="bold" mb={0}>
+                      Step 2: Paste the copied JSON here
+                    </Field.Label>
+                    <IconButton
+                      aria-label={showStep2 ? 'Hide cookie values' : 'Show cookie values'}
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => setShowStep2(!showStep2)}>{showStep2 ? <FaEyeSlash /> : <FaEye />}</IconButton>
+                  </HStack>
+                  <Textarea
+                    value={consoleOutput}
+                    onValueChange={(e) => handleConsoleOutputChange(e.target.value)}
+                    placeholder='{"PHPSESSID": "abc123", "sesUID": "12345", "sesDID": "67890"}'
+                    size="sm"
+                    rows={4}
+                    fontFamily="mono"
+                    fontSize="xs"
+                    sx={!showStep2 && consoleOutput ? {
+                      filter: 'blur(5px)',
+                      userSelect: 'none',
+                    } : undefined}
+                  />
+                  {consoleOutput && !isValidOutput && (
+                    <Text fontSize="xs" color="red.500" mt={1}>
+                      Invalid JSON - paste the clipboard contents from running the script
+                    </Text>
+                  )}
+                  {isValidOutput && !hasRequiredCookies && (
+                    <Text fontSize="xs" color="orange.500" mt={1}>
+                      Missing required cookies: {requiredCookies.filter(c => !(c in parsedOutput!)).join(', ')}
+                    </Text>
+                  )}
+                  {isValidOutput && hasRequiredCookies && (
+                    <Text fontSize="xs" color="green.500" mt={1}>
+                      ✓ Valid - found {Object.keys(parsedOutput!).length} cookies
+                    </Text>
+                  )}
+                </Field.Root>
+
+                <Separator />
+
+                {/* Step 3: Manual cf_clearance entry */}
+                <Field.Root>
+                  <HStack justify="space-between" mb={1}>
+                    <Field.Label fontSize="sm" fontWeight="bold" mb={0}>
+                      Step 3: Enter cf_clearance (from Application tab)
+                    </Field.Label>
+                    <IconButton
+                      aria-label={showStep3 ? 'Hide cf_clearance value' : 'Show cf_clearance value'}
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => setShowStep3(!showStep3)}>{showStep3 ? <FaEyeSlash /> : <FaEye />}</IconButton>
+                  </HStack>
+                  <Text fontSize="xs" color="gray.500" mb={2}>
+                    In DevTools → Application → Cookies → myfigurecollection.net → find cf_clearance → double-click its Value → Ctrl+C to copy
+                  </Text>
+                  <InputGroup size="sm">
+                    <Input
+                      type={showStep3 ? 'text' : 'password'}
+                      value={cfClearance}
+                      onValueChange={(e) => handleCfClearanceChange(e.target.value)}
+                      placeholder="cf_clearance value (required for Cloudflare bypass)"
+                      fontFamily="mono"
+                      fontSize="xs"
+                    />
+                  </InputGroup>
+                  {!hasCfClearance && (
+                    <Text fontSize="xs" color="orange.500" mt={1}>
+                      ⚠️ Without cf_clearance, requests may be blocked by Cloudflare
+                    </Text>
+                  )}
+                  {hasCfClearance && (
+                    <Text fontSize="xs" color="green.500" mt={1}>
+                      ✓ cf_clearance provided
+                    </Text>
+                  )}
+                </Field.Root>
+
+                {/* Storage Options */}
+                <Field.Root>
+                  <Field.Label fontSize="sm">
+                    Storage Option:
+                    <Text as="span" ml={2} color={storageTextColor} fontWeight="normal">
+                      {storageType === 'session' && '(cleared on logout)'}
+                      {storageType === 'persistent' && '(encrypted, persistent)'}
+                    </Text>
+                  </Field.Label>
+                  <RadioGroup.Root
+                    value={storageType}
+                    onValueChange={(v) => handleStorageTypeChange(v as StorageType)}>
+                    <Stack direction="column" gap={2}>
+                      <RadioGroup.Item value="session" size="sm"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>
+                          <Tooltip content="Stored in browser session - cleared when you log out">
+                            <Text fontSize="sm">Remember for this session (cleared on logout)</Text>
+                          </Tooltip>
+                        </RadioGroup.ItemText></RadioGroup.Item>
+                      <RadioGroup.Item value="persistent" size="sm"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>
+                          <Tooltip content="Encrypted and stored in browser - persists until manually cleared">
+                            <Text fontSize="sm">Remember until cleared (encrypted storage)</Text>
+                          </Tooltip>
+                        </RadioGroup.ItemText></RadioGroup.Item>
+                    </Stack>
+                  </RadioGroup.Root>
+                </Field.Root>
+
+                {/* Collapsible Security Section */}
+                <Box>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowSecurity(!showSecurity)}
+                    width="full"
+                    justifyContent="space-between"><HStack>
+                      <FaLock />
+                      <Text>Security & Privacy</Text>
+                    </HStack>{showSecurity ? <FaChevronUp /> : <FaChevronDown />}</Button>
+                  <Collapsible.Root open={showSecurity}>
+                    <Collapsible.Content>
+                      <Alert.Root status="info" mt={2} borderRadius="md">
+                        <Alert.Indicator />
+                        <Box fontSize="xs">
+                          <Text fontWeight="bold" mb={2}>🔒 Security & Privacy</Text>
+                          <Text mb={2}>
+                            MFC cookies are encrypted and stored only in your browser.
+                            They are securely transmitted when scraping, as MFC requires your
+                            authenticated session for:
+                          </Text>
+                          <Text as="ul" pl={4} mb={2}>
+                            <li>NSFW/NSFW+ restricted content</li>
+                            <li>Your MFC Manager catalog (for bulk import/sync)</li>
+                            <li>Other private or restricted items on MFC</li>
+                          </Text>
+                          <Text mb={2}>
+                            <strong>Our services immediately discard your cookies after use</strong>—they
+                            are never stored on our servers.
+                          </Text>
+                          <Text fontWeight="bold" color={warningColor}>
+                            ⚠️ Never share your MFC cookies with anyone—they provide access to your MFC account.
+                          </Text>
+                        </Box>
+                      </Alert.Root>
+                    </Collapsible.Content>
+                  </Collapsible.Root>
+                </Box>
+              </VStack>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <HStack gap={3}>
+                <Button
+                  size="sm"
+                  colorPalette="red"
+                  variant="outline"
+                  onClick={handleClear}
+                  disabled={!cookiesStored && !consoleOutput.trim() && !cfClearance.trim()}><FaTrash />Clear Cookies
+                              </Button>
+                <Button
+                  size="sm"
+                  colorPalette="blue"
+                  onClick={handleSave}
+                  disabled={!isValidOutput || !hasRequiredCookies || !hasChanges}><FaSave />Save
+                              </Button>
+              </HStack>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

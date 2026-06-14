@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
-import { ChakraProvider } from '@chakra-ui/react';
+import { Steps, ChakraProvider } from '@chakra-ui/react';
 import { useThemePreference } from '../useThemePreference';
 import theme from '../../theme';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <ChakraProvider theme={theme}>{children}</ChakraProvider>
+  <ChakraProvider value={system}>{children}</ChakraProvider>
 );
 
 describe('useThemePreference', () => {

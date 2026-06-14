@@ -1,25 +1,25 @@
 import React from 'react';
+import { useColorModeValue } from "../components/ui/color-mode";
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import {
+  Steps,
   Box,
   Heading,
   Button,
   Flex,
   useToast,
   Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
   Spinner,
   Center,
   Alert,
-  AlertIcon,
-useColorModeValue, } from '@chakra-ui/react';
-import { ChevronRightIcon } from '@chakra-ui/icons';
+  Icon,
+} from '@chakra-ui/react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { getFigureById, updateFigure } from '../api';
 import FigureForm from '../components/FigureForm';
 import { FigureFormData } from '../types';
+import { LuChevronRight } from 'react-icons/lu';
 
 const EditFigure: React.FC = () => {
   const cardBg = useColorModeValue('white', 'gray.800');
@@ -84,7 +84,7 @@ const EditFigure: React.FC = () => {
   if (isLoading) {
     return (
       <Center h="50vh">
-        <Spinner size="xl" color="brand.500" thickness="4px" />
+        <Spinner size="xl" color="brand.500" borderWidth="4px" />
       </Center>
     );
   }
@@ -92,46 +92,39 @@ const EditFigure: React.FC = () => {
   if (error || !figure) {
     return (
       <Box>
-        <Alert status="error" borderRadius="md" mb={4}>
-          <AlertIcon />
+        <Alert.Root status="error" borderRadius="md" mb={4}>
+          <Alert.Indicator />
           Failed to load figure details. Please try again.
-        </Alert>
-        <Button as={RouterLink} to="/figures">
-          Back to Figures
-        </Button>
+        </Alert.Root>
+        <Button asChild><RouterLink to="/figures">Back to Figures
+                  </RouterLink></Button>
       </Box>
     );
   }
 
   return (
     <Box>
-      <Breadcrumb spacing="8px" separator={<ChevronRightIcon color="gray.500" />} mb={5}>
-        <BreadcrumbItem>
-          <BreadcrumbLink as={RouterLink} to="/">Dashboard</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem>
-          <BreadcrumbLink as={RouterLink} to="/figures">Figures</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem>
-          <BreadcrumbLink as={RouterLink} to={`/figures/${id}`}>{figure.name}</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem isCurrentPage>
-          <BreadcrumbLink>Edit</BreadcrumbLink>
-        </BreadcrumbItem>
-      </Breadcrumb>
-      
+      <Breadcrumb.Root mb={5}>
+        <Breadcrumb.List gap="8px">
+          <Breadcrumb.Item>
+            <Breadcrumb.Link asChild><RouterLink to="/">Dashboard</RouterLink></Breadcrumb.Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator>{<Icon color="gray.500" asChild><LuChevronRight /></Icon>}</Breadcrumb.Separator><Breadcrumb.Item>
+            <Breadcrumb.Link asChild><RouterLink to="/figures">Figures</RouterLink></Breadcrumb.Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator>{<Icon color="gray.500" asChild><LuChevronRight /></Icon>}</Breadcrumb.Separator><Breadcrumb.Item>
+            <Breadcrumb.Link asChild><RouterLink to={`/figures/${id}`}>{figure.name}</RouterLink></Breadcrumb.Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator>{<Icon color="gray.500" asChild><LuChevronRight /></Icon>}</Breadcrumb.Separator><Breadcrumb.Item>
+            <Breadcrumb.Link>Edit</Breadcrumb.Link>
+          </Breadcrumb.Item>
+        </Breadcrumb.List>
+      </Breadcrumb.Root>
       <Flex justify="space-between" align="center" mb={6}>
         <Heading size="lg">Edit Figure</Heading>
-        <Button
-          leftIcon={<FaArrowLeft />}
-          as={RouterLink}
-          to={`/figures/${id}`}
-          variant="outline"
-        >
-          Cancel
-        </Button>
+        <Button variant="outline" asChild><RouterLink to={`/figures/${id}`}><FaArrowLeft />Cancel
+                              </RouterLink></Button>
       </Flex>
-      
       <Box bg={cardBg} p={6} borderRadius="lg" shadow="md">
         <FigureForm
           initialData={figure}

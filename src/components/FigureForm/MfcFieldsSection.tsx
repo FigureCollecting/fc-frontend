@@ -8,8 +8,7 @@
  */
 import React from 'react';
 import {
-  FormControl,
-  FormLabel,
+  Steps,
   Input,
   Grid,
   GridItem,
@@ -19,6 +18,7 @@ import {
   WrapItem,
   Text,
   Box,
+  Field,
 } from '@chakra-ui/react';
 import { UseFormRegister, UseFormWatch } from 'react-hook-form';
 import { FigureFormData } from '../../types';
@@ -38,93 +38,93 @@ const MfcFieldsSection: React.FC<MfcFieldsSectionProps> = ({ register, watch }) 
       </Text>
       <Grid templateColumns={{ base: 'repeat(1, 1fr)', md: 'repeat(3, 1fr)' }} gap={4}>
         <GridItem>
-          <FormControl>
-            <FormLabel fontSize="sm">MFC Title</FormLabel>
+          <Field.Root>
+            <Field.Label fontSize="sm">MFC Title</Field.Label>
             <Input
               {...register('mfcTitle')}
               placeholder="Figure title from MFC"
               size="sm"
             />
-          </FormControl>
+          </Field.Root>
         </GridItem>
 
         <GridItem>
-          <FormControl>
-            <FormLabel fontSize="sm">Origin / Series</FormLabel>
+          <Field.Root>
+            <Field.Label fontSize="sm">Origin / Series</Field.Label>
             <Input
               {...register('origin')}
               placeholder="e.g., Fate/Grand Order"
               size="sm"
             />
-          </FormControl>
+          </Field.Root>
         </GridItem>
 
         <GridItem>
-          <FormControl>
-            <FormLabel fontSize="sm">Version</FormLabel>
+          <Field.Root>
+            <Field.Label fontSize="sm">Version</Field.Label>
             <Input
               {...register('version')}
               placeholder="e.g., Little Devil Ver."
               size="sm"
             />
-          </FormControl>
+          </Field.Root>
         </GridItem>
 
         <GridItem>
-          <FormControl>
-            <FormLabel fontSize="sm">Category</FormLabel>
+          <Field.Root>
+            <Field.Label fontSize="sm">Category</Field.Label>
             <Input
               {...register('category')}
               placeholder="e.g., Scale Figure"
               size="sm"
             />
-          </FormControl>
+          </Field.Root>
         </GridItem>
 
         <GridItem>
-          <FormControl>
-            <FormLabel fontSize="sm">Classification</FormLabel>
+          <Field.Root>
+            <Field.Label fontSize="sm">Classification</Field.Label>
             <Input
               {...register('classification')}
               placeholder="e.g., Goods"
               size="sm"
             />
-          </FormControl>
+          </Field.Root>
         </GridItem>
 
         <GridItem>
-          <FormControl>
-            <FormLabel fontSize="sm">Materials</FormLabel>
+          <Field.Root>
+            <Field.Label fontSize="sm">Materials</Field.Label>
             <Input
               {...register('materials')}
               placeholder="e.g., PVC, ABS"
               size="sm"
             />
-          </FormControl>
+          </Field.Root>
         </GridItem>
 
         {tags.length > 0 && (
           <GridItem colSpan={{ base: 1, md: 3 }}>
-            <FormControl>
-              <FormLabel fontSize="sm">Tags</FormLabel>
-              <Wrap spacing={2}>
+            <Field.Root>
+              <Field.Label fontSize="sm">Tags</Field.Label>
+              <Wrap gap={2}>
                 {tags.map((tag, index) => (
                   <WrapItem key={index}>
-                    <Tag
+                    <Tag.Root
                       size="md"
-                      colorScheme={
+                      colorPalette={
                         tag === '18+' ? 'red' :
                         tag === 'Castoff' ? 'orange' :
                         tag === 'Limited' ? 'purple' :
                         'gray'
                       }
                     >
-                      <TagLabel>{tag}</TagLabel>
-                    </Tag>
+                      <Tag.Label>{tag}</Tag.Label>
+                    </Tag.Root>
                   </WrapItem>
                 ))}
               </Wrap>
-            </FormControl>
+            </Field.Root>
           </GridItem>
         )}
       </Grid>

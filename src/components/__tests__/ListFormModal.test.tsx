@@ -1,13 +1,13 @@
 import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
-import { ChakraProvider } from '@chakra-ui/react';
+import { Steps, ChakraProvider } from '@chakra-ui/react';
 import { render } from '@testing-library/react';
 import ListFormModal from '../ListFormModal';
 import { MfcList, MFC_LIST_LIMITS } from '../../types';
 import theme from '../../theme';
 
 const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ChakraProvider theme={theme}>{children}</ChakraProvider>
+  <ChakraProvider value={system}>{children}</ChakraProvider>
 );
 
 const mockOnClose = jest.fn();

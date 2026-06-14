@@ -6,17 +6,15 @@
  * with counts. Supports multi-select within each facet.
  */
 import React, { useState, useMemo, useCallback } from 'react';
+import { useColorModeValue } from "./ui/color-mode";
 import {
+  Steps,
   Box,
   VStack,
   Text,
   Checkbox,
   CheckboxGroup,
   Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
   Badge,
   Input,
   InputGroup,
@@ -28,19 +26,14 @@ import {
   TagCloseButton,
   Wrap,
   WrapItem,
-  useColorModeValue,
   Drawer,
   IconButton,
   Icon,
-  Tooltip,
-  DrawerBody,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
   useDisclosure,
   useBreakpointValue,
+  Portal,
 } from '@chakra-ui/react';
+import { Tooltip } from '@/components/ui/tooltip';
 import { FaSearch, FaTimes, FaFilter, FaSortAmountDown, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { StatsData } from '../types';
 import { mergeManufacturerStats } from '../utils/statsUtils';
@@ -156,148 +149,144 @@ const FacetSection: React.FC<FacetSectionProps> = ({
   }, [selectedItems.length]);
 
   return (
-    <AccordionItem border="none">
-      <HStack px={0} py={2} spacing={0}>
-        <AccordionButton px={0} py={0} _hover={{ bg: 'transparent' }} flex="1">
+    <Accordion.Item border="none" value='item-0'>
+      <HStack px={0} py={2} gap={0}>
+        <Accordion.ItemTrigger px={0} py={0} _hover={{ bg: 'transparent' }} flex="1">
           <HStack flex="1" justify="space-between">
             <Text fontWeight="semibold" fontSize="sm">
               {title}
             </Text>
-            <HStack spacing={2}>
+            <HStack gap={2}>
               {selectedItems.length > 0 && (
-                <Badge colorScheme="brand" borderRadius="full" px={2}>
+                <Badge colorPalette="brand" borderRadius="full" px={2}>
                   {selectedItems.length}
                 </Badge>
               )}
-              <AccordionIcon />
+              <Accordion.ItemIndicator />
             </HStack>
           </HStack>
-        </AccordionButton>
-        <Tooltip label={sortLabel} placement="top" hasArrow>
+        </Accordion.ItemTrigger>
+        <Tooltip content={sortLabel} showArrow positioning={{
+          placement: "top"
+        }}>
           <IconButton
             aria-label={sortLabel}
-            icon={<Icon as={sortIcon} />}
             size="xs"
             variant="ghost"
-            colorScheme="gray"
+            colorPalette="gray"
             onClick={cycleSortMode}
-            ml={1}
-          />
+            ml={1}><Icon as={sortIcon} /></IconButton>
         </Tooltip>
       </HStack>
+      <Accordion.ItemContent px={0} pb={4}><Accordion.ItemBody>
+          <VStack gap={2} align="stretch">
+            {/* Search within facet */}
+            {items.length > 5 && (
+              <InputGroup size="sm">
+                <InputLeftElement pointerEvents="none">
+                  <FaSearch color="gray.400" />
+                </InputLeftElement>
+                <Input
+                  placeholder={searchPlaceholder}
+                  value={searchTerm}
+                  onValueChange={(e) => setSearchTerm(e.target.value)}
+                  bg={searchBg}
+                  borderRadius="md"
+                />
+              </InputGroup>
+            )}
 
-      <AccordionPanel px={0} pb={4}>
-        <VStack spacing={2} align="stretch">
-          {/* Search within facet */}
-          {items.length > 5 && (
-            <InputGroup size="sm">
-              <InputLeftElement pointerEvents="none">
-                <FaSearch color="gray.400" />
-              </InputLeftElement>
-              <Input
-                placeholder={searchPlaceholder}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                bg={searchBg}
-                borderRadius="md"
-              />
-            </InputGroup>
-          )}
+            {/* Clear selection button */}
+            {selectedItems.length > 0 && (
+              <Button
+                size="xs"
+                variant="ghost"
+                colorPalette="red"
+                onClick={clearSelection}
+                alignSelf="flex-start"><FaTimes />
+                Clear {title}</Button>
+            )}
 
-          {/* Clear selection button */}
-          {selectedItems.length > 0 && (
-            <Button
-              size="xs"
-              variant="ghost"
-              colorScheme="red"
-              leftIcon={<FaTimes />}
-              onClick={clearSelection}
-              alignSelf="flex-start"
-            >
-              Clear {title}
-            </Button>
-          )}
-
-          {/* Checkbox list */}
-          {visibleItems.length === 0 ? (
-            <Text fontSize="sm" color={textColor} fontStyle="italic">
-              {emptyMessage}
-            </Text>
-          ) : (
-            <CheckboxGroup value={selectedItems} onChange={handleCheckboxChange}>
-              <VStack spacing={1} align="stretch">
-                {visibleItems.map((item) => (
-                  <Box
-                    key={item._id}
-                    px={2}
-                    py={1}
-                    borderRadius="md"
-                    _hover={{ bg: hoverBg }}
-                    transition="background 0.2s"
-                  >
-                    <Checkbox
-                      value={item._id}
-                      size="sm"
-                      width="100%"
-                      isChecked={selectedItems.includes(item._id)}
+            {/* Checkbox list */}
+            {visibleItems.length === 0 ? (
+              <Text fontSize="sm" color={textColor} fontStyle="italic">
+                {emptyMessage}
+              </Text>
+            ) : (
+              <CheckboxGroup value={selectedItems} onValueChange={handleCheckboxChange}>
+                <VStack gap={1} align="stretch">
+                  {visibleItems.map((item) => (
+                    <Box
+                      key={item._id}
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      _hover={{ bg: hoverBg }}
+                      transition="background 0.2s"
                     >
-                      <HStack justify="space-between" width="100%" pr={2}>
-                        <Text
-                          fontSize="sm"
-                          color={item._id === '__unspecified__' ? 'gray.500' : textColor}
-                          fontStyle={item._id === '__unspecified__' ? 'italic' : 'normal'}
-                          noOfLines={1}
-                          title={item._id === '__unspecified__' ? 'Not Specified' : item._id + (item.roleName ? ` (${item.roleName})` : '')}
-                        >
-                          {item._id === '__unspecified__' ? 'Not Specified' : (item._id || '(empty)')}
-                          {item.roleName && (
-                            <Text as="span" fontSize="xs" color="gray.500">
-                              {' '}· {item.roleName}
-                            </Text>
-                          )}
-                        </Text>
-                        <Badge
-                          size="sm"
-                          variant="subtle"
-                          colorScheme="gray"
-                          borderRadius="full"
-                          minW="24px"
-                          textAlign="center"
-                        >
-                          {item.count}
-                        </Badge>
-                      </HStack>
-                    </Checkbox>
-                  </Box>
-                ))}
-              </VStack>
-            </CheckboxGroup>
-          )}
+                      <Checkbox.Root
+                        value={item._id}
+                        size="sm"
+                        width="100%"
+                        checked={selectedItems.includes(item._id)}
+                      ><Checkbox.HiddenInput /><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control><Checkbox.Label>
+                        <HStack justify="space-between" width="100%" pr={2}>
+                          <Text
+                            fontSize="sm"
+                            color={item._id === '__unspecified__' ? 'gray.500' : textColor}
+                            fontStyle={item._id === '__unspecified__' ? 'italic' : 'normal'}
+                            lineClamp={1}
+                            title={item._id === '__unspecified__' ? 'Not Specified' : item._id + (item.roleName ? ` (${item.roleName})` : '')}
+                          >
+                            {item._id === '__unspecified__' ? 'Not Specified' : (item._id || '(empty)')}
+                            {item.roleName && (
+                              <Text as="span" fontSize="xs" color="gray.500">
+                                {' '}· {item.roleName}
+                              </Text>
+                            )}
+                          </Text>
+                          <Badge
+                            size="sm"
+                            variant="subtle"
+                            colorPalette="gray"
+                            borderRadius="full"
+                            minW="24px"
+                            textAlign="center"
+                          >
+                            {item.count}
+                          </Badge>
+                        </HStack>
+                      </Checkbox.Label></Checkbox.Root>
+                    </Box>
+                  ))}
+                </VStack>
+              </CheckboxGroup>
+            )}
 
-          {/* Show more/less toggle */}
-          {hasMore && !showAll && (
-            <Button
-              size="xs"
-              variant="link"
-              colorScheme="brand"
-              onClick={() => setShowAll(true)}
-            >
-              Show {filteredItems.length - maxVisibleItems} more
-            </Button>
-          )}
-          {showAll && hasMore && (
-            <Button
-              size="xs"
-              variant="link"
-              colorScheme="gray"
-              onClick={() => setShowAll(false)}
-            >
-              Show less
-            </Button>
-          )}
-        </VStack>
-      </AccordionPanel>
-    </AccordionItem>
+            {/* Show more/less toggle */}
+            {hasMore && !showAll && (
+              <Button
+                size="xs"
+                variant='plain'
+                colorPalette="brand"
+                onClick={() => setShowAll(true)}
+              >
+                Show {filteredItems.length - maxVisibleItems} more
+              </Button>
+            )}
+            {showAll && hasMore && (
+              <Button
+                size="xs"
+                variant='plain'
+                colorPalette="gray"
+                onClick={() => setShowAll(false)}
+              >
+                Show less
+              </Button>
+            )}
+          </VStack>
+        </Accordion.ItemBody></Accordion.ItemContent>
+    </Accordion.Item>
   );
 };
 
@@ -486,14 +475,14 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
 
   if (isLoading) {
     return (
-      <VStack spacing={4} align="stretch" p={4}>
+      <VStack gap={4} align="stretch" p={4}>
         <Text color="gray.500">Loading filters...</Text>
       </VStack>
     );
   }
 
   return (
-    <VStack spacing={4} align="stretch">
+    <VStack gap={4} align="stretch">
       {/* Active filters summary */}
       {hasActiveFilters && (
         <Box p={3} bg={sectionBg} borderRadius="md">
@@ -504,115 +493,114 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
             <Button
               size="xs"
               variant="ghost"
-              colorScheme="red"
+              colorPalette="red"
               onClick={clearAllFilters}
             >
               Clear All
             </Button>
           </HStack>
-          <Wrap spacing={2}>
+          <Wrap gap={2}>
             {filters.manufacturers.map((m) => (
               <WrapItem key={`mfr-${m}`}>
-                <Tag size="sm" colorScheme="brand" borderRadius="full">
-                  <TagLabel>{m}</TagLabel>
-                  <TagCloseButton
+                <Tag.Root size="sm" colorPalette="brand" borderRadius="full">
+                  <Tag.Label>{m}</Tag.Label>
+                  <Tag.CloseTrigger
                     onClick={() =>
                       handleManufacturerChange(filters.manufacturers.filter((x) => x !== m))
                     }
                   />
-                </Tag>
+                </Tag.Root>
               </WrapItem>
             ))}
             {filters.distributors.map((d) => (
               <WrapItem key={`dist-${d}`}>
-                <Tag size="sm" colorScheme="cyan" borderRadius="full">
-                  <TagLabel>{d}</TagLabel>
-                  <TagCloseButton
+                <Tag.Root size="sm" colorPalette="cyan" borderRadius="full">
+                  <Tag.Label>{d}</Tag.Label>
+                  <Tag.CloseTrigger
                     onClick={() =>
                       handleDistributorChange(filters.distributors.filter((x) => x !== d))
                     }
                   />
-                </Tag>
+                </Tag.Root>
               </WrapItem>
             ))}
             {filters.scales.map((s) => (
               <WrapItem key={`scale-${s}`}>
-                <Tag size="sm" colorScheme="purple" borderRadius="full">
-                  <TagLabel>{s}</TagLabel>
-                  <TagCloseButton
+                <Tag.Root size="sm" colorPalette="purple" borderRadius="full">
+                  <Tag.Label>{s}</Tag.Label>
+                  <Tag.CloseTrigger
                     onClick={() =>
                       handleScaleChange(filters.scales.filter((x) => x !== s))
                     }
                   />
-                </Tag>
+                </Tag.Root>
               </WrapItem>
             ))}
             {filters.origins.map((o) => (
               <WrapItem key={`origin-${o}`}>
-                <Tag size="sm" colorScheme="orange" borderRadius="full">
-                  <TagLabel>{o === '__unspecified__' ? 'Not Specified' : o}</TagLabel>
-                  <TagCloseButton
+                <Tag.Root size="sm" colorPalette="orange" borderRadius="full">
+                  <Tag.Label>{o === '__unspecified__' ? 'Not Specified' : o}</Tag.Label>
+                  <Tag.CloseTrigger
                     onClick={() =>
                       handleOriginChange(filters.origins.filter((x) => x !== o))
                     }
                   />
-                </Tag>
+                </Tag.Root>
               </WrapItem>
             ))}
             {filters.categories.map((c) => (
               <WrapItem key={`category-${c}`}>
-                <Tag size="sm" colorScheme="teal" borderRadius="full">
-                  <TagLabel>{c === '__unspecified__' ? 'Not Specified' : c}</TagLabel>
-                  <TagCloseButton
+                <Tag.Root size="sm" colorPalette="teal" borderRadius="full">
+                  <Tag.Label>{c === '__unspecified__' ? 'Not Specified' : c}</Tag.Label>
+                  <Tag.CloseTrigger
                     onClick={() =>
                       handleCategoryChange(filters.categories.filter((x) => x !== c))
                     }
                   />
-                </Tag>
+                </Tag.Root>
               </WrapItem>
             ))}
             {filters.sculptors.map((s) => (
               <WrapItem key={`sculptor-${s}`}>
-                <Tag size="sm" colorScheme="pink" borderRadius="full">
-                  <TagLabel>{s}</TagLabel>
-                  <TagCloseButton
+                <Tag.Root size="sm" colorPalette="pink" borderRadius="full">
+                  <Tag.Label>{s}</Tag.Label>
+                  <Tag.CloseTrigger
                     onClick={() =>
                       handleSculptorChange(filters.sculptors.filter((x) => x !== s))
                     }
                   />
-                </Tag>
+                </Tag.Root>
               </WrapItem>
             ))}
             {filters.illustrators.map((i) => (
               <WrapItem key={`illustrator-${i}`}>
-                <Tag size="sm" colorScheme="yellow" borderRadius="full">
-                  <TagLabel>{i}</TagLabel>
-                  <TagCloseButton
+                <Tag.Root size="sm" colorPalette="yellow" borderRadius="full">
+                  <Tag.Label>{i}</Tag.Label>
+                  <Tag.CloseTrigger
                     onClick={() =>
                       handleIllustratorChange(filters.illustrators.filter((x) => x !== i))
                     }
                   />
-                </Tag>
+                </Tag.Root>
               </WrapItem>
             ))}
             {filters.classifications.map((cl) => (
               <WrapItem key={`classification-${cl}`}>
-                <Tag size="sm" colorScheme="red" borderRadius="full">
-                  <TagLabel>{cl === '__unspecified__' ? 'Not Specified' : cl}</TagLabel>
-                  <TagCloseButton
+                <Tag.Root size="sm" colorPalette="red" borderRadius="full">
+                  <Tag.Label>{cl === '__unspecified__' ? 'Not Specified' : cl}</Tag.Label>
+                  <Tag.CloseTrigger
                     onClick={() =>
                       handleClassificationChange(filters.classifications.filter((x) => x !== cl))
                     }
                   />
-                </Tag>
+                </Tag.Root>
               </WrapItem>
             ))}
           </Wrap>
         </Box>
       )}
-
       {/* Facet accordions */}
-      <Accordion allowMultiple defaultIndex={[0, 1, 2, 3, 4]}>
+      <Accordion.Root multiple defaultValue={['0', '1', '2', '3', '4']}>
         <FacetSection
           title="Category"
           items={categoryItems}
@@ -714,7 +702,7 @@ const SidebarContent: React.FC<FacetedFilterSidebarProps> = ({
             />
           </>
         )}
-      </Accordion>
+      </Accordion.Root>
     </VStack>
   );
 };
@@ -730,7 +718,7 @@ const FacetedFilterSidebar: React.FC<FacetedFilterSidebarProps & {
   onDrawerOpen?: () => void;
   onDrawerClose?: () => void;
 }> = (props) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const isMobile = useBreakpointValue({ base: true, lg: false });
 
   const sidebarBg = useColorModeValue('white', 'gray.800');
@@ -761,30 +749,36 @@ const FacetedFilterSidebar: React.FC<FacetedFilterSidebarProps & {
     return (
       <>
         <Button
-          leftIcon={<FaFilter />}
           onClick={onOpen}
           size="sm"
           variant={hasActiveFilters ? 'solid' : 'outline'}
-          colorScheme={hasActiveFilters ? 'brand' : 'gray'}
-        >
-          Filters
-          {filterCount > 0 && (
-            <Badge ml={2} colorScheme="white" color="white" bg="brand.600" borderRadius="full">
-              {filterCount}
-            </Badge>
-          )}
-        </Button>
+          colorPalette={hasActiveFilters ? 'brand' : 'gray'}><FaFilter />
+            Filters
+            {filterCount > 0 && (
+          <Badge ml={2} colorPalette="white" color="white" bg="brand.600" borderRadius="full">
+            {filterCount}
+          </Badge>
+        )}</Button>
+        <Drawer.Root open={isOpen} placement='start' size='sm' onOpenChange={e => {
+          if (!e.open) {
+            onClose();
+          }
+        }}>
+          <Portal>
 
-        <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="sm">
-          <DrawerOverlay />
-          <DrawerContent>
-            <DrawerCloseButton />
-            <DrawerHeader borderBottomWidth="1px">Filter Collection</DrawerHeader>
-            <DrawerBody py={4}>
-              <SidebarContent {...props} />
-            </DrawerBody>
-          </DrawerContent>
-        </Drawer>
+            <Drawer.Backdrop />
+            <Drawer.Positioner>
+              <Drawer.Content>
+                <Drawer.CloseTrigger />
+                <Drawer.Header borderBottomWidth="1px">Filter Collection</Drawer.Header>
+                <Drawer.Body py={4}>
+                  <SidebarContent {...props} />
+                </Drawer.Body>
+              </Drawer.Content>
+            </Drawer.Positioner>
+
+          </Portal>
+        </Drawer.Root>
       </>
     );
   }

@@ -1,5 +1,5 @@
-import { useColorMode } from '@chakra-ui/react';
 import { useEffect } from 'react';
+import { useColorMode } from "../components/ui/color-mode";
 import { stateLogger } from '../utils/logger';
 
 type ColorMode = 'light' | 'dark';

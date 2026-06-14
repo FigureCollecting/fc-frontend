@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { Steps, ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import { MemoryRouter } from 'react-router-dom';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
@@ -40,22 +40,38 @@ const AllProviders = ({ children, initialRoutes = ['/'] }: {
 
 
   // Create theme with proper breakpoints for testing
-  const testTheme = extendTheme({
-    breakpoints: {
-      base: '0px',
-      sm: '320px', 
-      md: '768px',
-      lg: '960px',
-      xl: '1200px',
-      '2xl': '1536px',
-    }
+  const testTheme = createSystem(defaultConfig, {
+    theme: {
+      tokens: {
+        breakpoints: {
+          base: {
+            value: '0px',
+          },
+          sm: {
+            value: '320px',
+          }, 
+          md: {
+            value: '768px',
+          },
+          lg: {
+            value: '960px',
+          },
+          xl: {
+            value: '1200px',
+          },
+          '2xl': {
+            value: '1536px',
+          },
+        },
+      },
+    },
   });
 
   return (
     <HelmetProvider>
       <CacheProvider value={emotionCache}>
         <MockQueryClientProvider>
-          <ChakraProvider theme={testTheme}>
+          <ChakraProvider value={testTheme}>
             <MemoryRouter initialEntries={initialRoutes}>
               {children}
             </MemoryRouter>

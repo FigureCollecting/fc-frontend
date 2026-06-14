@@ -1,6 +1,7 @@
 import React from 'react';
+import { useColorModeValue } from "./ui/color-mode";
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Image, Text, Badge, Link, Flex, IconButton, useToast, useColorModeValue, HStack } from '@chakra-ui/react';
+import { Steps, Box, Image, Text, Badge, Link, Flex, IconButton, useToast, HStack } from '@chakra-ui/react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { Figure } from '../types';
 import { deleteFigure } from '../api';
@@ -67,19 +68,18 @@ const HighlightedText: React.FC<{ text: string; query?: string; color?: string }
         const isMatch = terms.some(term => part.toLowerCase() === term);
         return isMatch ? (
           <Box
-            key={index}
-            as="mark"
             display="inline"
             px={0.5}
             borderRadius="sm"
-            sx={{
+            css={{
               // Override browser default mark styles with !important
               background: `var(--chakra-colors-${color.replace('.', '-')}) !important`,
-              color: 'inherit',
+
+              color: 'inherit'
             }}
-          >
-            {part}
-          </Box>
+            asChild><mark key={index}>
+              {part}
+            </mark></Box>
         ) : (
           <React.Fragment key={index}>{part}</React.Fragment>
         );
@@ -143,8 +143,8 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
       // Use min(100%, maxImageHeight) for width - this allows aspect-ratio to work correctly
       // When viewport height is the constraint, width shrinks to match, keeping square shape
       w={maxImageHeight ? `min(100%, ${maxImageHeight}px)` : '100%'}
-      sx={{
-        aspectRatio: '1/1',
+      css={{
+        aspectRatio: '1/1'
       }}
       bg={imageBg}
       overflow="hidden"
@@ -168,13 +168,13 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
       {figure.mfcLink && extractMfcId(figure.mfcLink) && (
         <Link
           href={buildMfcUrl(extractMfcId(figure.mfcLink)!)}
-          isExternal
           fontSize="xs"
           color="blue.500"
           display="block"
           mb={compact ? 1 : 2}
           onClick={(e) => e.stopPropagation()}
-        >
+          target='_blank'
+          rel='noopener noreferrer'>
           MFC: {extractMfcId(figure.mfcLink)}
         </Link>
       )}
@@ -182,56 +182,44 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
         fontWeight="semibold"
         fontSize={compact ? 'md' : 'lg'}
         lineHeight="tight"
-        noOfLines={compact ? 2 : 1}
+        lineClamp={compact ? 2 : 1}
         mb={1}
       >
         <HighlightedText text={figure.name} query={searchQuery} />
       </Text>
-      <Text fontSize="sm" color="gray.600" mb={1} noOfLines={1}>
+      <Text fontSize="sm" color="gray.600" mb={1} lineClamp={1}>
         <HighlightedText
           text={getDisplayCompanyName(figure.companyRoles, figure.manufacturer)}
           query={searchQuery}
         />
       </Text>
       {figure.version && (
-        <Text fontSize="xs" color="gray.500" mb={1} noOfLines={1} fontStyle="italic">
+        <Text fontSize="xs" color="gray.500" mb={1} lineClamp={1} fontStyle="italic">
           <HighlightedText text={figure.version} query={searchQuery} />
         </Text>
       )}
-      <HStack spacing={2} mb={compact ? 1 : 2} flexWrap="wrap">
-        <Badge colorScheme="brand" fontSize="xs">
+      <HStack gap={2} mb={compact ? 1 : 2} flexWrap="wrap">
+        <Badge colorPalette="brand" fontSize="xs">
           {figure.scale}
         </Badge>
         {figure.origin && (
-          <Text fontSize="xs" color="gray.500" noOfLines={1}>
+          <Text fontSize="xs" color="gray.500" lineClamp={1}>
             <HighlightedText text={figure.origin} query={searchQuery} />
           </Text>
         )}
       </HStack>
 
       <Flex justify="flex-start" gap={1}>
-        <Link
-          as={RouterLink}
-          to={`/figures/edit/${figure._id}`}
-          onClick={handleEdit}
-        >
-          <IconButton
-            aria-label="Edit item"
-            icon={<FaEdit />}
-            size="xs"
-            variant="ghost"
-            colorScheme="brand"
-          />
-        </Link>
+        <Link asChild><RouterLink to={`/figures/edit/${figure._id}`} onClick={handleEdit}>
+            <IconButton aria-label="Edit item" size="xs" variant="ghost" colorPalette="brand"><FaEdit /></IconButton>
+          </RouterLink></Link>
         <IconButton
           aria-label="Delete item"
-          icon={<FaTrash />}
           size="xs"
           variant="ghost"
-          colorScheme="red"
+          colorPalette="red"
           onClick={handleDelete}
-          isLoading={deleteMutation.isLoading}
-        />
+          loading={deleteMutation.isLoading}><FaTrash /></IconButton>
       </Flex>
     </Box>
   );
@@ -243,7 +231,7 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
       position="absolute"
       top={1}
       right={1}
-      colorScheme="purple"
+      colorPalette="purple"
       fontSize="xs"
       zIndex={2}
       title="Collection order (mfcActivityOrder)"
@@ -256,12 +244,87 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
   if (layout === 'image-only') {
     return (
       <Link
-        as={RouterLink}
-        to={`/figures/${figure._id}`}
         display="block"
         cursor="pointer"
         _hover={{ textDecoration: 'none' }}
-      >
+        asChild><RouterLink to={`/figures/${figure._id}`}>
+              <Box
+                borderWidth="1px"
+                borderRadius="lg"
+                overflow="hidden"
+                bg={cardBg}
+                shadow="md"
+                transition="all 0.3s"
+                _hover={{ shadow: 'lg', transform: 'translateY(-2px)' }}
+                position="relative"
+              >
+                <ImageSection />
+                <ActivityOrderBadge />
+                {/* Minimal overlay with name on hover */}
+                <Box
+                  position="absolute"
+                  bottom={0}
+                  left={0}
+                  right={0}
+                  bg="blackAlpha.700"
+                  color="white"
+                  p={2}
+                  opacity={0}
+                  transition="opacity 0.2s"
+                  _groupHover={{ opacity: 1 }}
+                  css={{
+                    '& .chakra-link:hover &': { opacity: 1 }
+                  }}
+                >
+                  <Text fontSize="xs" lineClamp={1} fontWeight="medium">
+                    {figure.name}
+                  </Text>
+                </Box>
+              </Box>
+            </RouterLink></Link>
+    );
+  }
+
+  // Text-left layout (horizontal) - text on left (44%), image on right (56%) with 16:9 aspect ratio
+  if (layout === 'text-left') {
+    return (
+      <Link
+        display="block"
+        cursor="pointer"
+        _hover={{ textDecoration: 'none' }}
+        asChild><RouterLink to={`/figures/${figure._id}`}>
+          <Flex
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            bg={cardBg}
+            shadow="md"
+            transition="all 0.3s"
+            _hover={{ shadow: 'lg', transform: 'translateY(-2px)' }}
+            direction="row"
+            position="relative"
+          >
+            <ActivityOrderBadge />
+            {/* Text on left - 44% width */}
+            <Box w="44%" flexShrink={0}>
+              <TextContent compact />
+            </Box>
+            {/* Image on right - 56% width with 16:9 aspect ratio */}
+            <Box w="56%" flexShrink={0}>
+              <ImageSection />
+            </Box>
+          </Flex>
+        </RouterLink></Link>
+    );
+  }
+
+  // Default: text-bottom layout (vertical) - uses 16:9 aspect ratio for image
+  return (
+    <Link
+      display="block"
+      cursor="pointer"
+      _hover={{ textDecoration: 'none' }}
+      asChild><RouterLink to={`/figures/${figure._id}`}>
         <Box
           borderWidth="1px"
           borderRadius="lg"
@@ -272,90 +335,11 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
           _hover={{ shadow: 'lg', transform: 'translateY(-2px)' }}
           position="relative"
         >
+          <ActivityOrderBadge />
           <ImageSection />
-          <ActivityOrderBadge />
-          {/* Minimal overlay with name on hover */}
-          <Box
-            position="absolute"
-            bottom={0}
-            left={0}
-            right={0}
-            bg="blackAlpha.700"
-            color="white"
-            p={2}
-            opacity={0}
-            transition="opacity 0.2s"
-            _groupHover={{ opacity: 1 }}
-            sx={{ '.chakra-link:hover &': { opacity: 1 } }}
-          >
-            <Text fontSize="xs" noOfLines={1} fontWeight="medium">
-              {figure.name}
-            </Text>
-          </Box>
+          <TextContent />
         </Box>
-      </Link>
-    );
-  }
-
-  // Text-left layout (horizontal) - text on left (44%), image on right (56%) with 16:9 aspect ratio
-  if (layout === 'text-left') {
-    return (
-      <Link
-        as={RouterLink}
-        to={`/figures/${figure._id}`}
-        display="block"
-        cursor="pointer"
-        _hover={{ textDecoration: 'none' }}
-      >
-        <Flex
-          borderWidth="1px"
-          borderRadius="lg"
-          overflow="hidden"
-          bg={cardBg}
-          shadow="md"
-          transition="all 0.3s"
-          _hover={{ shadow: 'lg', transform: 'translateY(-2px)' }}
-          direction="row"
-          position="relative"
-        >
-          <ActivityOrderBadge />
-          {/* Text on left - 44% width */}
-          <Box w="44%" flexShrink={0}>
-            <TextContent compact />
-          </Box>
-          {/* Image on right - 56% width with 16:9 aspect ratio */}
-          <Box w="56%" flexShrink={0}>
-            <ImageSection />
-          </Box>
-        </Flex>
-      </Link>
-    );
-  }
-
-  // Default: text-bottom layout (vertical) - uses 16:9 aspect ratio for image
-  return (
-    <Link
-      as={RouterLink}
-      to={`/figures/${figure._id}`}
-      display="block"
-      cursor="pointer"
-      _hover={{ textDecoration: 'none' }}
-    >
-      <Box
-        borderWidth="1px"
-        borderRadius="lg"
-        overflow="hidden"
-        bg={cardBg}
-        shadow="md"
-        transition="all 0.3s"
-        _hover={{ shadow: 'lg', transform: 'translateY(-2px)' }}
-        position="relative"
-      >
-        <ActivityOrderBadge />
-        <ImageSection />
-        <TextContent />
-      </Box>
-    </Link>
+      </RouterLink></Link>
   );
 };
 

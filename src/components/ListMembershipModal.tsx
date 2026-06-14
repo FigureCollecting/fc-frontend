@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
+  Steps,
   Checkbox,
   Button,
   Text,
@@ -14,7 +8,8 @@ import {
   Spinner,
   Center,
   Alert,
-  AlertIcon,
+  Dialog,
+  Portal,
 } from '@chakra-ui/react';
 import { useQuery, useQueryClient } from 'react-query';
 import { getLists, getListsByItem, addItemsToList, removeItemsFromList } from '../api';
@@ -115,65 +110,75 @@ const ListMembershipModal: React.FC<ListMembershipModalProps> = ({
   })();
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md" scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Manage Lists</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={4}>
-            Select which lists should include <strong>{figureName}</strong>
-          </Text>
+    <Dialog.Root open={isOpen} size='md' scrollBehavior="inside" onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+      <Portal>
 
-          {isLoading && (
-            <Center py={8}>
-              <Spinner data-testid="membership-spinner" />
-            </Center>
-          )}
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>Manage Lists</Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>
+              <Text fontSize="sm" color="gray.500" mb={4}>
+                Select which lists should include <strong>{figureName}</strong>
+              </Text>
 
-          {!isLoading && lists.length === 0 && (
-            <Alert status="info" borderRadius="md">
-              <AlertIcon />
-              No lists found. Create a list first, then come back to add figures.
-            </Alert>
-          )}
+              {isLoading && (
+                <Center py={8}>
+                  <Spinner data-testid="membership-spinner" />
+                </Center>
+              )}
 
-          {!isLoading && lists.length > 0 && (
-            <VStack align="stretch" spacing={2}>
-              {lists.map((list) => (
-                <Checkbox
-                  key={list._id}
-                  isChecked={checkedListIds.has(list._id)}
-                  onChange={() => handleToggle(list._id)}
-                  data-testid={`list-checkbox-${list._id}`}
-                >
-                  {list.name}
-                  {list.itemCount > 0 && (
-                    <Text as="span" fontSize="xs" color="gray.500" ml={2}>
-                      ({list.itemCount} items)
-                    </Text>
-                  )}
-                </Checkbox>
-              ))}
-            </VStack>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            colorScheme="brand"
-            onClick={handleSave}
-            isLoading={isSaving}
-            isDisabled={!hasChanges}
-            data-testid="membership-save-btn"
-          >
-            Save
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {!isLoading && lists.length === 0 && (
+                <Alert.Root status="info" borderRadius="md">
+                  <Alert.Indicator />
+                  No lists found. Create a list first, then come back to add figures.
+                </Alert.Root>
+              )}
+
+              {!isLoading && lists.length > 0 && (
+                <VStack align="stretch" gap={2}>
+                  {lists.map((list) => (
+                    <Checkbox.Root
+                      key={list._id}
+                      onCheckedChange={() => handleToggle(list._id)}
+                      data-testid={`list-checkbox-${list._id}`}
+                      checked={checkedListIds.has(list._id)}
+                    ><Checkbox.HiddenInput /><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control><Checkbox.Label>
+                        {list.name}
+                        {list.itemCount > 0 && (
+                          <Text as="span" fontSize="xs" color="gray.500" ml={2}>
+                            ({list.itemCount} items)
+                          </Text>
+                        )}
+                      </Checkbox.Label></Checkbox.Root>
+                  ))}
+                </VStack>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="ghost" mr={3} onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                colorPalette="brand"
+                onClick={handleSave}
+                loading={isSaving}
+                disabled={!hasChanges}
+                data-testid="membership-save-btn"
+              >
+                Save
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

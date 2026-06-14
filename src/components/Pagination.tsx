@@ -9,7 +9,9 @@
  * - Card layout selector (text position)
  */
 import React from 'react';
+import { useColorModeValue } from "./ui/color-mode";
 import {
+  Steps,
   Button,
   Flex,
   Text,
@@ -19,13 +21,12 @@ import {
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
-  Select,
+  NativeSelect,
   Box,
-  Tooltip,
-  useColorModeValue,
   ButtonGroup,
   Icon,
 } from '@chakra-ui/react';
+import { Tooltip } from '@/components/ui/tooltip';
 import { FaChevronLeft, FaChevronRight, FaTh, FaImage, FaAlignLeft, FaAlignJustify } from 'react-icons/fa';
 
 // Card layout options
@@ -139,7 +140,7 @@ const Pagination: React.FC<PaginationProps> = ({
         variant={isFirstActive ? 'solid' : 'outline'}
         bg={isFirstActive ? activeBg : undefined}
         color={isFirstActive ? activeColor : undefined}
-        colorScheme={isFirstActive ? 'brand' : 'gray'}
+        colorPalette={isFirstActive ? 'brand' : 'gray'}
         fontWeight={isFirstActive ? 'bold' : 'medium'}
         boxShadow={isFirstActive ? `0 0 0 3px ${activeRing}` : undefined}
         transform={isFirstActive ? 'scale(1.1)' : undefined}
@@ -172,7 +173,7 @@ const Pagination: React.FC<PaginationProps> = ({
             variant={isActive ? 'solid' : 'outline'}
             bg={isActive ? activeBg : undefined}
             color={isActive ? activeColor : undefined}
-            colorScheme={isActive ? 'brand' : 'gray'}
+            colorPalette={isActive ? 'brand' : 'gray'}
             fontWeight={isActive ? 'bold' : 'medium'}
             boxShadow={isActive ? `0 0 0 3px ${activeRing}` : undefined}
             transform={isActive ? 'scale(1.1)' : undefined}
@@ -206,7 +207,7 @@ const Pagination: React.FC<PaginationProps> = ({
           variant={isLastActive ? 'solid' : 'outline'}
           bg={isLastActive ? activeBg : undefined}
           color={isLastActive ? activeColor : undefined}
-          colorScheme={isLastActive ? 'brand' : 'gray'}
+          colorPalette={isLastActive ? 'brand' : 'gray'}
           fontWeight={isLastActive ? 'bold' : 'medium'}
           boxShadow={isLastActive ? `0 0 0 3px ${activeRing}` : undefined}
           transform={isLastActive ? 'scale(1.1)' : undefined}
@@ -236,32 +237,34 @@ const Pagination: React.FC<PaginationProps> = ({
           {/* Page slider (when > 5 pages) */}
           {totalPages > 5 && (
             <Box w="100%" maxW="300px" px={4}>
-              <Slider
+              <Slider.Root
                 aria-label="Page slider"
                 value={currentPage}
                 min={1}
                 max={totalPages}
                 step={1}
-                onChange={handleSliderChange}
+                onValueChange={handleSliderChange}
                 focusThumbOnChange={false}
               >
                 <SliderTrack bg={sliderTrackBg} h="6px" borderRadius="full">
                   <SliderFilledTrack bg={sliderFilledBg} />
                 </SliderTrack>
                 <Tooltip
-                  label={`Page ${currentPage}`}
-                  placement="top"
-                  hasArrow
+                  content={`Page ${currentPage}`}
+                  showArrow
                   isOpen={undefined}
+                  positioning={{
+                    placement: "top"
+                  }}
                 >
                   <SliderThumb boxSize={5} bg={activeBg} />
                 </Tooltip>
-              </Slider>
+              </Slider.Root>
             </Box>
           )}
 
           {/* Page info, page size selector, and card layout */}
-          <HStack spacing={4} fontSize="sm" color="gray.600" flexWrap="wrap" justify="center">
+          <HStack gap={4} fontSize="sm" color="gray.600" flexWrap="wrap" justify="center">
             <Text fontWeight="medium">
               Page {currentPage} of {totalPages}
             </Text>
@@ -269,23 +272,25 @@ const Pagination: React.FC<PaginationProps> = ({
             {showPageSizeSelector && onPageSizeChange && (
               <>
                 <Text color="gray.400">•</Text>
-                <HStack spacing={2}>
+                <HStack gap={2}>
                   <FaTh size={12} />
-                  <Select
-                    size="sm"
-                    value={pageSize}
-                    onChange={handlePageSizeChange}
-                    width="auto"
-                    minW="110px"
-                    variant="filled"
-                    borderRadius="md"
-                  >
-                    {PAGE_SIZE_PRESETS.map((preset) => (
-                      <option key={preset.value} value={preset.value}>
-                        {preset.label}
-                      </option>
-                    ))}
-                  </Select>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field
+                      size="sm"
+                      value={pageSize}
+                      onValueChange={handlePageSizeChange}
+                      width="auto"
+                      minW="110px"
+                      variant="filled"
+                      borderRadius="md">
+                      {PAGE_SIZE_PRESETS.map((preset) => (
+                        <option key={preset.value} value={preset.value}>
+                          {preset.label}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
                 </HStack>
               </>
             )}
@@ -293,16 +298,16 @@ const Pagination: React.FC<PaginationProps> = ({
             {showCardLayoutSelector && onCardLayoutChange && (
               <>
                 <Text color="gray.400">•</Text>
-                <ButtonGroup size="sm" isAttached variant="outline">
+                <ButtonGroup size="sm" attached variant="outline">
                   {CARD_LAYOUT_OPTIONS.map((option) => (
-                    <Tooltip key={option.value} label={option.label} placement="top" hasArrow>
+                    <Tooltip key={option.value} content={option.label} showArrow positioning={{
+                      placement: "top"
+                    }}>
                       <IconButton
                         aria-label={option.label}
-                        icon={<Icon as={option.icon} />}
                         onClick={() => onCardLayoutChange(option.value)}
                         variant={cardLayout === option.value ? 'solid' : 'outline'}
-                        colorScheme={cardLayout === option.value ? 'brand' : 'gray'}
-                      />
+                        colorPalette={cardLayout === option.value ? 'brand' : 'gray'}><Icon asChild><option.icon /></Icon></IconButton>
                     </Tooltip>
                   ))}
                 </ButtonGroup>
@@ -311,31 +316,26 @@ const Pagination: React.FC<PaginationProps> = ({
           </HStack>
         </>
       )}
-
       {/* Page navigation: prev/next arrows and page number buttons */}
       {showPageNav && totalPages > 1 && (
         <Flex justify="center" align="center">
           <IconButton
             aria-label="Previous page"
-            icon={<FaChevronLeft />}
             onClick={handlePrevious}
-            isDisabled={currentPage === 1}
+            disabled={currentPage === 1}
             size="sm"
             variant="ghost"
-            mr={2}
-          />
+            mr={2}><FaChevronLeft /></IconButton>
 
           {renderPageButtons()}
 
           <IconButton
             aria-label="Next page"
-            icon={<FaChevronRight />}
             onClick={handleNext}
-            isDisabled={currentPage === totalPages}
+            disabled={currentPage === totalPages}
             size="sm"
             variant="ghost"
-            ml={2}
-          />
+            ml={2}><FaChevronRight /></IconButton>
         </Flex>
       )}
     </Flex>

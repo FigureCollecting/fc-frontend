@@ -5,14 +5,8 @@
  * Acts as the primary view filter for collection data slices.
  */
 import React from 'react';
-import {
-  Tabs,
-  TabList,
-  Tab,
-  Badge,
-  HStack,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { useColorModeValue } from "./ui/color-mode";
+import { Steps, Tabs, TabList, Tab, Badge, HStack } from '@chakra-ui/react';
 import { FaBox, FaTruck, FaStar } from 'react-icons/fa';
 import { CollectionStatus, StatusCounts } from '../types';
 
@@ -46,14 +40,14 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
   };
 
   return (
-    <Tabs
-      index={activeIndex}
-      onChange={handleTabChange}
-      variant="soft-rounded"
-      colorScheme="brand"
+    <Tabs.Root
+      value={activeIndex}
+      onValueChange={handleTabChange}
+      variant='subtle'
+      colorPalette="brand"
       mb={4}
     >
-      <TabList
+      <Tabs.List
         bg={tabBg}
         p={1}
         borderRadius="lg"
@@ -77,13 +71,13 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
                 bg: activeBg,
                 color: 'brand.600',
               }}
-              isDisabled={isLoading}
+              disabled={isLoading}
             >
-              <HStack spacing={2}>
+              <HStack gap={2}>
                 <Icon />
                 <span>{config.label}</span>
                 <Badge
-                  colorScheme={isActive ? 'brand' : 'gray'}
+                  colorPalette={isActive ? 'brand' : 'gray'}
                   variant={isActive ? 'solid' : 'subtle'}
                   borderRadius="full"
                   px={2}
@@ -95,8 +89,8 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
             </Tab>
           );
         })}
-      </TabList>
-    </Tabs>
+      </Tabs.List>
+    </Tabs.Root>
   );
 };
 

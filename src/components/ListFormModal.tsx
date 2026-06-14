@@ -1,20 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  Select,
-  Button,
-  FormErrorMessage,
-} from '@chakra-ui/react';
+import { Steps, Input, Textarea, NativeSelect, Button, Field, Dialog, Portal } from '@chakra-ui/react';
 import { MfcList, MfcListFormData, MFC_LIST_LIMITS, ListPrivacy } from '../types';
 
 interface ListFormModalProps {
@@ -82,74 +67,86 @@ const ListFormModal: React.FC<ListFormModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{isEdit ? 'Edit List' : 'Create List'}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <FormControl isInvalid={!!nameError} mb={4} isRequired>
-            <FormLabel>Name</FormLabel>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="List name"
-              maxLength={MFC_LIST_LIMITS.NAME_MAX}
-              data-testid="list-name-input"
-            />
-            {nameError && <FormErrorMessage>{nameError}</FormErrorMessage>}
-          </FormControl>
+    <Dialog.Root open={isOpen} size='lg' onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+      <Portal>
 
-          <FormControl mb={4}>
-            <FormLabel>Teaser</FormLabel>
-            <Input
-              value={teaser}
-              onChange={(e) => setTeaser(e.target.value)}
-              placeholder="Short description"
-              maxLength={MFC_LIST_LIMITS.TEASER_MAX}
-              data-testid="list-teaser-input"
-            />
-          </FormControl>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>{isEdit ? 'Edit List' : 'Create List'}</Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>
+              <Field.Root invalid={!!nameError} mb={4} required>
+                <Field.Label>Name</Field.Label>
+                <Input
+                  value={name}
+                  onValueChange={(e) => setName(e.target.value)}
+                  placeholder="List name"
+                  maxLength={MFC_LIST_LIMITS.NAME_MAX}
+                  data-testid="list-name-input"
+                />
+                {nameError && <Field.ErrorText>{nameError}</Field.ErrorText>}
+              </Field.Root>
 
-          <FormControl mb={4}>
-            <FormLabel>Description</FormLabel>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Detailed description (optional)"
-              rows={4}
-              data-testid="list-description-input"
-            />
-          </FormControl>
+              <Field.Root mb={4}>
+                <Field.Label>Teaser</Field.Label>
+                <Input
+                  value={teaser}
+                  onValueChange={(e) => setTeaser(e.target.value)}
+                  placeholder="Short description"
+                  maxLength={MFC_LIST_LIMITS.TEASER_MAX}
+                  data-testid="list-teaser-input"
+                />
+              </Field.Root>
 
-          <FormControl mb={4}>
-            <FormLabel>Privacy</FormLabel>
-            <Select
-              value={privacy}
-              onChange={(e) => setPrivacy(e.target.value as ListPrivacy)}
-              data-testid="list-privacy-select"
-            >
-              <option value="public">Public</option>
-              <option value="friends">Friends Only</option>
-              <option value="private">Private</option>
-            </Select>
-          </FormControl>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            colorScheme="brand"
-            onClick={handleSubmit}
-            isLoading={isLoading}
-            data-testid="list-form-submit"
-          >
-            {isEdit ? 'Save Changes' : 'Create List'}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              <Field.Root mb={4}>
+                <Field.Label>Description</Field.Label>
+                <Textarea
+                  value={description}
+                  onValueChange={(e) => setDescription(e.target.value)}
+                  placeholder="Detailed description (optional)"
+                  rows={4}
+                  data-testid="list-description-input"
+                />
+              </Field.Root>
+
+              <Field.Root mb={4}>
+                <Field.Label>Privacy</Field.Label>
+                <NativeSelect.Root>
+                  <NativeSelect.Field
+                    value={privacy}
+                    onValueChange={(e) => setPrivacy(e.target.value as ListPrivacy)}
+                    data-testid="list-privacy-select">
+                    <option value="public">Public</option>
+                    <option value="friends">Friends Only</option>
+                    <option value="private">Private</option>
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+              </Field.Root>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="ghost" mr={3} onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                colorPalette="brand"
+                onClick={handleSubmit}
+                loading={isLoading}
+                data-testid="list-form-submit"
+              >
+                {isEdit ? 'Save Changes' : 'Create List'}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import {
-  Box,
-  Heading,
-  SimpleGrid,
-  Spinner,
-  Center,
-  useToast,
-  Text,
-  Flex,
-} from '@chakra-ui/react';
+import { Steps, Box, Heading, SimpleGrid, Spinner, Center, useToast, Text, Flex } from '@chakra-ui/react';
 import { searchFigures } from '../api';
 import SearchBar from '../components/SearchBar';
 import FigureCard from '../components/FigureCard';
@@ -56,20 +47,17 @@ const Search: React.FC = () => {
   return (
     <Box>
       <Heading size="lg" mb={6}>Search Your Collection</Heading>
-      
       <Box mb={6}>
         <SearchBar onSearch={handleSearch} placeholder="Search by name, manufacturer, origin..." />
       </Box>
-      
       {searchQuery && (
         <Text mb={4} fontSize="lg" fontWeight="medium">
           Search results for: <Text as="span" color="brand.600">"{searchQuery}"</Text>
         </Text>
       )}
-      
       {isLoading ? (
         <Center h="200px">
-          <Spinner size="xl" color="brand.500" thickness="4px" />
+          <Spinner size="xl" color="brand.500" borderWidth="4px" />
         </Center>
       ) : error ? (
         <Flex justify="center" p={8}>
@@ -94,7 +82,7 @@ const Search: React.FC = () => {
             Found {searchResults?.length} {searchResults?.length === 1 ? 'figure' : 'figures'}
           </Text>
           
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6}>
+          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={6}>
             {searchResults?.map((figure) => (
               <FigureCard
                 key={figure.id}

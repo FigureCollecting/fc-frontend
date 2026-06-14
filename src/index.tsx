@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { ChakraProvider } from '@chakra-ui/react';
+import { Steps, ChakraProvider } from '@chakra-ui/react';
 import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import theme from './theme';
@@ -24,7 +24,7 @@ root.render(
     <HelmetProvider>
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
-          <ChakraProvider theme={theme}>
+          <ChakraProvider value={system}>
             <App />
           </ChakraProvider>
         </QueryClientProvider>

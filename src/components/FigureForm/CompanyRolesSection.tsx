@@ -7,18 +7,19 @@
  */
 
 import React from 'react';
+import { useColorModeValue } from "../ui/color-mode";
 import {
+  Steps,
   Box,
   Button,
-  FormControl,
   HStack,
   IconButton,
   Input,
-  Select,
+  NativeSelect,
   Text,
   VStack,
   Badge,
-  useColorModeValue,
+  Field,
 } from '@chakra-ui/react';
 import { useFormContext, useFieldArray } from 'react-hook-form';
 import { FaPlus, FaTrash } from 'react-icons/fa';
@@ -57,72 +58,70 @@ const CompanyRolesSection: React.FC = () => {
           Companies
         </Text>
         <Button
-          leftIcon={<FaPlus />}
           size="sm"
           variant="outline"
-          colorScheme="blue"
+          colorPalette="blue"
           onClick={handleAddCompany}
-          aria-label="Add company"
-        >
-          Add Company
-        </Button>
+          aria-label="Add company"><FaPlus />Add Company
+                  </Button>
       </HStack>
-
       {fields.length === 0 ? (
         <Text color="gray.500" fontSize="sm" fontStyle="italic">
           No companies added. Click &quot;Add Company&quot; to assign company roles.
         </Text>
       ) : (
-        <VStack spacing={3} align="stretch">
+        <VStack gap={3} align="stretch">
           {fields.map((field, index) => (
-            <HStack key={field.id} spacing={3} p={3} borderWidth="1px" borderRadius="md" bg={rowBgColor}>
+            <HStack key={field.id} gap={3} p={3} borderWidth="1px" borderRadius="md" bg={rowBgColor}>
               {/* Company Name Input */}
-              <FormControl flex="2">
+              <Field.Root flex="2">
                 <Input
                   {...register(`companyRoles.${index}.companyName` as const)}
                   placeholder="Company name"
                   defaultValue={field.companyName}
                 />
-              </FormControl>
+              </Field.Root>
 
               {/* Role Type Select */}
-              <FormControl flex="1">
-                <Select
-                  {...register(`companyRoles.${index}.roleId` as const)}
-                  aria-label="Role"
-                  defaultValue={
-                    // Use roleId if set, otherwise find by roleName (handles race condition)
-                    field.roleId ||
-                    companyRoleTypes.find(rt => rt.name.toLowerCase() === field.roleName?.toLowerCase())?._id ||
-                    ''
-                  }
-                  onChange={(e) => {
-                    const selectedRole = companyRoleTypes.find((rt) => rt._id === e.target.value);
-                    if (selectedRole) {
-                      // Update roleName when roleId changes
-                      const input = document.querySelector(
-                        `input[name="companyRoles.${index}.roleName"]`
-                      ) as HTMLInputElement;
-                      if (input) input.value = selectedRole.name;
+              <Field.Root flex="1">
+                <NativeSelect.Root>
+                  <NativeSelect.Field
+                    {...register(`companyRoles.${index}.roleId` as const)}
+                    aria-label="Role"
+                    defaultValue={
+                      // Use roleId if set, otherwise find by roleName (handles race condition)
+                      field.roleId ||
+                      companyRoleTypes.find(rt => rt.name.toLowerCase() === field.roleName?.toLowerCase())?._id ||
+                      ''
                     }
-                  }}
-                >
-                  {companyRoleTypes.map((rt) => (
-                    <option key={rt._id} value={rt._id}>
-                      {rt.name}
-                    </option>
-                  ))}
-                </Select>
+                    onValueChange={(e) => {
+                      const selectedRole = companyRoleTypes.find((rt) => rt._id === e.target.value);
+                      if (selectedRole) {
+                        // Update roleName when roleId changes
+                        const input = document.querySelector(
+                          `input[name="companyRoles.${index}.roleName"]`
+                        ) as HTMLInputElement;
+                        if (input) input.value = selectedRole.name;
+                      }
+                    }}>
+                    {companyRoleTypes.map((rt) => (
+                      <option key={rt._id} value={rt._id}>
+                        {rt.name}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
                 <input
                   type="hidden"
                   {...register(`companyRoles.${index}.roleName` as const)}
                   defaultValue={field.roleName}
                 />
-              </FormControl>
+              </Field.Root>
 
               {/* Role Badge (visual indicator) */}
               {field.roleName && (
-                <Badge colorScheme="purple" alignSelf="center">
+                <Badge colorPalette="purple" alignSelf="center">
                   {field.roleName}
                 </Badge>
               )}
@@ -130,12 +129,10 @@ const CompanyRolesSection: React.FC = () => {
               {/* Remove Button */}
               <IconButton
                 aria-label="Remove company"
-                icon={<FaTrash />}
                 size="sm"
-                colorScheme="red"
+                colorPalette="red"
                 variant="ghost"
-                onClick={() => remove(index)}
-              />
+                onClick={() => remove(index)}><FaTrash /></IconButton>
             </HStack>
           ))}
         </VStack>

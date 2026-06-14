@@ -1,12 +1,7 @@
 import React, { useState, useCallback } from 'react';
+import { useColorModeValue } from "./ui/color-mode";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
+  Steps,
   Button,
   VStack,
   HStack,
@@ -24,18 +19,14 @@ import {
   Td,
   TableContainer,
   Alert,
-  AlertIcon,
   Stat,
-  StatLabel,
-  StatNumber,
-  StatGroup,
-  useColorModeValue,
   Input,
-  FormControl,
-  FormLabel,
   Switch,
-  Divider,
   Icon,
+  Separator,
+  Field,
+  Dialog,
+  Portal,
 } from '@chakra-ui/react';
 import { FaUpload, FaFileImport, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { previewBulkImport, executeBulkImport } from '../api';
@@ -152,109 +143,109 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
   const getStatusBadge = (status: BulkImportPreviewItem['status']) => {
     switch (status) {
       case 'new':
-        return <Badge colorScheme="green">New</Badge>;
+        return <Badge colorPalette="green">New</Badge>;
       case 'catalog_exists':
-        return <Badge colorScheme="blue">In Catalog</Badge>;
+        return <Badge colorPalette="blue">In Catalog</Badge>;
       case 'duplicate':
-        return <Badge colorScheme="orange">Already Owned</Badge>;
+        return <Badge colorPalette="orange">Already Owned</Badge>;
     }
   };
 
   const renderUploadStep = () => (
-    <VStack spacing={4} align="stretch">
-      <Alert status="info">
-        <AlertIcon />
+    <VStack gap={4} align="stretch">
+      <Alert.Root status="info">
+        <Alert.Indicator />
         <Text fontSize="sm">
           Export your collection from MyFigureCollection.net and paste the CSV content below,
           or upload the CSV file directly.
         </Text>
-      </Alert>
+      </Alert.Root>
 
-      <FormControl>
-        <FormLabel>Upload CSV File</FormLabel>
+      <Field.Root>
+        <Field.Label>Upload CSV File</Field.Label>
         <Input
           type="file"
           accept=".csv"
-          onChange={handleFileUpload}
+          onValueChange={handleFileUpload}
           p={1}
         />
-      </FormControl>
+      </Field.Root>
 
       <Text textAlign="center" color="gray.500">- OR -</Text>
 
-      <FormControl>
-        <FormLabel>Paste CSV Content</FormLabel>
+      <Field.Root>
+        <Field.Label>Paste CSV Content</Field.Label>
         <Textarea
           placeholder="Paste your MFC CSV export here..."
           value={csvContent}
-          onChange={(e) => setCsvContent(e.target.value)}
+          onValueChange={(e) => setCsvContent(e.target.value)}
           minH="200px"
           fontFamily="mono"
           fontSize="sm"
         />
-      </FormControl>
+      </Field.Root>
     </VStack>
   );
 
   const renderPreviewStep = () => (
-    <VStack spacing={4} align="stretch">
+    <VStack gap={4} align="stretch">
       {previewData && (
         <>
-          <StatGroup>
-            <Stat>
-              <StatLabel>New Items</StatLabel>
-              <StatNumber color="green.500">{previewData.summary.new}</StatNumber>
-            </Stat>
-            <Stat>
-              <StatLabel>In Catalog</StatLabel>
-              <StatNumber color="blue.500">{previewData.summary.catalogExists}</StatNumber>
-            </Stat>
-            <Stat>
-              <StatLabel>Already Owned</StatLabel>
-              <StatNumber color="orange.500">{previewData.summary.duplicates}</StatNumber>
-            </Stat>
-            <Stat>
-              <StatLabel>Total</StatLabel>
-              <StatNumber>{previewData.totalItems}</StatNumber>
-            </Stat>
-          </StatGroup>
+          <Stat.Root>
+            <Stat.Root>
+              <Stat.Label>New Items</Stat.Label>
+              <Stat.ValueText color="green.500">{previewData.summary.new}</Stat.ValueText>
+            </Stat.Root>
+            <Stat.Root>
+              <Stat.Label>In Catalog</Stat.Label>
+              <Stat.ValueText color="blue.500">{previewData.summary.catalogExists}</Stat.ValueText>
+            </Stat.Root>
+            <Stat.Root>
+              <Stat.Label>Already Owned</Stat.Label>
+              <Stat.ValueText color="orange.500">{previewData.summary.duplicates}</Stat.ValueText>
+            </Stat.Root>
+            <Stat.Root>
+              <Stat.Label>Total</Stat.Label>
+              <Stat.ValueText>{previewData.totalItems}</Stat.ValueText>
+            </Stat.Root>
+          </Stat.Root>
 
-          <Divider />
+          <Separator />
 
-          <FormControl display="flex" alignItems="center">
-            <FormLabel mb="0">Skip duplicates (already owned items)</FormLabel>
+          <Field.Root display="flex" alignItems="center">
+            <Field.Label mb="0">Skip duplicates (already owned items)</Field.Label>
             <Switch
-              isChecked={skipDuplicates}
-              onChange={(e) => setSkipDuplicates(e.target.checked)}
-              colorScheme="green"
+              checked={skipDuplicates}
+              onValueChange={(e) => setSkipDuplicates(e.target.checked)}
+              colorPalette="green"
             />
-          </FormControl>
+          </Field.Root>
 
           {previewData.summary.duplicates > 0 && skipDuplicates && (
-            <Alert status="info" size="sm">
-              <AlertIcon />
+            <Alert.Root status="info" size="sm">
+              <Alert.Indicator />
               <Text fontSize="sm">
                 {previewData.summary.duplicates} duplicate(s) will be skipped during import.
               </Text>
-            </Alert>
+            </Alert.Root>
           )}
 
           <Box maxH="300px" overflowY="auto" borderWidth={1} borderRadius="md" borderColor={borderColor}>
-            <TableContainer>
-              <Table size="sm" variant="simple">
-                <Thead position="sticky" top={0} bg={bgColor}>
-                  <Tr>
-                    <Th>MFC ID</Th>
-                    <Th>Title</Th>
-                    <Th>Manufacturer</Th>
-                    <Th>Scale</Th>
-                    <Th>Status</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+            <Table.ScrollArea>
+              <Table.Root size="sm" variant="simple">
+                <Table.Header position="sticky" top={0} bg={bgColor}>
+                  <Table.Row>
+                    <Table.ColumnHeader>MFC ID</Table.ColumnHeader>
+                    <Table.ColumnHeader>Title</Table.ColumnHeader>
+                    <Table.ColumnHeader>Manufacturer</Table.ColumnHeader>
+                    <Table.ColumnHeader>Scale</Table.ColumnHeader>
+                    <Table.ColumnHeader>Status</Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
                   {previewData.items.slice(0, 50).map((item) => (
-                    <Tr key={item.mfcId} opacity={item.status === 'duplicate' && skipDuplicates ? 0.5 : 1}>
-                      <Td>
+                    <Table.Row key={item.mfcId} opacity={item.status === 'duplicate' && skipDuplicates ? 0.5 : 1}>
+                      <Table.Cell>
                         <a
                           href={`https://myfigurecollection.net/item/${item.mfcId}`}
                           target="_blank"
@@ -263,18 +254,18 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
                         >
                           {item.mfcId}
                         </a>
-                      </Td>
-                      <Td maxW="200px" isTruncated title={item.cleanTitle}>
+                      </Table.Cell>
+                      <Table.Cell maxW="200px" isTruncated title={item.cleanTitle}>
                         {item.cleanTitle}
-                      </Td>
-                      <Td>{item.manufacturers.join(', ') || '-'}</Td>
-                      <Td>{item.scale || '-'}</Td>
-                      <Td>{getStatusBadge(item.status)}</Td>
-                    </Tr>
+                      </Table.Cell>
+                      <Table.Cell>{item.manufacturers.join(', ') || '-'}</Table.Cell>
+                      <Table.Cell>{item.scale || '-'}</Table.Cell>
+                      <Table.Cell>{getStatusBadge(item.status)}</Table.Cell>
+                    </Table.Row>
                   ))}
-                </Tbody>
-              </Table>
-            </TableContainer>
+                </Table.Body>
+              </Table.Root>
+            </Table.ScrollArea>
           </Box>
 
           {previewData.items.length > 50 && (
@@ -288,18 +279,22 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
   );
 
   const renderImportingStep = () => (
-    <VStack spacing={4} py={8}>
-      <Progress size="lg" isIndeterminate w="100%" colorScheme="green" />
+    <VStack gap={4} py={8}>
+      <Progress.Root size="lg" indeterminate w="100%" colorPalette="green">
+        <Progress.Track>
+          <Progress.Range />
+        </Progress.Track>
+      </Progress.Root>
       <Text>Importing figures...</Text>
     </VStack>
   );
 
   const renderCompleteStep = () => (
-    <VStack spacing={4} align="stretch">
+    <VStack gap={4} align="stretch">
       {importResult && (
         <>
-          <Alert status={importResult.errors.length > 0 ? 'warning' : 'success'}>
-            <AlertIcon as={importResult.errors.length > 0 ? FaExclamationTriangle : FaCheckCircle} />
+          <Alert.Root status={importResult.errors.length > 0 ? 'warning' : 'success'}>
+            <Alert.Indicator as={importResult.errors.length > 0 ? FaExclamationTriangle : FaCheckCircle} />
             <Box>
               <Text fontWeight="bold">Import Complete</Text>
               <Text fontSize="sm">
@@ -307,7 +302,7 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
                 {importResult.skipped > 0 && `, skipped ${importResult.skipped} duplicate(s)`}
               </Text>
             </Box>
-          </Alert>
+          </Alert.Root>
 
           {importResult.errors.length > 0 && (
             <>
@@ -345,65 +340,65 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
     switch (step) {
       case 'upload':
         return (
-          <HStack spacing={3}>
+          <HStack gap={3}>
             <Button variant="ghost" onClick={handleClose}>
               Cancel
             </Button>
-            <Button
-              colorScheme="blue"
-              onClick={handlePreview}
-              isLoading={isLoading}
-              leftIcon={<Icon as={FaFileImport} />}
-            >
-              Preview Import
-            </Button>
+            <Button colorPalette="blue" onClick={handlePreview} loading={isLoading}><Icon as={FaFileImport} />Preview Import
+                          </Button>
           </HStack>
         );
       case 'preview':
         return (
-          <HStack spacing={3}>
+          <HStack gap={3}>
             <Button variant="ghost" onClick={() => setStep('upload')}>
               Back
             </Button>
             <Button
-              colorScheme="green"
+              colorPalette="green"
               onClick={handleImport}
-              isLoading={isLoading}
-              leftIcon={<Icon as={FaUpload} />}
-              isDisabled={!previewData || (previewData.summary.new + previewData.summary.catalogExists === 0)}
-            >
-              Import {previewData ? (skipDuplicates
-                ? previewData.summary.new + previewData.summary.catalogExists
-                : previewData.totalItems) : 0} Figures
-            </Button>
+              loading={isLoading}
+              disabled={!previewData || (previewData.summary.new + previewData.summary.catalogExists === 0)}><Icon as={FaUpload} />Import {previewData ? (skipDuplicates
+                  ? previewData.summary.new + previewData.summary.catalogExists
+                  : previewData.totalItems) : 0}Figures
+                          </Button>
           </HStack>
         );
       case 'importing':
         return null;
       case 'complete':
         return (
-          <Button colorScheme="blue" onClick={handleClose}>
-            Close
-          </Button>
+          <Button colorPalette="blue" onClick={handleClose}>Close
+                      </Button>
         );
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent bg={bgColor}>
-        <ModalHeader>
-          <HStack>
-            <Icon as={FaFileImport} />
-            <Text>Import from MyFigureCollection</Text>
-          </HStack>
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>{renderStepContent()}</ModalBody>
-        <ModalFooter>{renderFooter()}</ModalFooter>
-      </ModalContent>
-    </Modal>
+    <Dialog.Root open={isOpen} size='xl' scrollBehavior="inside" onOpenChange={e => {
+      if (!e.open) {
+        handleClose();
+      }
+    }}>
+      <Portal>
+
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content bg={bgColor}>
+            <Dialog.Header>
+              <HStack>
+                <Icon as={FaFileImport} />
+                <Text>Import from MyFigureCollection</Text>
+              </HStack>
+            </Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>{renderStepContent()}</Dialog.Body>
+            <Dialog.Footer>{renderFooter()}</Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

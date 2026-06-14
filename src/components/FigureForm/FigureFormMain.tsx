@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useColorModeValue } from "../ui/color-mode";
 import { createLogger } from '../../utils/logger';
 import {
+  Steps,
   Box,
   Button,
-  FormControl,
-  FormLabel,
   Input,
-  FormErrorMessage,
   VStack,
   InputGroup,
   InputRightElement,
@@ -19,7 +18,7 @@ import {
   GridItem,
   Image,
   AspectRatio,
-  useColorModeValue,
+  Field,
 } from '@chakra-ui/react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { FaLink } from 'react-icons/fa';
@@ -761,201 +760,198 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
 
   return (
     <FormProvider {...methods}>
-    <Box as="form" onSubmit={handleSubmit(handleFormSubmit)} role="form" aria-labelledby="figure-form-title">
-      <Text id="figure-form-title" fontSize="xl" fontWeight="bold" className="sr-only">
-        {initialData ? 'Edit Item Form' : 'Add Item Form'}
-      </Text>
-      <Text fontSize="sm" color="gray.600" mb={4} aria-describedby="form-instructions">
-        Fill out the form below to {initialData ? 'update' : 'add'} an item to your collection.
-        {mfcLink ? ' The form will auto-populate data from the MFC link.' : ''}
-      </Text>
-      <Text id="form-instructions" className="sr-only">
-        Required fields are marked with an asterisk. You can provide an MFC link to auto-populate figure data.
-      </Text>
-
-      {/* Two-column layout: Form fields on left, Image preview on right */}
-      <Grid
-        templateColumns={{ base: '1fr', lg: '1fr 280px' }}
-        gap={6}
-        alignItems="start"
-      >
-        {/* Left Column: Form Fields */}
-        <GridItem>
-          <VStack spacing={6} align="stretch">
-            {/* MFC Link at top */}
-            <FormControl isInvalid={!!errors.mfcLink}>
-              <FormLabel>
-                MFC Item
-                {extractMfcItemId(mfcLink) && (
-                  <Text as="span" color="brand.500" fontWeight="semibold" ml={2}>
-                    #{extractMfcItemId(mfcLink)}
-                  </Text>
-                )}
-              </FormLabel>
-              <InputGroup>
-                <Input
-                  {...register('mfcLink', {
-                    validate: validateMfcUrl
-                  })}
-                  placeholder="Enter item # (e.g., 123456) or full MFC URL"
-                  data-invalid={!!errors.mfcLink}
-                />
-                <InputRightElement>
-                  {isScrapingMFC ? (
-                    <Spinner size="sm" data-testid="mfc-scraping-spinner" />
-                  ) : (
-                    <IconButton
-                      aria-label="Open MFC link"
-                      icon={<FaLink />}
-                      size="sm"
-                      variant="ghost"
-                      onClick={openMfcLink}
-                      isDisabled={!mfcLink}
-                    />
-                  )}
-                </InputRightElement>
-              </InputGroup>
-              <FormErrorMessage data-testid="form-error-message">{errors.mfcLink?.message}</FormErrorMessage>
-              <Text fontSize="xs" color="gray.500" mt={1}>
-                Enter just the item number or paste the full MFC URL • Click link icon to open page
-              </Text>
-            </FormControl>
-
-            {/* Core Fields Section - Extracted Component */}
-            <CoreFieldsSection
-              register={register}
-              getValues={getValues}
-              errors={errors}
-              mfcLink={mfcLink}
-              imageUrl={imageUrl}
-              handleScaleBlur={handleScaleBlur}
-              validateName={validateName}
-              validateUrl={validateUrl}
-              openImageLink={openImageLink}
-            />
-
-            {/* Schema v3: Company & Artist Roles - Primary data from MFC */}
-            <Box mt={6}>
-              <CompanyRolesSection />
-            </Box>
-            <Box mt={4}>
-              <ArtistRolesSection />
-            </Box>
-
-            {/* Schema v3: MFC-specific fields */}
-            <Box mt={6} pt={4} borderTopWidth="1px" borderColor="gray.200">
-              <MfcFieldsSection register={register} watch={watch} />
-            </Box>
-
-            {/* Collection Details Section - Extracted Component */}
-            <CollectionDetailsSection
-              register={register}
-              setValue={setValue}
-              watch={watch}
-            />
-
-            {/* Catalog & Purchase Sections - Extracted Component */}
-            <CatalogPurchaseSection
-              register={register}
-              setValue={setValue}
-              watch={watch}
-            />
-
-            {/* Schema v3: Release Information */}
-            <Box mt={6} pt={6} borderTopWidth="1px" borderColor="gray.200">
-              <Text fontSize="lg" fontWeight="semibold" mb={4} color="gray.700">
-                Release Information
-              </Text>
-              <ReleasesSection />
-            </Box>
-
-            <HStack mt={4} spacing={4}>
-              <Button
-                colorScheme="brand"
-                isLoading={isLoading && (loadingAction === 'save' || pendingAction === 'save')}
-                type="submit"
-                size="lg"
-                onClick={() => setPendingAction('save')}
-                isDisabled={isLoading}
-              >
-                {initialData ? 'Update Figure' : 'Save'}
-              </Button>
-
-              {!initialData && (
-                <Button
-                  colorScheme="green"
-                  isLoading={isLoading && (loadingAction === 'saveAndAdd' || pendingAction === 'saveAndAdd')}
-                  type="submit"
-                  size="lg"
-                  onClick={() => setPendingAction('saveAndAdd')}
-                  isDisabled={isLoading}
-                >
-                  Save & Add Another
-                </Button>
-              )}
-            </HStack>
-          </VStack>
-        </GridItem>
-
-        {/* Right Column: Image Preview (sticky on large screens) */}
-        <GridItem
-          display={{ base: 'none', lg: 'block' }}
-          position="sticky"
-          top="20px"
-        >
-          <Box
-            border="1px"
-            borderColor={previewBorderColor}
-            borderRadius="md"
-            overflow="hidden"
-            bg={previewBg}
+      <Box role="form" aria-labelledby="figure-form-title" asChild><form onSubmit={handleSubmit(handleFormSubmit)}>
+          <Text id="figure-form-title" fontSize="xl" fontWeight="bold" className="sr-only">
+            {initialData ? 'Edit Item Form' : 'Add Item Form'}
+          </Text>
+          <Text fontSize="sm" color="gray.600" mb={4} aria-describedby="form-instructions">
+            Fill out the form below to {initialData ? 'update' : 'add'} an item to your collection.
+            {mfcLink ? ' The form will auto-populate data from the MFC link.' : ''}
+          </Text>
+          <Text id="form-instructions" className="sr-only">
+            Required fields are marked with an asterisk. You can provide an MFC link to auto-populate figure data.
+          </Text>
+          {/* Two-column layout: Form fields on left, Image preview on right */}
+          <Grid
+            templateColumns={{ base: '1fr', lg: '1fr 280px' }}
+            gap={6}
+            alignItems="start"
           >
-            <Text
-              fontSize="sm"
-              fontWeight="semibold"
-              p={2}
-              borderBottom="1px"
-              borderColor={previewBorderColor}
-            >
-              Image Preview
-            </Text>
-            {/* 9:16 aspect ratio container for vertical figure images */}
-            <AspectRatio ratio={9 / 16} maxH="500px">
-              {imageUrl && !imageError ? (
-                <Image
-                  src={imageUrl}
-                  alt="Figure preview"
-                  objectFit="contain"
-                  onError={() => setImageError(true)}
-                  cursor="pointer"
-                  onClick={openImageLink}
-                  title="Click to open full image"
-                />
-              ) : (
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexDirection="column"
-                  color={placeholderColor}
-                >
-                  {imageError ? (
-                    <Text fontSize="sm">Failed to load image</Text>
-                  ) : (
-                    <>
-                      <Text fontSize="sm">No image</Text>
-                      <Text fontSize="xs" mt={1}>
-                        Enter URL or fetch from MFC
+            {/* Left Column: Form Fields */}
+            <GridItem>
+              <VStack gap={6} align="stretch">
+                {/* MFC Link at top */}
+                <Field.Root invalid={!!errors.mfcLink}>
+                  <Field.Label>
+                    MFC Item
+                    {extractMfcItemId(mfcLink) && (
+                      <Text as="span" color="brand.500" fontWeight="semibold" ml={2}>
+                        #{extractMfcItemId(mfcLink)}
                       </Text>
-                    </>
-                  )}
+                    )}
+                  </Field.Label>
+                  <InputGroup>
+                    <Input
+                      {...register('mfcLink', {
+                        validate: validateMfcUrl
+                      })}
+                      placeholder="Enter item # (e.g., 123456) or full MFC URL"
+                      data-invalid={!!errors.mfcLink}
+                    />
+                    <InputRightElement>
+                      {isScrapingMFC ? (
+                        <Spinner size="sm" data-testid="mfc-scraping-spinner" />
+                      ) : (
+                        <IconButton
+                          aria-label="Open MFC link"
+                          size="sm"
+                          variant="ghost"
+                          onClick={openMfcLink}
+                          disabled={!mfcLink}><FaLink /></IconButton>
+                      )}
+                    </InputRightElement>
+                  </InputGroup>
+                  <Field.ErrorText data-testid="form-error-message">{errors.mfcLink?.message}</Field.ErrorText>
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Enter just the item number or paste the full MFC URL • Click link icon to open page
+                  </Text>
+                </Field.Root>
+
+                {/* Core Fields Section - Extracted Component */}
+                <CoreFieldsSection
+                  register={register}
+                  getValues={getValues}
+                  errors={errors}
+                  mfcLink={mfcLink}
+                  imageUrl={imageUrl}
+                  handleScaleBlur={handleScaleBlur}
+                  validateName={validateName}
+                  validateUrl={validateUrl}
+                  openImageLink={openImageLink}
+                />
+
+                {/* Schema v3: Company & Artist Roles - Primary data from MFC */}
+                <Box mt={6}>
+                  <CompanyRolesSection />
                 </Box>
-              )}
-            </AspectRatio>
-          </Box>
-        </GridItem>
-      </Grid>
-    </Box>
+                <Box mt={4}>
+                  <ArtistRolesSection />
+                </Box>
+
+                {/* Schema v3: MFC-specific fields */}
+                <Box mt={6} pt={4} borderTopWidth="1px" borderColor="gray.200">
+                  <MfcFieldsSection register={register} watch={watch} />
+                </Box>
+
+                {/* Collection Details Section - Extracted Component */}
+                <CollectionDetailsSection
+                  register={register}
+                  setValue={setValue}
+                  watch={watch}
+                />
+
+                {/* Catalog & Purchase Sections - Extracted Component */}
+                <CatalogPurchaseSection
+                  register={register}
+                  setValue={setValue}
+                  watch={watch}
+                />
+
+                {/* Schema v3: Release Information */}
+                <Box mt={6} pt={6} borderTopWidth="1px" borderColor="gray.200">
+                  <Text fontSize="lg" fontWeight="semibold" mb={4} color="gray.700">
+                    Release Information
+                  </Text>
+                  <ReleasesSection />
+                </Box>
+
+                <HStack mt={4} gap={4}>
+                  <Button
+                    colorPalette="brand"
+                    loading={isLoading && (loadingAction === 'save' || pendingAction === 'save')}
+                    type="submit"
+                    size="lg"
+                    onClick={() => setPendingAction('save')}
+                    disabled={isLoading}
+                  >
+                    {initialData ? 'Update Figure' : 'Save'}
+                  </Button>
+
+                  {!initialData && (
+                    <Button
+                      colorPalette="green"
+                      loading={isLoading && (loadingAction === 'saveAndAdd' || pendingAction === 'saveAndAdd')}
+                      type="submit"
+                      size="lg"
+                      onClick={() => setPendingAction('saveAndAdd')}
+                      disabled={isLoading}
+                    >
+                      Save & Add Another
+                    </Button>
+                  )}
+                </HStack>
+              </VStack>
+            </GridItem>
+
+            {/* Right Column: Image Preview (sticky on large screens) */}
+            <GridItem
+              display={{ base: 'none', lg: 'block' }}
+              position="sticky"
+              top="20px"
+            >
+              <Box
+                border="1px"
+                borderColor={previewBorderColor}
+                borderRadius="md"
+                overflow="hidden"
+                bg={previewBg}
+              >
+                <Text
+                  fontSize="sm"
+                  fontWeight="semibold"
+                  p={2}
+                  borderBottom="1px"
+                  borderColor={previewBorderColor}
+                >
+                  Image Preview
+                </Text>
+                {/* 9:16 aspect ratio container for vertical figure images */}
+                <AspectRatio ratio={9 / 16} maxH="500px">
+                  {imageUrl && !imageError ? (
+                    <Image
+                      src={imageUrl}
+                      alt="Figure preview"
+                      objectFit="contain"
+                      onError={() => setImageError(true)}
+                      cursor="pointer"
+                      onClick={openImageLink}
+                      title="Click to open full image"
+                    />
+                  ) : (
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      flexDirection="column"
+                      color={placeholderColor}
+                    >
+                      {imageError ? (
+                        <Text fontSize="sm">Failed to load image</Text>
+                      ) : (
+                        <>
+                          <Text fontSize="sm">No image</Text>
+                          <Text fontSize="xs" mt={1}>
+                            Enter URL or fetch from MFC
+                          </Text>
+                        </>
+                      )}
+                    </Box>
+                  )}
+                </AspectRatio>
+              </Box>
+            </GridItem>
+          </Grid>
+        </form></Box>
     </FormProvider>
   );
 };

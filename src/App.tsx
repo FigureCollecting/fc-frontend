@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Box } from '@chakra-ui/react';
+import { Steps, Box } from '@chakra-ui/react';
 import { useAuthStore } from './stores/authStore';
 import Layout from './components/Layout';
 import TerminalThemeProvider from './components/TerminalThemeProvider';

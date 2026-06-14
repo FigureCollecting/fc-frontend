@@ -1,7 +1,9 @@
 import React from 'react';
+import { useColorModeValue } from "../components/ui/color-mode";
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import {
+  Steps,
   Box,
   Heading,
   Text,
@@ -11,15 +13,12 @@ import {
   GridItem,
   Badge,
   Flex,
-  Divider,
   IconButton,
   useToast,
   Spinner,
   Center,
   Link,
   Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
   HStack,
   VStack,
   Wrap,
@@ -27,10 +26,8 @@ import {
   Tag,
   SimpleGrid,
   Stat,
-  StatLabel,
-  StatNumber,
-  useColorModeValue,
   useDisclosure,
+  Separator,
 } from '@chakra-ui/react';
 import { FaEdit, FaTrash, FaArrowLeft, FaExternalLinkAlt, FaListUl, FaStar, FaUsers } from 'react-icons/fa';
 import { getFigureById, deleteFigure, getListsByItem } from '../api';
@@ -45,7 +42,7 @@ const FigureDetail: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   
-  const { isOpen: isListsOpen, onOpen: onListsOpen, onClose: onListsClose } = useDisclosure();
+  const { open: isListsOpen, onOpen: onListsOpen, onClose: onListsClose } = useDisclosure();
 
   const { data: figure, isLoading, error } = useQuery(
     ['figure', id],
@@ -107,7 +104,7 @@ const FigureDetail: React.FC = () => {
   if (isLoading) {
     return (
       <Center h="50vh">
-        <Spinner size="xl" color="brand.500" thickness="4px" />
+        <Spinner size="xl" color="brand.500" borderWidth="4px" />
       </Center>
     );
   }
@@ -118,27 +115,27 @@ const FigureDetail: React.FC = () => {
         <Heading size="md" color="red.500" mb={4}>
           Error loading figure details
         </Heading>
-        <Button as={RouterLink} to="/figures">
-          Back to Figures
-        </Button>
+        <Button asChild><RouterLink to="/figures">Back to Figures
+                  </RouterLink></Button>
       </Box>
     );
   }
 
   return (
     <Box>
-      <Breadcrumb spacing="8px" separator=">" mb={5}>
-        <BreadcrumbItem>
-          <BreadcrumbLink as={RouterLink} to="/">Dashboard</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem>
-          <BreadcrumbLink as={RouterLink} to="/figures">Figures</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem isCurrentPage>
-          <BreadcrumbLink>{figure.name}</BreadcrumbLink>
-        </BreadcrumbItem>
-      </Breadcrumb>
-      
+      <Breadcrumb.Root mb={5}>
+        <Breadcrumb.List gap="8px">
+          <Breadcrumb.Item>
+            <Breadcrumb.Link asChild><RouterLink to="/">Dashboard</RouterLink></Breadcrumb.Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator>></Breadcrumb.Separator><Breadcrumb.Item>
+            <Breadcrumb.Link asChild><RouterLink to="/figures">Figures</RouterLink></Breadcrumb.Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator>></Breadcrumb.Separator><Breadcrumb.Item>
+            <Breadcrumb.Link>{figure.name}</Breadcrumb.Link>
+          </Breadcrumb.Item>
+        </Breadcrumb.List>
+      </Breadcrumb.Root>
       <Box bg={cardBg} borderRadius="lg" overflow="hidden" shadow="md">
         <Grid templateColumns={{ base: '1fr', md: '1fr 2fr' }}>
           <GridItem>
@@ -157,34 +154,29 @@ const FigureDetail: React.FC = () => {
               <Heading size="lg" mb={2}>{figure.name}</Heading>
               <Flex>
                 <IconButton
-                  as={RouterLink}
-                  to={`/figures/edit/${figure._id}`}
                   aria-label="Edit figure"
-                  icon={<FaEdit />}
                   variant="ghost"
-                  colorScheme="brand"
+                  colorPalette="brand"
                   mr={2}
-                />
+                  asChild><RouterLink to={`/figures/edit/${figure._id}`}><FaEdit /></RouterLink></IconButton>
                 <IconButton
                   aria-label="Delete figure"
-                  icon={<FaTrash />}
                   variant="ghost"
-                  colorScheme="red"
+                  colorPalette="red"
                   onClick={handleDelete}
-                  isLoading={deleteMutation.isLoading}
-                />
+                  loading={deleteMutation.isLoading}><FaTrash /></IconButton>
               </Flex>
             </Flex>
             
             {/* Companies with role badges */}
-            <VStack align="flex-start" spacing={1} mb={4}>
+            <VStack align="flex-start" gap={1} mb={4}>
               {getDisplayCompanies(figure.companyRoles, figure.manufacturer).map((company, idx) => (
-                <HStack key={idx} spacing={2}>
+                <HStack key={idx} gap={2}>
                   <Text fontSize="xl" color="gray.600">
                     {company.name}
                   </Text>
                   {company.role && (
-                    <Badge colorScheme="purple" fontSize="sm">
+                    <Badge colorPalette="purple" fontSize="sm">
                       {company.role}
                     </Badge>
                   )}
@@ -197,14 +189,14 @@ const FigureDetail: React.FC = () => {
 
             {/* Artists with role badges */}
             {getDisplayArtists(figure.artistRoles).length > 0 && (
-              <VStack align="flex-start" spacing={1} mb={4}>
+              <VStack align="flex-start" gap={1} mb={4}>
                 {getDisplayArtists(figure.artistRoles).map((artist, idx) => (
-                  <HStack key={idx} spacing={2}>
+                  <HStack key={idx} gap={2}>
                     <Text fontSize="md" color="gray.500">
                       {artist.name}
                     </Text>
                     {artist.role && (
-                      <Badge colorScheme="teal" fontSize="xs">
+                      <Badge colorPalette="teal" fontSize="xs">
                         {artist.role}
                       </Badge>
                     )}
@@ -214,12 +206,12 @@ const FigureDetail: React.FC = () => {
             )}
 
             <Flex gap={2} mb={4} flexWrap="wrap">
-              <Badge colorScheme="brand" fontSize="md" px={2} py={1}>
+              <Badge colorPalette="brand" fontSize="md" px={2} py={1}>
                 {figure.scale}
               </Badge>
             </Flex>
             
-            <Divider my={4} />
+            <Separator my={4} />
             
             <Grid templateColumns="auto 1fr" columnGap={4} rowGap={3}>
               <Text fontWeight="bold">Added:</Text>
@@ -249,7 +241,7 @@ const FigureDetail: React.FC = () => {
               {figure.wishRating && (
                 <>
                   <Text fontWeight="bold">Wish Priority:</Text>
-                  <HStack spacing={0}>
+                  <HStack gap={0}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <FaStar
                         key={star}
@@ -262,7 +254,11 @@ const FigureDetail: React.FC = () => {
               )}
 
               <Text fontWeight="bold">MFC Link:</Text>
-              <Link href={figure.mfcLink} isExternal color="brand.500">
+              <Link
+                href={figure.mfcLink}
+                color="brand.500"
+                target='_blank'
+                rel='noopener noreferrer'>
                 <Flex align="center">
                   View on MyFigureCollection <FaExternalLinkAlt size="0.8em" style={{ marginLeft: '0.5em' }} />
                 </Flex>
@@ -274,52 +270,52 @@ const FigureDetail: React.FC = () => {
               Object.values(figure.communityStats).some(v => v !== undefined && v !== null)
             ) && (
               <>
-                <Divider my={4} />
+                <Separator my={4} />
                 <Box>
-                  <HStack spacing={2} mb={3}>
+                  <HStack gap={2} mb={3}>
                     <FaUsers />
                     <Heading size="sm">Community</Heading>
                   </HStack>
-                  <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3}>
+                  <SimpleGrid columns={{ base: 2, md: 3 }} gap={3}>
                     {figure.communityStats.ownedCount !== undefined && (
-                      <Stat size="sm">
-                        <StatLabel>Owned</StatLabel>
-                        <StatNumber fontSize="lg">
+                      <Stat.Root size="sm">
+                        <Stat.Label>Owned</Stat.Label>
+                        <Stat.ValueText fontSize="lg">
                           {figure.communityStats.ownedCount.toLocaleString()}
-                        </StatNumber>
-                      </Stat>
+                        </Stat.ValueText>
+                      </Stat.Root>
                     )}
                     {figure.communityStats.wishedCount !== undefined && (
-                      <Stat size="sm">
-                        <StatLabel>Wished</StatLabel>
-                        <StatNumber fontSize="lg">
+                      <Stat.Root size="sm">
+                        <Stat.Label>Wished</Stat.Label>
+                        <Stat.ValueText fontSize="lg">
                           {figure.communityStats.wishedCount.toLocaleString()}
-                        </StatNumber>
-                      </Stat>
+                        </Stat.ValueText>
+                      </Stat.Root>
                     )}
                     {figure.communityStats.orderedCount !== undefined && (
-                      <Stat size="sm">
-                        <StatLabel>Ordered</StatLabel>
-                        <StatNumber fontSize="lg">
+                      <Stat.Root size="sm">
+                        <Stat.Label>Ordered</Stat.Label>
+                        <Stat.ValueText fontSize="lg">
                           {figure.communityStats.orderedCount.toLocaleString()}
-                        </StatNumber>
-                      </Stat>
+                        </Stat.ValueText>
+                      </Stat.Root>
                     )}
                     {figure.communityStats.listedInCount !== undefined && (
-                      <Stat size="sm">
-                        <StatLabel>Listed In</StatLabel>
-                        <StatNumber fontSize="lg">
+                      <Stat.Root size="sm">
+                        <Stat.Label>Listed In</Stat.Label>
+                        <Stat.ValueText fontSize="lg">
                           {figure.communityStats.listedInCount.toLocaleString()}
-                        </StatNumber>
-                      </Stat>
+                        </Stat.ValueText>
+                      </Stat.Root>
                     )}
                     {figure.communityStats.averageScore !== undefined && (
-                      <Stat size="sm">
-                        <StatLabel>MFC Score</StatLabel>
-                        <StatNumber fontSize="lg">
+                      <Stat.Root size="sm">
+                        <Stat.Label>MFC Score</Stat.Label>
+                        <Stat.ValueText fontSize="lg">
                           {figure.communityStats.averageScore.toFixed(1)}/10
-                        </StatNumber>
-                      </Stat>
+                        </Stat.ValueText>
+                      </Stat.Root>
                     )}
                   </SimpleGrid>
                 </Box>
@@ -329,9 +325,9 @@ const FigureDetail: React.FC = () => {
             {/* Related Items */}
             {figure.relatedItems && figure.relatedItems.length > 0 && (
               <>
-                <Divider my={4} />
+                <Separator my={4} />
                 <Box>
-                  <HStack spacing={2} mb={3}>
+                  <HStack gap={2} mb={3}>
                     <FaExternalLinkAlt size="14px" />
                     <Heading size="sm">Related Items</Heading>
                   </HStack>
@@ -340,10 +336,10 @@ const FigureDetail: React.FC = () => {
                       <Link
                         key={item.mfcId}
                         href={`https://myfigurecollection.net/item/${item.mfcId}`}
-                        isExternal
                         _hover={{ textDecoration: 'none' }}
                         flexShrink={0}
-                      >
+                        target='_blank'
+                        rel='noopener noreferrer'>
                         <Box
                           w="120px"
                           borderWidth="1px"
@@ -363,11 +359,11 @@ const FigureDetail: React.FC = () => {
                             />
                           )}
                           <Box p={2}>
-                            <Text fontSize="xs" noOfLines={2}>
+                            <Text fontSize="xs" lineClamp={2}>
                               {item.name || `MFC #${item.mfcId}`}
                             </Text>
                             {item.relationType && (
-                              <Badge fontSize="2xs" colorScheme="gray" mt={1}>
+                              <Badge fontSize="2xs" colorPalette="gray" mt={1}>
                                 {item.relationType}
                               </Badge>
                             )}
@@ -396,17 +392,17 @@ const FigureDetail: React.FC = () => {
             {/* Lists section */}
             {figure.mfcId && (
               <>
-                <Divider my={4} />
+                <Separator my={4} />
                 <Box>
                   <Flex align="center" justify="space-between" mb={2}>
-                    <HStack spacing={2}>
+                    <HStack gap={2}>
                       <FaListUl />
                       <Heading size="sm">Lists</Heading>
                     </HStack>
                     <Button
                       size="xs"
                       variant="outline"
-                      colorScheme="brand"
+                      colorPalette="brand"
                       onClick={onListsOpen}
                       data-testid="manage-lists-btn"
                     >
@@ -414,17 +410,17 @@ const FigureDetail: React.FC = () => {
                     </Button>
                   </Flex>
                   {memberLists && memberLists.length > 0 ? (
-                    <Wrap spacing={2}>
+                    <Wrap gap={2}>
                       {memberLists.map((list) => (
                         <WrapItem key={list._id}>
-                          <Tag
+                          <Tag.Root
                             size="sm"
-                            colorScheme="brand"
+                            colorPalette="brand"
                             cursor="pointer"
                             onClick={() => navigate(`/lists/${list._id}`)}
                           >
                             {list.name}
-                          </Tag>
+                          </Tag.Root>
                         </WrapItem>
                       ))}
                     </Wrap>
@@ -437,31 +433,18 @@ const FigureDetail: React.FC = () => {
               </>
             )}
 
-            <Divider my={4} />
+            <Separator my={4} />
 
             <Flex justifyContent="space-between" mt={6}>
-              <Button
-                leftIcon={<FaArrowLeft />}
-                as={RouterLink}
-                to="/figures"
-                variant="outline"
-              >
-                Back to Figures
-              </Button>
+              <Button variant="outline" asChild><RouterLink to="/figures"><FaArrowLeft />Back to Figures
+                                                </RouterLink></Button>
 
-              <Button
-                as={RouterLink}
-                to={`/figures/edit/${figure._id}`}
-                colorScheme="brand"
-                leftIcon={<FaEdit />}
-              >
-                Edit Figure
-              </Button>
+              <Button colorPalette="brand" asChild><RouterLink to={`/figures/edit/${figure._id}`}><FaEdit />Edit Figure
+                                                </RouterLink></Button>
             </Flex>
           </GridItem>
         </Grid>
       </Box>
-
       {/* List membership modal */}
       {figure.mfcId && (
         <ListMembershipModal

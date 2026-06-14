@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { useColorMode } from '@chakra-ui/react';
+import { useColorMode } from "../components/ui/color-mode";
 import { useThemeStore } from '../stores/themeStore';
 import { useAuthStore } from '../stores/authStore';
 import { updateUserProfile } from '../api';

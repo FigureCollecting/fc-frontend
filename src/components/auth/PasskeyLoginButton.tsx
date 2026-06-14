@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, useToast } from '@chakra-ui/react';
+import { Steps, Button, useToast } from '@chakra-ui/react';
 import { getWebAuthnLoginOptions, verifyWebAuthnLogin } from '../../api';
 import { startAuthentication } from '@simplewebauthn/browser';
 
@@ -45,11 +45,10 @@ const PasskeyLoginButton: React.FC<PasskeyLoginButtonProps> = ({ onSuccess }) =>
     <Button
       w="full"
       variant="outline"
-      isLoading={loading}
+      loading={loading}
       onClick={handlePasskeyLogin}
-    >
-      Sign in with Passkey
-    </Button>
+    >Sign in with Passkey
+          </Button>
   );
 };
 

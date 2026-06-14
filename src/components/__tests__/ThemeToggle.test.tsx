@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '../../test-utils';
 import { fireEvent } from '@testing-library/react';
 import ThemeToggle from '../ThemeToggle';
-import { ChakraProvider } from '@chakra-ui/react';
+import { Steps, ChakraProvider } from '@chakra-ui/react';
 import theme from '../../theme';
 import { act } from 'react-dom/test-utils';
 
@@ -13,7 +13,7 @@ beforeAll(() => {
 
 // Wrapper with Chakra provider for proper theme context
 const ThemeWrapper = ({ children }: { children: React.ReactNode }) => (
-  <ChakraProvider theme={theme}>{children}</ChakraProvider>
+  <ChakraProvider value={system}>{children}</ChakraProvider>
 );
 
 describe('ThemeToggle', () => {

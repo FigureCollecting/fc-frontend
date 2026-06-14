@@ -1,21 +1,13 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { useColorModeValue } from "../components/ui/color-mode";
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
-import {
-  Box,
-  Heading,
-  Button,
-  Flex,
-  useToast,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-useColorModeValue, } from '@chakra-ui/react';
-import { ChevronRightIcon } from '@chakra-ui/icons';
+import { Steps, Box, Heading, Button, Flex, useToast, Breadcrumb, Icon } from '@chakra-ui/react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { createFigure } from '../api';
 import FigureForm from '../components/FigureForm';
 import { FigureFormData } from '../types';
+import { LuChevronRight } from 'react-icons/lu';
 
 type SubmitAction = 'save' | 'saveAndAdd' | null;
 
@@ -88,30 +80,24 @@ const AddFigure: React.FC = () => {
 
   return (
     <Box>
-      <Breadcrumb spacing="8px" separator={<ChevronRightIcon color="gray.500" />} mb={5}>
-        <BreadcrumbItem>
-          <BreadcrumbLink as={RouterLink} to="/">Dashboard</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem>
-          <BreadcrumbLink as={RouterLink} to="/figures">Figures</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem isCurrentPage>
-          <BreadcrumbLink>Add New Figure</BreadcrumbLink>
-        </BreadcrumbItem>
-      </Breadcrumb>
-      
+      <Breadcrumb.Root mb={5}>
+        <Breadcrumb.List gap="8px">
+          <Breadcrumb.Item>
+            <Breadcrumb.Link asChild><RouterLink to="/">Dashboard</RouterLink></Breadcrumb.Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator>{<Icon color="gray.500" asChild><LuChevronRight /></Icon>}</Breadcrumb.Separator><Breadcrumb.Item>
+            <Breadcrumb.Link asChild><RouterLink to="/figures">Figures</RouterLink></Breadcrumb.Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator>{<Icon color="gray.500" asChild><LuChevronRight /></Icon>}</Breadcrumb.Separator><Breadcrumb.Item>
+            <Breadcrumb.Link>Add New Figure</Breadcrumb.Link>
+          </Breadcrumb.Item>
+        </Breadcrumb.List>
+      </Breadcrumb.Root>
       <Flex justify="space-between" align="center" mb={6}>
         <Heading size="lg">Add New Figure</Heading>
-        <Button
-          leftIcon={<FaArrowLeft />}
-          as={RouterLink}
-          to="/figures"
-          variant="outline"
-        >
-          Back to Figures
-        </Button>
+        <Button variant="outline" asChild><RouterLink to="/figures"><FaArrowLeft />Back to Figures
+                              </RouterLink></Button>
       </Flex>
-      
       <Box bg={cardBg} p={6} borderRadius="lg" shadow="md">
         <FigureForm
           onSubmit={handleSubmit}

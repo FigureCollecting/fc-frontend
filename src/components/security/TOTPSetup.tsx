@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import {
-  Box, VStack, Heading, Text, Image, Input, Button,
-  Alert, AlertIcon, Code, useToast, HStack, PinInput, PinInputField
+  Steps,
+  Box,
+  VStack,
+  Heading,
+  Text,
+  Image,
+  Input,
+  Button,
+  Alert,
+  Code,
+  useToast,
+  HStack,
+  PinInput,
+  PinInputField,
 } from '@chakra-ui/react';
 import { setupTOTP, verifyTOTPSetup, disableTOTP } from '../../api';
 import BackupCodesDisplay from './BackupCodesDisplay';
@@ -77,7 +89,7 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
 
   if (step === 'setup') {
     return (
-      <VStack spacing={4} align="stretch">
+      <VStack gap={4} align="stretch">
         <Heading size="sm">Scan QR Code</Heading>
         <Text fontSize="sm">Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)</Text>
         {setupData?.qrCodeDataURL && (
@@ -90,16 +102,16 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
         </Text>
         <Text fontSize="sm" mt={4}>Enter the 6-digit code from your app:</Text>
         <HStack justify="center">
-          <PinInput otp size="lg" onComplete={handleVerify}>
-            <PinInputField />
-            <PinInputField />
-            <PinInputField />
-            <PinInputField />
-            <PinInputField />
-            <PinInputField />
-          </PinInput>
+          <PinInput.Root otp size="lg" onValueComplete={handleVerify}><PinInput.HiddenInput />
+
+
+
+
+
+
+            <PinInput.Control><PinInput.Input index={0} /><PinInput.Input index={1} /><PinInput.Input index={2} /><PinInput.Input index={3} /><PinInput.Input index={4} /><PinInput.Input index={5} /></PinInput.Control></PinInput.Root>
         </HStack>
-        {error && <Alert status="error" borderRadius="md"><AlertIcon />{error}</Alert>}
+        {error && <Alert.Root status="error" borderRadius="md"><Alert.Indicator />{error}</Alert.Root>}
         <Button variant="ghost" onClick={() => setStep('idle')}>Cancel</Button>
       </VStack>
     );
@@ -107,18 +119,18 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
 
   if (step === 'disable') {
     return (
-      <VStack spacing={4} align="stretch">
+      <VStack gap={4} align="stretch">
         <Heading size="sm">Disable 2FA</Heading>
         <Text fontSize="sm">Enter your authenticator code to disable two-factor authentication.</Text>
         <Input
           placeholder="Enter 6-digit code"
           value={disableCode}
-          onChange={(e) => setDisableCode(e.target.value)}
+          onValueChange={(e) => setDisableCode(e.target.value)}
           maxLength={6}
         />
-        {error && <Alert status="error" borderRadius="md"><AlertIcon />{error}</Alert>}
+        {error && <Alert.Root status="error" borderRadius="md"><Alert.Indicator />{error}</Alert.Root>}
         <HStack>
-          <Button colorScheme="red" onClick={handleDisable} isLoading={loading} isDisabled={disableCode.length !== 6}>
+          <Button colorPalette="red" onClick={handleDisable} loading={loading} disabled={disableCode.length !== 6}>
             Disable
           </Button>
           <Button variant="ghost" onClick={() => { setStep('idle'); setError(''); }}>Cancel</Button>
@@ -128,7 +140,7 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
   }
 
   return (
-    <VStack spacing={4} align="stretch">
+    <VStack gap={4} align="stretch">
       <Heading size="sm">Authenticator App (TOTP)</Heading>
       <Text fontSize="sm">
         {isEnabled
@@ -136,11 +148,11 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
           : 'Add an extra layer of security to your account.'}
       </Text>
       {isEnabled ? (
-        <Button colorScheme="red" variant="outline" onClick={() => setStep('disable')}>
+        <Button colorPalette="red" variant="outline" onClick={() => setStep('disable')}>
           Disable 2FA
         </Button>
       ) : (
-        <Button colorScheme="blue" onClick={handleSetup} isLoading={loading}>
+        <Button colorPalette="blue" onClick={handleSetup} loading={loading}>
           Set Up 2FA
         </Button>
       )}

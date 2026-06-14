@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
-import { Box, Stack, Link, Text, Icon, Flex } from '@chakra-ui/react';
+import { Steps, Box, Stack, Link, Text, Icon, Flex } from '@chakra-ui/react';
 import { FaHome, FaCube, FaPlus, FaSearch, FaChartBar, FaListUl, FaUser } from 'react-icons/fa';
 
 const Sidebar: React.FC = () => {
@@ -15,8 +15,6 @@ const Sidebar: React.FC = () => {
     
     return (
       <Link
-        as={RouterLink}
-        to={to}
         display="block"
         p={2}
         borderRadius="md"
@@ -28,12 +26,12 @@ const Sidebar: React.FC = () => {
           bg: 'brand.50',
           color: 'brand.600',
         }}
-      >
-        <Flex align="center">
-          <Icon as={icon} mr={3} />
-          <Text>{children}</Text>
-        </Flex>
-      </Link>
+        asChild><RouterLink to={to}>
+          <Flex align="center">
+            <Icon as={icon} mr={3} />
+            <Text>{children}</Text>
+          </Flex>
+        </RouterLink></Link>
     );
   };
 
@@ -47,7 +45,7 @@ const Sidebar: React.FC = () => {
       pr={4}
       py={3}
     >
-      <Stack spacing={1}>
+      <Stack gap={1}>
         <Text fontWeight="bold" fontSize="sm" color="gray.500" mb={2} px={2}>
           MAIN
         </Text>

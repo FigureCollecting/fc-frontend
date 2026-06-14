@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { ChakraProvider } from '@chakra-ui/react';
+import { Steps, ChakraProvider } from '@chakra-ui/react';
 import ListDetail from '../pages/ListDetail';
 import * as api from '../api';
 import { MfcList } from '../types';
@@ -80,7 +80,7 @@ function renderListDetail(listId = 'list1') {
   const user = userEvent.setup();
   const result = render(
     <QueryClientProvider client={queryClient}>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider value={system}>
         <MemoryRouter initialEntries={[`/lists/${listId}`]}>
           <Routes>
             <Route path="/lists/:id" element={<ListDetail />} />

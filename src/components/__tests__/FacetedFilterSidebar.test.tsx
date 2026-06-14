@@ -15,7 +15,7 @@ jest.mock('@chakra-ui/react', () => {
   };
 });
 
-import { useBreakpointValue } from '@chakra-ui/react';
+import { Steps, useBreakpointValue } from '@chakra-ui/react';
 const mockedBreakpoint = useBreakpointValue as jest.Mock;
 
 const emptyFilters: FacetedFilters = {

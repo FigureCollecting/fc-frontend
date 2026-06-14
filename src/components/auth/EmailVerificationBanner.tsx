@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, AlertIcon, Button, HStack, Text, useToast } from '@chakra-ui/react';
+import { Steps, Alert, Button, HStack, Text, useToast } from '@chakra-ui/react';
 import { useAuthStore } from '../../stores/authStore';
 import { resendVerificationEmail, getUserProfile } from '../../api';
 
@@ -52,15 +52,15 @@ const EmailVerificationBanner: React.FC = () => {
   };
 
   return (
-    <Alert status="warning" variant="subtle">
-      <AlertIcon />
+    <Alert.Root status="warning" variant="subtle">
+      <Alert.Indicator />
       <HStack justify="space-between" w="full">
         <Text>Your email is not verified. Please check your inbox.</Text>
-        <Button size="sm" colorScheme="orange" variant="outline" isLoading={loading} onClick={handleResend}>
+        <Button size="sm" colorPalette="orange" variant="outline" loading={loading} onClick={handleResend}>
           Resend
         </Button>
       </HStack>
-    </Alert>
+    </Alert.Root>
   );
 };
 
