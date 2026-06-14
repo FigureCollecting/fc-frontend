@@ -1,135 +1,80 @@
 /**
- * Enhanced theme tests - covers component variant functions
+ * Enhanced theme tests (Chakra v3 system).
+ *
+ * The v2 component `variants`/`baseStyle` functions that took
+ * `StyleFunctionProps` + `mode()` no longer exist in v3. The equivalent design
+ * intent is now expressed through tokens, brand semantic tokens, the brand
+ * Button recipe default, and v3's built-in dark-mode-aware recipes. These tests
+ * validate that intent against the real v3 system.
  */
-import theme from '../theme';
+import system from '../theme';
 
-describe('theme configuration', () => {
-  it('should have correct initial color mode', () => {
-    expect(theme.token('config.initialColorMode')).toBe('light');
-    expect(theme.token('config.useSystemColorMode')).toBe(false);
-  });
-
+describe('theme configuration (Chakra v3 system)', () => {
   it('should have brand colors', () => {
-    expect(theme.token('colors.brand')).toBeDefined();
-    expect(theme.token('colors.brand')).toBe('#0967d2');
+    expect(system.token('colors.brand.500')).toBe('#0967d2');
+    expect(system.token('colors.brand.400')).toBe('#2186eb');
   });
 
   it('should have terminal colors', () => {
-    expect(theme.token('colors.terminal')).toBeDefined();
-    expect(theme.token('colors.terminal.bg')).toBe('#0a0a0a');
-    expect(theme.token('colors.terminal.text')).toBe('#00ff00');
+    expect(system.token('colors.terminal.bg')).toBe('#0a0a0a');
+    expect(system.token('colors.terminal.text')).toBe('#00ff00');
   });
 
   it('should have Inter font', () => {
-    expect(theme.token('fonts.heading')).toContain('Inter');
-    expect(theme.token('fonts.body')).toContain('Inter');
+    expect(system.token('fonts.heading')).toContain('Inter');
+    expect(system.token('fonts.body')).toContain('Inter');
   });
 
-  describe('Button component variants', () => {
-    it('should have solid variant for brand colorScheme', () => {
-      const solidVariant = theme.token('components.Button.variants.solid');
-      expect(solidVariant).toBeDefined();
-
-      // Call with brand colorScheme
-      const brandStyles = solidVariant({ colorScheme: 'brand', system, colorMode: 'light' });
-      expect(brandStyles.bg).toBeTruthy();
-      expect(brandStyles.color).toBeTruthy();
-      expect(brandStyles._hover).toBeDefined();
+  describe('Button brand palette default', () => {
+    it('should set the brand colorPalette on the button base recipe', () => {
+      const buttonRecipe = system.getRecipe('button');
+      expect(buttonRecipe.base?.colorPalette).toBe('brand');
     });
 
-    it('should use default Chakra styles for non-brand colorScheme', () => {
-      const solidVariant = theme.token('components.Button.variants.solid');
-      const otherStyles = solidVariant({ colorScheme: 'red', system, colorMode: 'light' });
-      // Non-brand colorSchemes get default Chakra solid variant styles (not brand-specific overrides)
-      expect(otherStyles.bg).not.toContain('brand');
-    });
-
-    it('should have different styles for dark mode', () => {
-      const solidVariant = theme.token('components.Button.variants.solid');
-      const darkStyles = solidVariant({ colorScheme: 'brand', system, colorMode: 'dark' });
-      expect(darkStyles.bg).toBeTruthy();
+    it('should still provide the standard solid/outline/ghost variants', () => {
+      const buttonRecipe = system.getRecipe('button');
+      const variantKeys = Object.keys(buttonRecipe.variants?.variant ?? {});
+      expect(variantKeys).toEqual(
+        expect.arrayContaining(['solid', 'outline', 'ghost'])
+      );
     });
   });
 
-  describe('Input component variants', () => {
-    it('should have outline variant', () => {
-      const outlineVariant = theme.token('components.Input.variants.outline');
-      expect(outlineVariant).toBeDefined();
-
-      const styles = outlineVariant({ system, colorMode: 'light' });
-      expect(styles.field).toBeDefined();
-      expect(styles.field.bg).toBeTruthy();
-      expect(styles.field._focus).toBeDefined();
-      expect(styles.field._placeholder).toBeDefined();
+  describe('Brand semantic tokens', () => {
+    it('should resolve solid/contrast/fg slots to css vars', () => {
+      expect(system.token('colors.brand.solid')).toContain('--chakra-colors-brand-solid');
+      expect(system.token('colors.brand.contrast')).toContain('--chakra-colors-brand-contrast');
+      expect(system.token('colors.brand.fg')).toContain('--chakra-colors-brand-fg');
     });
   });
 
-  describe('Select component variants', () => {
-    it('should have outline variant', () => {
-      const outlineVariant = theme.token('components.Select.variants.outline');
-      expect(outlineVariant).toBeDefined();
-
-      const styles = outlineVariant({ system, colorMode: 'light' });
-      expect(styles.field).toBeDefined();
-      expect(styles.field.bg).toBeTruthy();
+  describe('Built-in form recipes (v3 defaults, dark-mode aware)', () => {
+    it('should expose input outline-style recipe', () => {
+      const input = system.getRecipe('input');
+      expect(input).toBeDefined();
+      expect(input.variants?.variant).toBeDefined();
     });
-  });
 
-  describe('Textarea component variants', () => {
-    it('should have outline variant', () => {
-      const outlineVariant = theme.token('components.Textarea.variants.outline');
-      expect(outlineVariant).toBeDefined();
-
-      const styles = outlineVariant({ system, colorMode: 'light' });
-      expect(styles.bg).toBeTruthy();
-      expect(styles._focus).toBeDefined();
-      expect(styles._placeholder).toBeDefined();
+    it('should expose textarea recipe', () => {
+      const textarea = system.getRecipe('textarea');
+      expect(textarea).toBeDefined();
     });
-  });
 
-  describe('FormLabel component', () => {
-    it('should have baseStyle', () => {
-      const baseStyle = theme.token('components.FormLabel.baseStyle');
-      expect(baseStyle).toBeDefined();
-
-      const styles = baseStyle({ system, colorMode: 'light' });
-      expect(styles.color).toBeTruthy();
-    });
-  });
-
-  describe('Card component', () => {
-    it('should have baseStyle', () => {
-      const baseStyle = theme.token('components.Card.baseStyle');
-      expect(baseStyle).toBeDefined();
-
-      const styles = baseStyle({ system, colorMode: 'light' });
-      expect(styles.container).toBeDefined();
-      expect(styles.container.bg).toBeTruthy();
-    });
-  });
-
-  describe('Menu component', () => {
-    it('should have baseStyle', () => {
-      const baseStyle = theme.token('components.Menu.baseStyle');
-      expect(baseStyle).toBeDefined();
-
-      const styles = baseStyle({ system, colorMode: 'light' });
-      expect(styles.list).toBeDefined();
-      expect(styles.item).toBeDefined();
-      expect(styles.item._hover).toBeDefined();
-      expect(styles.item._focus).toBeDefined();
+    it('should expose nativeSelect slot recipe', () => {
+      const nativeSelect = system.getSlotRecipe('nativeSelect');
+      expect(nativeSelect).toBeDefined();
+      expect(nativeSelect.slots).toEqual(
+        expect.arrayContaining(['root', 'field'])
+      );
     });
   });
 
   describe('global styles', () => {
-    it('should have global body styles', () => {
-      const globalStyles = theme.token('styles.global');
-      expect(globalStyles).toBeDefined();
-
-      const styles = globalStyles({ system, colorMode: 'light' });
-      expect(styles.body).toBeDefined();
-      expect(styles.body.bg).toBeTruthy();
-      expect(styles.body.color).toBeTruthy();
+    it('should style the body with bg/color and a dark conditional', () => {
+      const globalCss = system.getGlobalCss();
+      const serialized = JSON.stringify(globalCss);
+      expect(serialized).toContain('body');
+      expect(serialized.toLowerCase()).toContain('dark');
     });
   });
 });
