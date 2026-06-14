@@ -97,6 +97,31 @@ if (!window.crypto) {
   });
 }
 
+// structuredClone polyfill: jest-environment-jsdom@27 runs in a VM context that
+// does not expose Node's global structuredClone, which Chakra UI v3 (via Zag.js)
+// relies on at render time. Use V8 structured serialization (handles undefined,
+// Maps, Sets, etc.) rather than JSON, which throws on undefined.
+if (typeof (global as any).structuredClone === 'undefined') {
+  const v8 = require('v8') as typeof import('v8');
+  (global as any).structuredClone = <T>(val: T): T =>
+    val === undefined ? val : v8.deserialize(v8.serialize(val));
+}
+
+// ResizeObserver is used by Chakra v3 components (e.g. positioned overlays) and
+// is not implemented by jsdom.
+if (typeof (global as any).ResizeObserver === 'undefined') {
+  (global as any).ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
+// jsdom does not implement scrollIntoView, which Ark UI menus/selects call.
+if (typeof window !== 'undefined' && !window.HTMLElement.prototype.scrollIntoView) {
+  window.HTMLElement.prototype.scrollIntoView = function () {};
+}
+
 // Basic fetch mock
 global.fetch = jest.fn(() =>
   Promise.resolve({
