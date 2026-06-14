@@ -7,6 +7,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FigureForm from '../FigureForm';
 import { ChakraProvider } from '@chakra-ui/react';
+import system from '../../theme';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 // Mock usePublicConfigs to avoid QueryClient dependency issues
@@ -47,7 +48,7 @@ const renderFigureForm = (props = {}) => {
   };
 
   return render(
-    <ChakraProvider>
+    <ChakraProvider value={system}>
       <FigureForm {...defaultProps} />
     </ChakraProvider>
   );
@@ -72,7 +73,7 @@ describe('FigureForm Uncovered Conditions', () => {
 
       // Condition 2: with valid URL (truthy)
       rerender(
-        <ChakraProvider>
+        <ChakraProvider value={system}>
           <FigureForm
             onSubmit={jest.fn()}
             isLoading={false}
@@ -100,7 +101,7 @@ describe('FigureForm Uncovered Conditions', () => {
 
       // Condition 2: with valid URL (truthy)
       rerender(
-        <ChakraProvider>
+        <ChakraProvider value={system}>
           <FigureForm
             onSubmit={jest.fn()}
             isLoading={false}

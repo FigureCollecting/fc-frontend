@@ -7,6 +7,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FigureForm from '../FigureForm';
 import { ChakraProvider } from '@chakra-ui/react';
+import system from '../../theme';
 
 // Mock usePublicConfigs to avoid QueryClient dependency issues
 jest.mock('../../hooks/usePublicConfig', () => ({
@@ -46,7 +47,7 @@ const renderFigureForm = (props = {}) => {
   };
 
   return render(
-    <ChakraProvider>
+    <ChakraProvider value={system}>
       <FigureForm {...defaultProps} />
     </ChakraProvider>
   );

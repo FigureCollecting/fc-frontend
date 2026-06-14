@@ -9,6 +9,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FigureForm from '../FigureForm';
 import { ChakraProvider } from '@chakra-ui/react';
+import system from '../../theme';
 import { Figure, FigureFormData } from '../../types';
 
 // Mock usePublicConfigs
@@ -53,7 +54,7 @@ const renderFigureForm = (props: Partial<React.ComponentProps<typeof FigureForm>
   };
 
   return render(
-    <ChakraProvider>
+    <ChakraProvider value={system}>
       <FigureForm {...defaultProps} />
     </ChakraProvider>
   );
