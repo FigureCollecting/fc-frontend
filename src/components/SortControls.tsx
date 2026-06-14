@@ -1,6 +1,6 @@
 import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import { Steps, HStack, NativeSelect, IconButton, Field } from '@chakra-ui/react';
+import { HStack, NativeSelect, IconButton, Field } from '@chakra-ui/react';
 import { Tooltip } from './ui/tooltip';
 import { FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 
@@ -49,12 +49,11 @@ const SortControls: React.FC<SortControlsProps> = ({
         <Field.Label htmlFor="sort-by" srOnly>
           Sort by
         </Field.Label>
-        <NativeSelect.Root>
+        <NativeSelect.Root size="sm">
           <NativeSelect.Field
             id="sort-by"
             value={sortBy}
-            onValueChange={handleFieldChange}
-            size="sm"
+            onChange={handleFieldChange}
             borderColor={borderColor}
             bg={bgColor}
             aria-label="Sort by field"

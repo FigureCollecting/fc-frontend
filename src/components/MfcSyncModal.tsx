@@ -19,7 +19,6 @@ import {
   VStack,
   HStack,
   Text,
-  useToast,
   Badge,
   Box,
   Alert,
@@ -31,6 +30,7 @@ import {
   Dialog,
   Portal,
 } from '@chakra-ui/react';
+import { toaster } from './ui/toaster';
 import {
   FaSync,
   FaCheckCircle,
@@ -180,7 +180,6 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['owned', 'ordered', 'wished']);
   const [syncLists, setSyncLists] = useState(true);
 
-  const toast = useToast();
   const { user } = useAuthStore();
   const userId = user?._id;
   const { startSync, isActive } = useSyncStore();
@@ -261,10 +260,10 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
         if (result.valid) {
           logger.info(`[session=${currentSession}] Validation successful`);
           setStep('ready');
-          toast({
+          toaster.create({
             title: 'MFC Connected',
             description: `Logged in as ${result.username || 'user'}`,
-            status: 'success',
+            type: 'success',
             duration: 3000,
           });
         } else {
@@ -294,25 +293,25 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
     };
 
     checkCookies();
-  }, [isOpen, userId, toast]);
+  }, [isOpen, userId]);
 
   // Start the sync and close modal
   const handleStartSync = async () => {
     if (!user?._id || !cookies || !validationResult?.valid) return;
     if (selectedStatuses.length === 0 && !syncLists) {
-      toast({
+      toaster.create({
         title: 'Nothing selected',
         description: 'Please select at least one status or enable list sync',
-        status: 'warning',
+        type: 'warning',
         duration: 3000,
       });
       return;
     }
     if (isActive) {
-      toast({
+      toaster.create({
         title: 'Sync already in progress',
         description: 'Please wait for the current sync to complete',
-        status: 'warning',
+        type: 'warning',
         duration: 3000,
       });
       return;
@@ -475,7 +474,7 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
       {/* Lists Sync Option */}
       <Box w="100%" p={4} bg="gray.50" borderRadius="md" _dark={{ bg: 'gray.700' }}>
         <Checkbox.Root
-          onCheckedChange={(e) => setSyncLists(e.target.checked)}
+          onCheckedChange={(e) => setSyncLists(!!e.checked)}
           colorPalette="orange"
           data-testid="sync-lists-checkbox"
           checked={syncLists}

@@ -8,19 +8,14 @@ import {
   Spinner,
   Center,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Badge,
   IconButton,
   Flex,
   Button,
-  useToast,
   useDisclosure,
 } from '@chakra-ui/react';
 import { Tooltip } from '../components/ui/tooltip';
+import { toaster } from '../components/ui/toaster';
 import { FaTrash, FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { getLists, deleteList, createList } from '../api';
@@ -35,7 +30,6 @@ const PRIVACY_COLORS: Record<string, string> = {
 
 const Lists: React.FC = () => {
   const navigate = useNavigate();
-  const toast = useToast();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const limit = 20;
@@ -52,11 +46,11 @@ const Lists: React.FC = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('lists');
-        toast({ title: 'List created', status: 'success', duration: 3000 });
+        toaster.create({ title: 'List created', type: 'success', duration: 3000 });
         onCreateClose();
       },
       onError: () => {
-        toast({ title: 'Failed to create list', status: 'error', duration: 3000 });
+        toaster.create({ title: 'Failed to create list', type: 'error', duration: 3000 });
       },
     }
   );
@@ -70,11 +64,11 @@ const Lists: React.FC = () => {
     try {
       await deleteList(listId);
       queryClient.invalidateQueries('lists');
-      toast({ title: 'List deleted', status: 'success', duration: 3000 });
+      toaster.create({ title: 'List deleted', type: 'success', duration: 3000 });
     } catch {
-      toast({ title: 'Failed to delete list', status: 'error', duration: 3000 });
+      toaster.create({ title: 'Failed to delete list', type: 'error', duration: 3000 });
     }
-  }, [queryClient, toast]);
+  }, [queryClient]);
 
   return (
     <Box p={4}>
@@ -112,7 +106,7 @@ const Lists: React.FC = () => {
       {data && data.data.length > 0 && (
         <>
           <Box overflowX="auto">
-            <Table.Root variant="simple" size="sm">
+            <Table.Root size="sm">
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeader>Name</Table.ColumnHeader>
@@ -131,7 +125,7 @@ const Lists: React.FC = () => {
                     onClick={() => handleRowClick(list._id)}
                   >
                     <Table.Cell fontWeight="medium">{list.name}</Table.Cell>
-                    <Table.Cell color="gray.600" maxW="300px" isTruncated>
+                    <Table.Cell color="gray.600" maxW="300px" truncate>
                       {list.teaser || '—'}
                     </Table.Cell>
                     <Table.Cell>

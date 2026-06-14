@@ -93,11 +93,11 @@ const ResetPassword: React.FC = () => {
             )}
             <Field.Root>
               <Field.Label>New Password</Field.Label>
-              <Input type="password" value={password} onValueChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <Input type="password" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} required minLength={6} />
             </Field.Root>
             <Field.Root>
               <Field.Label>Confirm Password</Field.Label>
-              <Input type="password" value={confirmPassword} onValueChange={(e) => setConfirmPassword(e.target.value)} required />
+              <Input type="password" value={confirmPassword} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)} required />
             </Field.Root>
             <Button type="submit" colorPalette="blue" w="full" loading={status === 'loading'}>
               Reset Password

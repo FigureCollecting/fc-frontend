@@ -17,7 +17,6 @@ import {
   Collapsible,
   NativeSelect,
   NumberInput,
-  NumberInputField,
   Field,
 } from '@chakra-ui/react';
 import { Tooltip } from '../ui/tooltip';
@@ -57,7 +56,7 @@ const CatalogPurchaseSection: React.FC<CatalogPurchaseSectionProps> = ({
               <GridItem>
                 <Field.Root>
                   <Field.Label>Height (mm)</Field.Label>
-                  <NumberInput.Root min={0} onValueChange={(_, val) => setValue('heightMm', isNaN(val) ? undefined : val)} value={String(watch('heightMm') ?? '')}>
+                  <NumberInput.Root min={0} onValueChange={(e) => setValue('heightMm', isNaN(e.valueAsNumber) ? undefined : e.valueAsNumber)} value={String(watch('heightMm') ?? '')}>
                     <NumberInput.Input placeholder="e.g., 230" />
                   </NumberInput.Root>
                 </Field.Root>
@@ -66,7 +65,7 @@ const CatalogPurchaseSection: React.FC<CatalogPurchaseSectionProps> = ({
               <GridItem>
                 <Field.Root>
                   <Field.Label>Width (mm)</Field.Label>
-                  <NumberInput.Root min={0} onValueChange={(_, val) => setValue('widthMm', isNaN(val) ? undefined : val)} value={String(watch('widthMm') ?? '')}>
+                  <NumberInput.Root min={0} onValueChange={(e) => setValue('widthMm', isNaN(e.valueAsNumber) ? undefined : e.valueAsNumber)} value={String(watch('widthMm') ?? '')}>
                     <NumberInput.Input placeholder="e.g., 150" />
                   </NumberInput.Root>
                 </Field.Root>
@@ -75,7 +74,7 @@ const CatalogPurchaseSection: React.FC<CatalogPurchaseSectionProps> = ({
               <GridItem>
                 <Field.Root>
                   <Field.Label>Depth (mm)</Field.Label>
-                  <NumberInput.Root min={0} onValueChange={(_, val) => setValue('depthMm', isNaN(val) ? undefined : val)} value={String(watch('depthMm') ?? '')}>
+                  <NumberInput.Root min={0} onValueChange={(e) => setValue('depthMm', isNaN(e.valueAsNumber) ? undefined : e.valueAsNumber)} value={String(watch('depthMm') ?? '')}>
                     <NumberInput.Input placeholder="e.g., 120" />
                   </NumberInput.Root>
                 </Field.Root>
@@ -110,7 +109,7 @@ const CatalogPurchaseSection: React.FC<CatalogPurchaseSectionProps> = ({
               <GridItem>
                 <Field.Root>
                   <Field.Label>Purchase Price</Field.Label>
-                  <NumberInput.Root min={0} onValueChange={(_, val) => setValue('purchasePrice', isNaN(val) ? undefined : val)} value={String(watch('purchasePrice') ?? '')}>
+                  <NumberInput.Root min={0} onValueChange={(e) => setValue('purchasePrice', isNaN(e.valueAsNumber) ? undefined : e.valueAsNumber)} value={String(watch('purchasePrice') ?? '')}>
                     <NumberInput.Input placeholder="e.g., 150.00" />
                   </NumberInput.Root>
                 </Field.Root>

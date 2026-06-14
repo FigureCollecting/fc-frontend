@@ -10,11 +10,10 @@ import {
   Button,
   Alert,
   Code,
-  useToast,
   HStack,
   PinInput,
-  PinInputField,
 } from '@chakra-ui/react';
+import { toaster } from '../ui/toaster';
 import { setupTOTP, verifyTOTPSetup, disableTOTP } from '../../api';
 import BackupCodesDisplay from './BackupCodesDisplay';
 
@@ -30,7 +29,6 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
   const [disableCode, setDisableCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const toast = useToast();
 
   const handleSetup = async () => {
     setLoading(true);
@@ -54,7 +52,7 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
       setBackupCodes(result.data.backupCodes);
       setStep('backup');
       onStatusChange();
-      toast({ title: '2FA enabled', status: 'success', duration: 3000 });
+      toaster.create({ title: '2FA enabled', type: 'success', duration: 3000 });
     } catch {
       setError('Invalid code. Please try again.');
     } finally {
@@ -70,7 +68,7 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
       setStep('idle');
       setDisableCode('');
       onStatusChange();
-      toast({ title: '2FA disabled', status: 'info', duration: 3000 });
+      toaster.create({ title: '2FA disabled', type: 'info', duration: 3000 });
     } catch {
       setError('Invalid code. Please try again.');
     } finally {
@@ -102,14 +100,14 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
         </Text>
         <Text fontSize="sm" mt={4}>Enter the 6-digit code from your app:</Text>
         <HStack justify="center">
-          <PinInput.Root otp size="lg" onValueComplete={handleVerify}><PinInput.HiddenInput />
-
-
-
-
-
-
-            <PinInput.Control><PinInput.Input index={0} /><PinInput.Input index={1} /><PinInput.Input index={2} /><PinInput.Input index={3} /><PinInput.Input index={4} /><PinInput.Input index={5} /></PinInput.Control></PinInput.Root>
+          <PinInput.Root otp size="lg" onValueComplete={(e) => handleVerify(e.valueAsString)}>
+            <PinInput.HiddenInput />
+            <PinInput.Control>
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <PinInput.Input key={i} index={i} />
+              ))}
+            </PinInput.Control>
+          </PinInput.Root>
         </HStack>
         {error && <Alert.Root status="error" borderRadius="md"><Alert.Indicator />{error}</Alert.Root>}
         <Button variant="ghost" onClick={() => setStep('idle')}>Cancel</Button>
@@ -125,7 +123,7 @@ const TOTPSetup: React.FC<TOTPSetupProps> = ({ isEnabled, onStatusChange }) => {
         <Input
           placeholder="Enter 6-digit code"
           value={disableCode}
-          onValueChange={(e) => setDisableCode(e.target.value)}
+          onChange={(e) => setDisableCode(e.target.value)}
           maxLength={6}
         />
         {error && <Alert.Root status="error" borderRadius="md"><Alert.Indicator />{error}</Alert.Root>}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Steps, Button, useToast } from '@chakra-ui/react';
+import { Steps, Button } from '@chakra-ui/react';
+import { toaster } from '../ui/toaster';
 import { getWebAuthnLoginOptions, verifyWebAuthnLogin } from '../../api';
 import { startAuthentication } from '@simplewebauthn/browser';
 
@@ -9,7 +10,6 @@ interface PasskeyLoginButtonProps {
 
 const PasskeyLoginButton: React.FC<PasskeyLoginButtonProps> = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
-  const toast = useToast();
 
   // Check if WebAuthn is supported
   const isSupported = typeof window !== 'undefined' &&
@@ -29,10 +29,10 @@ const PasskeyLoginButton: React.FC<PasskeyLoginButtonProps> = ({ onSuccess }) =>
       onSuccess(verifyData);
     } catch (err: any) {
       if (err.name !== 'NotAllowedError') {
-        toast({
+        toaster.create({
           title: 'Passkey login failed',
           description: err.message || 'Unable to authenticate with passkey',
-          status: 'error',
+          type: 'error',
           duration: 5000,
         });
       }

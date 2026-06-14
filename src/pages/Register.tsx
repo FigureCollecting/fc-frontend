@@ -13,11 +13,11 @@ import {
   Flex,
   Link,
   Icon,
+  IconButton,
   InputGroup,
-  InputRightElement,
-  useToast,
   Field,
 } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { useForm } from 'react-hook-form';
 import { FaEye, FaEyeSlash, FaCube } from 'react-icons/fa';
 import { registerUser } from '../api';
@@ -39,8 +39,7 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const { setUser } = useAuthStore();
   const navigate = useNavigate();
-  const toast = useToast();
-  
+
   const {
     register,
     handleSubmit,
@@ -62,22 +61,22 @@ const Register: React.FC = () => {
     {
       onSuccess: (userData) => {
         setUser(userData);
-        toast({
+        toaster.create({
           title: 'Account created!',
           description: 'Check your email to verify your account.',
-          status: 'success',
+          type: 'success',
           duration: 8000,
-          isClosable: true,
+          closable: true,
         });
         navigate('/');
       },
       onError: (error: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: error.response?.data?.message || 'Registration failed',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }
@@ -168,7 +167,20 @@ const Register: React.FC = () => {
             
             <Field.Root invalid={!!errors.password} mb={4}>
               <Field.Label>Password</Field.Label>
-              <InputGroup>
+              <InputGroup
+                endElement={
+                  <IconButton
+                    variant="ghost"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <Icon
+                      as={showPassword ? FaEyeSlash : FaEye}
+                      color={linkColor}
+                    />
+                  </IconButton>
+                }
+              >
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Create a password"
@@ -182,18 +194,6 @@ const Register: React.FC = () => {
                     },
                   })}
                 />
-                <InputRightElement h="full">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    <Icon
-                      as={showPassword ? FaEyeSlash : FaEye}
-                      color={linkColor}
-                    />
-                  </Button>
-                </InputRightElement>
               </InputGroup>
               <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
             </Field.Root>
@@ -226,8 +226,8 @@ const Register: React.FC = () => {
             
             <Text textAlign="center">
               Already have an account?{' '}
-              <Link as={RouterLink} to="/login" color="brand.500">
-                Sign In
+              <Link asChild color="brand.500">
+                <RouterLink to="/login">Sign In</RouterLink>
               </Link>
             </Text>
           </Box>

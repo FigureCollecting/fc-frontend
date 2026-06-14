@@ -9,9 +9,9 @@ import {
   Box,
   Input,
   Alert,
-  useToast,
   IconButton,
 } from '@chakra-ui/react';
+import { toaster } from '../ui/toaster';
 import { getWebAuthnRegisterOptions, verifyWebAuthnRegistration, deleteWebAuthnCredential } from '../../api';
 import { startRegistration } from '@simplewebauthn/browser';
 import { LuTrash2 } from 'react-icons/lu';
@@ -31,7 +31,6 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
   const [adding, setAdding] = useState(false);
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
-  const toast = useToast();
 
   const isSupported = typeof window !== 'undefined' && window.PublicKeyCredential !== undefined;
 
@@ -41,13 +40,13 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
       const { data: optionsData } = await getWebAuthnRegisterOptions(nickname || undefined);
       const regResponse = await startRegistration({ optionsJSON: optionsData.options });
       await verifyWebAuthnRegistration(optionsData.challengeId, regResponse);
-      toast({ title: 'Passkey added', status: 'success', duration: 3000 });
+      toaster.create({ title: 'Passkey added', type: 'success', duration: 3000 });
       setAdding(false);
       setNickname('');
       onUpdate();
     } catch (err: any) {
       if (err.name !== 'NotAllowedError') {
-        toast({ title: 'Failed to add passkey', description: err.message, status: 'error', duration: 5000 });
+        toaster.create({ title: 'Failed to add passkey', description: err.message, type: 'error', duration: 5000 });
       }
     } finally {
       setLoading(false);
@@ -57,10 +56,10 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
   const handleDelete = async (credentialId: string) => {
     try {
       await deleteWebAuthnCredential(credentialId);
-      toast({ title: 'Passkey removed', status: 'info', duration: 3000 });
+      toaster.create({ title: 'Passkey removed', type: 'info', duration: 3000 });
       onUpdate();
     } catch {
-      toast({ title: 'Failed to remove passkey', status: 'error', duration: 5000 });
+      toaster.create({ title: 'Failed to remove passkey', type: 'error', duration: 5000 });
     }
   };
 
@@ -95,7 +94,7 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
           <Input
             placeholder="Passkey nickname (optional)"
             value={nickname}
-            onValueChange={(e) => setNickname(e.target.value)}
+            onChange={(e) => setNickname(e.target.value)}
             maxLength={50}
           />
           <HStack>

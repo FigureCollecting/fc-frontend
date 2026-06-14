@@ -8,13 +8,13 @@ import {
   Heading,
   Button,
   Flex,
-  useToast,
   Breadcrumb,
   Spinner,
   Center,
   Alert,
   Icon,
 } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { FaArrowLeft } from 'react-icons/fa';
 import { getFigureById, updateFigure } from '../api';
 import FigureForm from '../components/FigureForm';
@@ -25,7 +25,6 @@ const EditFigure: React.FC = () => {
   const cardBg = useColorModeValue('white', 'gray.800');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const toast = useToast();
   const queryClient = useQueryClient();
   
   const { data: figure, isLoading, error } = useQuery(
@@ -34,12 +33,12 @@ const EditFigure: React.FC = () => {
     {
       enabled: !!id,
       onError: (err: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: err.response?.data?.message || 'Failed to load figure details',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }
@@ -55,22 +54,22 @@ const EditFigure: React.FC = () => {
         queryClient.invalidateQueries('recentFigures');
         queryClient.invalidateQueries('dashboardStats');
         
-        toast({
+        toaster.create({
           title: 'Success',
           description: 'Figure updated successfully',
-          status: 'success',
+          type: 'success',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
         navigate(`/figures/${id}`);
       },
       onError: (error: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: error.response?.data?.message || 'Failed to update figure',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }

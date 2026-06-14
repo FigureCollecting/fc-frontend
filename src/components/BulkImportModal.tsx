@@ -7,17 +7,10 @@ import {
   HStack,
   Text,
   Textarea,
-  useToast,
   Progress,
   Badge,
   Box,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
   Alert,
   Stat,
   Input,
@@ -28,6 +21,7 @@ import {
   Dialog,
   Portal,
 } from '@chakra-ui/react';
+import { toaster } from './ui/toaster';
 import { FaUpload, FaFileImport, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { previewBulkImport, executeBulkImport } from '../api';
 import { BulkImportPreviewItem, BulkImportPreviewResponse, BulkImportExecuteResponse } from '../types';
@@ -50,7 +44,6 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
   const [importResult, setImportResult] = useState<BulkImportExecuteResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [skipDuplicates, setSkipDuplicates] = useState(true);
-  const toast = useToast();
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -69,10 +62,10 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
 
   const handlePreview = async () => {
     if (!csvContent.trim()) {
-      toast({
+      toaster.create({
         title: 'No content',
         description: 'Please paste CSV content or upload a file',
-        status: 'warning',
+        type: 'warning',
         duration: 3000,
       });
       return;
@@ -86,10 +79,10 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
       logger.info('Preview generated:', result.summary);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to preview import';
-      toast({
+      toaster.create({
         title: 'Preview failed',
         description: message,
-        status: 'error',
+        type: 'error',
         duration: 5000,
       });
       logger.error('Preview failed:', error);
@@ -107,10 +100,10 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
       setStep('complete');
       logger.info('Import completed:', result);
 
-      toast({
+      toaster.create({
         title: 'Import successful',
         description: `Imported ${result.imported} figures${result.skipped > 0 ? `, skipped ${result.skipped} duplicates` : ''}`,
-        status: 'success',
+        type: 'success',
         duration: 5000,
       });
 
@@ -119,10 +112,10 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Import failed';
-      toast({
+      toaster.create({
         title: 'Import failed',
         description: message,
-        status: 'error',
+        type: 'error',
         duration: 5000,
       });
       logger.error('Import failed:', error);
@@ -166,7 +159,7 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
         <Input
           type="file"
           accept=".csv"
-          onValueChange={handleFileUpload}
+          onChange={handleFileUpload}
           p={1}
         />
       </Field.Root>
@@ -178,7 +171,7 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
         <Textarea
           placeholder="Paste your MFC CSV export here..."
           value={csvContent}
-          onValueChange={(e) => setCsvContent(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCsvContent(e.target.value)}
           minH="200px"
           fontFamily="mono"
           fontSize="sm"
@@ -214,11 +207,14 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
 
           <Field.Root display="flex" alignItems="center">
             <Field.Label mb="0">Skip duplicates (already owned items)</Field.Label>
-            <Switch
+            <Switch.Root
               checked={skipDuplicates}
-              onValueChange={(e) => setSkipDuplicates(e.target.checked)}
+              onCheckedChange={(e) => setSkipDuplicates(e.checked)}
               colorPalette="green"
-            />
+            >
+              <Switch.HiddenInput />
+              <Switch.Control />
+            </Switch.Root>
           </Field.Root>
 
           {previewData.summary.duplicates > 0 && skipDuplicates && (
@@ -232,7 +228,7 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
 
           <Box maxH="300px" overflowY="auto" borderWidth={1} borderRadius="md" borderColor={borderColor}>
             <Table.ScrollArea>
-              <Table.Root size="sm" variant="simple">
+              <Table.Root size="sm">
                 <Table.Header position="sticky" top={0} bg={bgColor}>
                   <Table.Row>
                     <Table.ColumnHeader>MFC ID</Table.ColumnHeader>
@@ -255,7 +251,7 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
                           {item.mfcId}
                         </a>
                       </Table.Cell>
-                      <Table.Cell maxW="200px" isTruncated title={item.cleanTitle}>
+                      <Table.Cell maxW="200px" truncate title={item.cleanTitle}>
                         {item.cleanTitle}
                       </Table.Cell>
                       <Table.Cell>{item.manufacturers.join(', ') || '-'}</Table.Cell>
@@ -280,7 +276,7 @@ const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClose, onIm
 
   const renderImportingStep = () => (
     <VStack gap={4} py={8}>
-      <Progress.Root size="lg" indeterminate w="100%" colorPalette="green">
+      <Progress.Root size="lg" value={null} w="100%" colorPalette="green">
         <Progress.Track>
           <Progress.Range />
         </Progress.Track>

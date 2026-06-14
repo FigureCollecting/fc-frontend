@@ -15,7 +15,12 @@ interface BackupCodesDisplayProps {
 
 const BackupCodesDisplay: React.FC<BackupCodesDisplayProps> = ({ codes }) => {
   const codeText = codes.join('\n');
-  const { hasCopied, onCopy } = useClipboard(codeText);
+  const [hasCopied, setHasCopied] = React.useState(false);
+  const onCopy = async () => {
+    await navigator.clipboard.writeText(codeText);
+    setHasCopied(true);
+    setTimeout(() => setHasCopied(false), 1500);
+  };
 
   const handleDownload = () => {
     const blob = new Blob([`FigureCollecting Backup Codes\n${'='.repeat(30)}\n\n${codeText}\n\nStore these codes in a safe place.\nEach code can only be used once.`], { type: 'text/plain' });

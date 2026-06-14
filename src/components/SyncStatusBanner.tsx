@@ -8,7 +8,6 @@
 import React, { useMemo } from 'react';
 import { useColorModeValue } from "./ui/color-mode";
 import {
-  Steps,
   Box,
   Flex,
   HStack,
@@ -294,15 +293,16 @@ const SyncStatusBanner: React.FC = () => {
           <Icon
             color={phaseStatus.color}
             boxSize={5}
-            className={phaseStatus.isSpinning ? 'spin' : ''}
-            sx={phaseStatus.isSpinning ? {
+            css={phaseStatus.isSpinning ? {
               animation: 'spin 1s linear infinite',
               '@keyframes spin': {
                 '0%': { transform: 'rotate(0deg)' },
                 '100%': { transform: 'rotate(360deg)' },
               },
-            } : {}}
-            asChild><phaseStatus.icon /></Icon>
+            } : undefined}
+          >
+            <phaseStatus.icon />
+          </Icon>
           <VStack align="start" gap={0} flex={1}>
             <HStack>
               <Text fontWeight="bold" fontSize="sm">

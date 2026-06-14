@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { Steps, Box, Heading, SimpleGrid, Spinner, Center, useToast, Text, Flex } from '@chakra-ui/react';
+import { Steps, Box, Heading, SimpleGrid, Spinner, Center, Text, Flex } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { searchFigures } from '../api';
 import SearchBar from '../components/SearchBar';
 import FigureCard from '../components/FigureCard';
@@ -10,7 +11,6 @@ import EmptyState from '../components/EmptyState';
 const Search: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const toast = useToast();
   const queryParams = new URLSearchParams(location.search);
   const initialSearchQuery = queryParams.get('q') || '';
   
@@ -22,12 +22,12 @@ const Search: React.FC = () => {
     {
       enabled: !!searchQuery,
       onError: (err: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: err.response?.data?.message || 'Search failed',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }

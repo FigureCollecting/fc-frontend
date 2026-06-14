@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useColorModeValue } from "../ui/color-mode";
+import { toaster } from '../ui/toaster';
 import { createLogger } from '../../utils/logger';
 import {
   Steps,
@@ -8,10 +9,8 @@ import {
   Input,
   VStack,
   InputGroup,
-  InputRightElement,
   IconButton,
   Text,
-  useToast,
   Spinner,
   HStack,
   Grid,
@@ -218,7 +217,6 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
     reset,
   } = methods;
 
-  const toast = useToast();
   const mfcLink = watch('mfcLink');
   const imageUrl = watch('imageUrl');
 
@@ -394,12 +392,12 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
         
         if (!response.ok) {
           if (mountedRef.current) {
-            toast({
+            toaster.create({
               title: 'Error',
               description: result.message || 'Failed to scrape MFC data',
-              status: 'error',
+              type: 'error',
               duration: 5000,
-              isClosable: true,
+              closable: true,
             });
           }
           return;
@@ -488,34 +486,34 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
           }
 
           if (mountedRef.current) {
-            toast({
+            toaster.create({
               title: fieldsPopulated > 0 ? 'Success' : 'Info',
               description: fieldsPopulated > 0
                 ? `Auto-populated ${fieldsPopulated} fields from MFC!`
                 : 'No new data found to populate (fields may already be filled)',
-              status: fieldsPopulated > 0 ? 'success' : 'info',
+              type: fieldsPopulated > 0 ? 'success' : 'info',
               duration: 3000,
-              isClosable: true,
+              closable: true,
             });
           }
         } else if (mountedRef.current) {
-          toast({
+          toaster.create({
             title: 'Warning',
             description: 'No data could be extracted from MFC link',
-            status: 'warning',
+            type: 'warning',
             duration: 3000,
-            isClosable: true,
+            closable: true,
           });
         }
       } catch (error: any) {
         if (error?.name === 'AbortError') return;
         if (mountedRef.current) {
-          toast({
+          toaster.create({
             title: 'Error',
             description: 'Network error while contacting server',
-            status: 'error',
+            type: 'error',
             duration: 5000,
-            isClosable: true,
+            closable: true,
           });
         }
       } finally {
@@ -531,7 +529,7 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
 
     lastScrapePromise.current = scrapePromise;
     return scrapePromise;
-  }, [getValues, setValue, toast, mapScrapedCompaniesToFormData, mapScrapedArtistsToFormData, mapScrapedReleasesToFormData]);
+  }, [getValues, setValue, mapScrapedCompaniesToFormData, mapScrapedArtistsToFormData, mapScrapedReleasesToFormData]);
 
   // Optimized useEffect for MFC link changes with stable dependencies
   useEffect(() => {
@@ -790,16 +788,9 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
                       </Text>
                     )}
                   </Field.Label>
-                  <InputGroup>
-                    <Input
-                      {...register('mfcLink', {
-                        validate: validateMfcUrl
-                      })}
-                      placeholder="Enter item # (e.g., 123456) or full MFC URL"
-                      data-invalid={!!errors.mfcLink}
-                    />
-                    <InputRightElement>
-                      {isScrapingMFC ? (
+                  <InputGroup
+                    endElement={
+                      isScrapingMFC ? (
                         <Spinner size="sm" data-testid="mfc-scraping-spinner" />
                       ) : (
                         <IconButton
@@ -808,8 +799,16 @@ const FigureForm: React.FC<FigureFormProps> = ({ initialData, onSubmit, isLoadin
                           variant="ghost"
                           onClick={openMfcLink}
                           disabled={!mfcLink}><FaLink /></IconButton>
-                      )}
-                    </InputRightElement>
+                      )
+                    }
+                  >
+                    <Input
+                      {...register('mfcLink', {
+                        validate: validateMfcUrl
+                      })}
+                      placeholder="Enter item # (e.g., 123456) or full MFC URL"
+                      data-invalid={!!errors.mfcLink}
+                    />
                   </InputGroup>
                   <Field.ErrorText data-testid="form-error-message">{errors.mfcLink?.message}</Field.ErrorText>
                   <Text fontSize="xs" color="gray.500" mt={1}>

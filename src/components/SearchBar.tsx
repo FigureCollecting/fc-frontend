@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useColorModeValue } from "./ui/color-mode";
 import { useNavigate } from 'react-router-dom';
 import {
-  Steps,
   InputGroup,
   Input,
-  InputRightElement,
   IconButton,
   Box,
   VStack,
@@ -152,9 +150,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <Box position="relative" width="100%">
       <Box width="100%" asChild><form onSubmit={handleSubmit}>
-          <InputGroup size="lg">
+          <InputGroup
+            endElement={
+              <IconButton aria-label="Search" size="sm" colorPalette="brand" type="submit"><FaSearch /></IconButton>
+            }
+          >
             <Input
               ref={inputRef}
+              size="lg"
               type="search"
               role="combobox"
               aria-label="Search your figures"
@@ -163,7 +166,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               aria-controls="search-suggestions"
               placeholder={placeholder}
               value={query}
-              onValueChange={handleInputChange}
+              onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onFocus={() => {
                 if (query.length >= 3 && suggestions && suggestions.length > 0) {
@@ -174,9 +177,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
               boxShadow="sm"
               borderRadius="lg"
             />
-            <InputRightElement>
-              <IconButton aria-label="Search" size="sm" colorPalette="brand" type="submit"><FaSearch /></IconButton>
-            </InputRightElement>
           </InputGroup>
         </form></Box>
       {/* Suggestions Dropdown */}

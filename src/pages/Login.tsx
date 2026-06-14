@@ -13,12 +13,12 @@ import {
   Flex,
   Link,
   Icon,
+  IconButton,
   InputGroup,
-  InputRightElement,
   VStack,
-  useToast,
   Field,
 } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { useForm } from 'react-hook-form';
 import { FaEye, FaEyeSlash, FaCube } from 'react-icons/fa';
 import { loginUser } from '../api';
@@ -40,7 +40,6 @@ const Login: React.FC = () => {
   const [twoFactorPending, setTwoFactorPending] = React.useState<{ sessionId: string; methods: string[] } | null>(null);
   const { setUser } = useAuthStore();
   const navigate = useNavigate();
-  const toast = useToast();
 
   const {
     register,
@@ -55,12 +54,12 @@ const Login: React.FC = () => {
 
   const handleLoginSuccess = (userData: User) => {
     setUser(userData);
-    toast({
+    toaster.create({
       title: 'Success',
       description: 'You are now logged in!',
-      status: 'success',
+      type: 'success',
       duration: 5000,
-      isClosable: true,
+      closable: true,
     });
     navigate('/');
   };
@@ -76,12 +75,12 @@ const Login: React.FC = () => {
         handleLoginSuccess(result as User);
       },
       onError: (error: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: error.response?.data?.message || 'Invalid email or password',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }
@@ -264,11 +263,24 @@ const Login: React.FC = () => {
               <Field.Root invalid={!!errors.password} mb={6}>
                 <Flex justify="space-between" align="baseline">
                   <Field.Label htmlFor="password">Password</Field.Label>
-                  <Link as={RouterLink} to="/forgot-password" color="brand.500" fontSize="sm">
-                    Forgot password?
+                  <Link asChild color="brand.500" fontSize="sm">
+                    <RouterLink to="/forgot-password">Forgot password?</RouterLink>
                   </Link>
                 </Flex>
-                <InputGroup>
+                <InputGroup
+                  endElement={
+                    <IconButton
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      variant="ghost"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <Icon
+                        as={showPassword ? FaEyeSlash : FaEye}
+                        color="gray.500"
+                      />
+                    </IconButton>
+                  }
+                >
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
@@ -279,17 +291,6 @@ const Login: React.FC = () => {
                       required: 'Password is required',
                     })}
                   />
-                  <InputRightElement h="full">
-                    <Button
-                      variant="ghost"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      <Icon
-                        as={showPassword ? FaEyeSlash : FaEye}
-                        color="gray.500"
-                      />
-                    </Button>
-                  </InputRightElement>
                 </InputGroup>
                 <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
               </Field.Root>
@@ -325,8 +326,8 @@ const Login: React.FC = () => {
 
               <Text textAlign="center" mt={4}>
                 Don't have an account?{' '}
-                <Link as={RouterLink} to="/register" color="brand.500">
-                  Register
+                <Link asChild color="brand.500">
+                  <RouterLink to="/register">Register</RouterLink>
                 </Link>
               </Text>
             </Box>

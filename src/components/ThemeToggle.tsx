@@ -1,10 +1,7 @@
 import React from 'react';
 import {
-  Steps,
   Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
+  Portal,
   Button,
   Icon,
   HStack,
@@ -44,41 +41,44 @@ const ThemeToggle: React.FC = () => {
   const currentTheme = THEME_OPTIONS.find(t => t.value === colorProfile);
 
   return (
-    <Menu>
-      <MenuButton
-        rightIcon={<LuChevronDown />}
-        size="sm"
-        variant="outline"
-        leftIcon={themeIcons[colorProfile]}
-        asChild
-      ><Button>
+    <Menu.Root>
+      <Menu.Trigger asChild>
+        <Button size="sm" variant="outline">
+          {themeIcons[colorProfile]}
           {currentTheme?.label || 'Theme'}
-        </Button></MenuButton>
-      <MenuList zIndex={1000}>
-        {THEME_OPTIONS.map((theme) => (
-          <MenuItem
-            key={theme.value}
-            onClick={() => setCustomTheme(theme.value)}
-            bg={colorProfile === theme.value ? 'gray.100' : undefined}
-            _dark={{ bg: colorProfile === theme.value ? 'gray.700' : undefined }}
-          >
-            <HStack gap={3} w="full">
-              <Box color={getThemeAccent(theme.value)}>
-                {themeIcons[theme.value]}
-              </Box>
-              <Box flex={1}>
-                <Text fontWeight={colorProfile === theme.value ? 'bold' : 'normal'}>
-                  {theme.label}
-                </Text>
-                <Text fontSize="xs" color="gray.500">
-                  {theme.description}
-                </Text>
-              </Box>
-            </HStack>
-          </MenuItem>
-        ))}
-      </MenuList>
-    </Menu>
+          <LuChevronDown />
+        </Button>
+      </Menu.Trigger>
+      <Portal>
+        <Menu.Positioner>
+          <Menu.Content zIndex={1000}>
+            {THEME_OPTIONS.map((theme) => (
+              <Menu.Item
+                key={theme.value}
+                value={theme.value}
+                onClick={() => setCustomTheme(theme.value)}
+                bg={colorProfile === theme.value ? 'gray.100' : undefined}
+                _dark={{ bg: colorProfile === theme.value ? 'gray.700' : undefined }}
+              >
+                <HStack gap={3} w="full">
+                  <Box color={getThemeAccent(theme.value)}>
+                    {themeIcons[theme.value]}
+                  </Box>
+                  <Box flex={1}>
+                    <Text fontWeight={colorProfile === theme.value ? 'bold' : 'normal'}>
+                      {theme.label}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      {theme.description}
+                    </Text>
+                  </Box>
+                </HStack>
+              </Menu.Item>
+            ))}
+          </Menu.Content>
+        </Menu.Positioner>
+      </Portal>
+    </Menu.Root>
   );
 };
 

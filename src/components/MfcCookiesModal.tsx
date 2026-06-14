@@ -23,18 +23,17 @@ import {
   Collapsible,
   Code,
   RadioGroup,
-  Radio,
   Stack,
   Alert,
   Box,
   InputGroup,
-  useToast,
   Separator,
   Field,
   Dialog,
   Portal,
 } from '@chakra-ui/react';
 import { Tooltip } from './ui/tooltip';
+import { toaster } from './ui/toaster';
 import { FaLock, FaChevronUp, FaChevronDown, FaTrash, FaSave, FaCopy, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuthStore } from '../stores/authStore';
 import { getMfcCookieAllowlist, CookieAllowlistResponse } from '../api/scraper';
@@ -131,7 +130,6 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
   onClose,
   onCookiesChanged,
 }) => {
-  const toast = useToast();
   const user = useAuthStore((state) => state.user);
   const userId = user?._id;
 
@@ -253,17 +251,17 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
       await navigator.clipboard.writeText(extractionScript);
       setScriptCopied(true);
       setTimeout(() => setScriptCopied(false), 2000);
-      toast({
+      toaster.create({
         title: 'Script copied!',
         description: 'Paste it in the MFC Console tab',
-        status: 'success',
+        type: 'success',
         duration: 2000,
       });
     } catch {
-      toast({
+      toaster.create({
         title: 'Copy failed',
         description: 'Please select and copy manually',
-        status: 'error',
+        type: 'error',
         duration: 3000,
       });
     }
@@ -271,10 +269,10 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
 
   const handleSave = async () => {
     if (!isValidOutput || !hasRequiredCookies) {
-      toast({
+      toaster.create({
         title: 'Invalid cookies',
         description: 'Please paste the JSON output from running the script',
-        status: 'error',
+        type: 'error',
         duration: 3000,
       });
       return;
@@ -294,12 +292,12 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
     setCookiesStored(true);
     setHasChanges(false);
 
-    toast({
+    toaster.create({
       title: 'Cookies Saved',
       description: `MFC cookies stored (${storageType === 'session' ? 'session' : 'persistent'})`,
-      status: 'success',
+      type: 'success',
       duration: 3000,
-      isClosable: true,
+      closable: true,
     });
     onCookiesChanged?.();
   };
@@ -311,12 +309,12 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
     setCookiesStored(false);
     setStorageType('session');
     setHasChanges(false);
-    toast({
+    toaster.create({
       title: 'Cookies Cleared',
       description: 'MFC cookies have been removed from storage',
-      status: 'info',
+      type: 'info',
       duration: 3000,
-      isClosable: true,
+      closable: true,
     });
     onCookiesChanged?.();
   };
@@ -415,13 +413,13 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
                   </HStack>
                   <Textarea
                     value={consoleOutput}
-                    onValueChange={(e) => handleConsoleOutputChange(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleConsoleOutputChange(e.target.value)}
                     placeholder='{"PHPSESSID": "abc123", "sesUID": "12345", "sesDID": "67890"}'
                     size="sm"
                     rows={4}
                     fontFamily="mono"
                     fontSize="xs"
-                    sx={!showStep2 && consoleOutput ? {
+                    css={!showStep2 && consoleOutput ? {
                       filter: 'blur(5px)',
                       userSelect: 'none',
                     } : undefined}
@@ -460,12 +458,13 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
                   <Text fontSize="xs" color="gray.500" mb={2}>
                     In DevTools → Application → Cookies → myfigurecollection.net → find cf_clearance → double-click its Value → Ctrl+C to copy
                   </Text>
-                  <InputGroup size="sm">
+                  <InputGroup>
                     <Input
                       type={showStep3 ? 'text' : 'password'}
                       value={cfClearance}
-                      onValueChange={(e) => handleCfClearanceChange(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleCfClearanceChange(e.target.value)}
                       placeholder="cf_clearance value (required for Cloudflare bypass)"
+                      size="sm"
                       fontFamily="mono"
                       fontSize="xs"
                     />
@@ -493,14 +492,14 @@ const MfcCookiesModal: React.FC<MfcCookiesModalProps> = ({
                   </Field.Label>
                   <RadioGroup.Root
                     value={storageType}
-                    onValueChange={(v) => handleStorageTypeChange(v as StorageType)}>
+                    onValueChange={(e) => handleStorageTypeChange(e.value as StorageType)}>
                     <Stack direction="column" gap={2}>
-                      <RadioGroup.Item value="session" size="sm"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>
+                      <RadioGroup.Item value="session"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>
                           <Tooltip content="Stored in browser session - cleared when you log out">
                             <Text fontSize="sm">Remember for this session (cleared on logout)</Text>
                           </Tooltip>
                         </RadioGroup.ItemText></RadioGroup.Item>
-                      <RadioGroup.Item value="persistent" size="sm"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>
+                      <RadioGroup.Item value="persistent"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>
                           <Tooltip content="Encrypted and stored in browser - persists until manually cleared">
                             <Text fontSize="sm">Remember until cleared (encrypted storage)</Text>
                           </Tooltip>

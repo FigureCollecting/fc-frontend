@@ -6,12 +6,6 @@ import {
   Heading,
   Flex,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
   Badge,
   Text,
 } from '@chakra-ui/react';
@@ -65,7 +59,7 @@ const StatTable: React.FC<StatTableProps> = ({
         <Badge colorPalette="brand" borderRadius="full">{data.length}</Badge>
       </Flex>
       <Table.ScrollArea maxH="400px" overflowY="auto">
-        <Table.Root variant="simple" size="sm">
+        <Table.Root variant="line" size="sm">
           <Table.Header position="sticky" top={0} bg={cardBg} zIndex={1}>
             <Table.Row>
               <Table.ColumnHeader>Name</Table.ColumnHeader>

@@ -11,16 +11,12 @@
 import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
 import {
-  Steps,
   Button,
   Flex,
   Text,
   IconButton,
   HStack,
   Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
   NativeSelect,
   Box,
   ButtonGroup,
@@ -115,7 +111,8 @@ const Pagination: React.FC<PaginationProps> = ({
     }
   };
 
-  const handleSliderChange = (value: number) => {
+  const handleSliderChange = (details: { value: number[] }) => {
+    const value = details.value[0];
     if (value !== currentPage) {
       onPageChange(value);
     }
@@ -238,27 +235,29 @@ const Pagination: React.FC<PaginationProps> = ({
           {totalPages > 5 && (
             <Box w="100%" maxW="300px" px={4}>
               <Slider.Root
-                aria-label="Page slider"
-                value={currentPage}
+                aria-label={['Page slider']}
+                value={[currentPage]}
                 min={1}
                 max={totalPages}
                 step={1}
                 onValueChange={handleSliderChange}
-                focusThumbOnChange={false}
               >
-                <SliderTrack bg={sliderTrackBg} h="6px" borderRadius="full">
-                  <SliderFilledTrack bg={sliderFilledBg} />
-                </SliderTrack>
-                <Tooltip
-                  content={`Page ${currentPage}`}
-                  showArrow
-                  isOpen={undefined}
-                  positioning={{
-                    placement: "top"
-                  }}
-                >
-                  <SliderThumb boxSize={5} bg={activeBg} />
-                </Tooltip>
+                <Slider.Control>
+                  <Slider.Track bg={sliderTrackBg} h="6px" borderRadius="full">
+                    <Slider.Range bg={sliderFilledBg} />
+                  </Slider.Track>
+                  <Tooltip
+                    content={`Page ${currentPage}`}
+                    showArrow
+                    positioning={{
+                      placement: "top"
+                    }}
+                  >
+                    <Slider.Thumb index={0} boxSize={5} bg={activeBg}>
+                      <Slider.HiddenInput />
+                    </Slider.Thumb>
+                  </Tooltip>
+                </Slider.Control>
               </Slider.Root>
             </Box>
           )}
@@ -274,14 +273,10 @@ const Pagination: React.FC<PaginationProps> = ({
                 <Text color="gray.400">•</Text>
                 <HStack gap={2}>
                   <FaTh size={12} />
-                  <NativeSelect.Root>
+                  <NativeSelect.Root size="sm" variant="subtle" width="auto" minW="110px">
                     <NativeSelect.Field
-                      size="sm"
                       value={pageSize}
-                      onValueChange={handlePageSizeChange}
-                      width="auto"
-                      minW="110px"
-                      variant="filled"
+                      onChange={handlePageSizeChange}
                       borderRadius="md">
                       {PAGE_SIZE_PRESETS.map((preset) => (
                         <option key={preset.value} value={preset.value}>

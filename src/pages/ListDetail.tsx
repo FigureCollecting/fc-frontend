@@ -20,10 +20,10 @@ import {
   LinkBox,
   LinkOverlay,
   useDisclosure,
-  useToast,
   Separator,
 } from '@chakra-ui/react';
 import { Tooltip } from '../components/ui/tooltip';
+import { toaster } from '../components/ui/toaster';
 import { FaArrowLeft, FaComments, FaBell, FaSearch, FaEdit } from 'react-icons/fa';
 import { getListById, updateList } from '../api';
 import { MfcListFormData } from '../types';
@@ -39,7 +39,6 @@ const PRIVACY_COLORS: Record<string, string> = {
 const ListDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const toast = useToast();
   const queryClient = useQueryClient();
   const { open: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
 
@@ -55,11 +54,11 @@ const ListDetail: React.FC = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['list', id]);
         queryClient.invalidateQueries('lists');
-        toast({ title: 'List updated', status: 'success', duration: 3000 });
+        toaster.create({ title: 'List updated', type: 'success', duration: 3000 });
         onEditClose();
       },
       onError: () => {
-        toast({ title: 'Failed to update list', status: 'error', duration: 3000 });
+        toaster.create({ title: 'Failed to update list', type: 'error', duration: 3000 });
       },
     }
   );

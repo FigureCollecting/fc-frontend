@@ -10,7 +10,6 @@ import {
   Text,
   Spinner,
   Center,
-  useToast,
   useDisclosure,
   HStack,
   Menu,
@@ -19,6 +18,7 @@ import {
   useBreakpointValue,
   Portal,
 } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { FaPlus, FaSync, FaChevronDown } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
 import { getFigures, filterFigures, getFigureStats } from '../api';
@@ -56,7 +56,6 @@ const FigureList: React.FC = () => {
     setActiveStatus,
   } = useFigureListState();
 
-  const toast = useToast();
   const queryClient = useQueryClient();
   const { open: isImportOpen, onClose: onImportClose } = useDisclosure();
   const { open: isSyncOpen, onOpen: onSyncOpen, onClose: onSyncClose } = useDisclosure();
@@ -193,12 +192,12 @@ const FigureList: React.FC = () => {
     {
       keepPreviousData: true,
       onError: (err: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: err.response?.data?.message || 'Failed to load figures',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }
@@ -277,7 +276,8 @@ const FigureList: React.FC = () => {
             <Menu.Trigger asChild><Button colorPalette="purple" variant="outline"><FaSync />Sync with MFC
                             <Icon asChild><FaChevronDown /></Icon></Button></Menu.Trigger>
             <Portal><Menu.Positioner><Menu.Content>
-                  <Menu.Item icon={<Icon asChild><FaSync /></Icon>} onSelect={onSyncOpen} value='item-0'>
+                  <Menu.Item onSelect={onSyncOpen} value='item-0'>
+                    <Icon asChild><FaSync /></Icon>
                     Sync MFC Account
                   </Menu.Item>
                   {/* CSV import hidden until fully implemented

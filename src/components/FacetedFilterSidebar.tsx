@@ -18,12 +18,9 @@ import {
   Badge,
   Input,
   InputGroup,
-  InputLeftElement,
   Button,
   HStack,
   Tag,
-  TagLabel,
-  TagCloseButton,
   Wrap,
   WrapItem,
   Drawer,
@@ -182,14 +179,14 @@ const FacetSection: React.FC<FacetSectionProps> = ({
           <VStack gap={2} align="stretch">
             {/* Search within facet */}
             {items.length > 5 && (
-              <InputGroup size="sm">
-                <InputLeftElement pointerEvents="none">
-                  <FaSearch color="gray.400" />
-                </InputLeftElement>
+              <InputGroup
+                startElement={<FaSearch color="gray.400" />}
+              >
                 <Input
+                  size="sm"
                   placeholder={searchPlaceholder}
                   value={searchTerm}
-                  onValueChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                   bg={searchBg}
                   borderRadius="md"
                 />
@@ -759,7 +756,7 @@ const FacetedFilterSidebar: React.FC<FacetedFilterSidebarProps & {
             {filterCount}
           </Badge>
         )}</Button>
-        <Drawer.Root open={isOpen} placement='start' size='sm' onOpenChange={e => {
+        <Drawer.Root open={open} placement='start' size='sm' onOpenChange={e => {
           if (!e.open) {
             onClose();
           }

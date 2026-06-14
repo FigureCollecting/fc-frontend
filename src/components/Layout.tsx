@@ -102,7 +102,7 @@ const Layout: React.FC = () => {
                 </HoverCard.Trigger>
                 <HoverCard.Positioner>
                   <HoverCard.Content width="auto" maxW="400px">
-                    <HoverCard.Body>
+                    <Box p={4}>
                       <VStack align="start" gap={2}>
                         <Text fontWeight="semibold" fontSize="sm">Service Versions</Text>
                         <VStack align="start" gap={1} fontSize="xs">
@@ -129,7 +129,7 @@ const Layout: React.FC = () => {
                           </HStack>
                         </VStack>
                       </VStack>
-                    </HoverCard.Body>
+                    </Box>
                   </HoverCard.Content>
                 </HoverCard.Positioner>
               </HoverCard.Root>

@@ -86,23 +86,24 @@ const ArtistRolesSection: React.FC = () => {
               <Field.Root flex="1">
                 <NativeSelect.Root>
                   <NativeSelect.Field
-                    {...register(`artistRoles.${index}.roleId` as const)}
+                    {...register(`artistRoles.${index}.roleId` as const, {
+                      onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
+                        const selectedRole = artistRoleTypes.find((rt) => rt._id === e.target.value);
+                        if (selectedRole) {
+                          const input = document.querySelector(
+                            `input[name="artistRoles.${index}.roleName"]`
+                          ) as HTMLInputElement;
+                          if (input) input.value = selectedRole.name;
+                        }
+                      },
+                    })}
                     aria-label="Role"
                     defaultValue={
                       // Use roleId if set, otherwise find by roleName (handles race condition)
                       field.roleId ||
                       artistRoleTypes.find(rt => rt.name.toLowerCase() === field.roleName?.toLowerCase())?._id ||
                       ''
-                    }
-                    onValueChange={(e) => {
-                      const selectedRole = artistRoleTypes.find((rt) => rt._id === e.target.value);
-                      if (selectedRole) {
-                        const input = document.querySelector(
-                          `input[name="artistRoles.${index}.roleName"]`
-                        ) as HTMLInputElement;
-                        if (input) input.value = selectedRole.name;
-                      }
-                    }}>
+                    }>
                     {artistRoleTypes.map((rt) => (
                       <option key={rt._id} value={rt._id}>
                         {rt.name}

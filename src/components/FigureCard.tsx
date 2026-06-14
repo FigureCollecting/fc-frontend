@@ -1,7 +1,8 @@
 import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
 import { Link as RouterLink } from 'react-router-dom';
-import { Steps, Box, Image, Text, Badge, Link, Flex, IconButton, useToast, HStack } from '@chakra-ui/react';
+import { Steps, Box, Image, Text, Badge, Link, Flex, IconButton, HStack } from '@chakra-ui/react';
+import { toaster } from './ui/toaster';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { Figure } from '../types';
 import { deleteFigure } from '../api';
@@ -89,7 +90,6 @@ const HighlightedText: React.FC<{ text: string; query?: string; color?: string }
 };
 
 const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = 'text-bottom', maxImageHeight }) => {
-  const toast = useToast();
   const queryClient = useQueryClient();
 
   const cardBg = useColorModeValue('white', 'gray.800');
@@ -102,21 +102,21 @@ const FigureCard: React.FC<FigureCardProps> = ({ figure, searchQuery, layout = '
       queryClient.invalidateQueries('recentFigures');
       queryClient.invalidateQueries('dashboardStats');
 
-      toast({
+      toaster.create({
         title: 'Item deleted',
         description: `${figure.name} has been removed from your collection.`,
-        status: 'success',
+        type: 'success',
         duration: 5000,
-        isClosable: true,
+        closable: true,
       });
     },
     onError: (error: any) => {
-      toast({
+      toaster.create({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to delete item',
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
+        closable: true,
       });
     },
   });

@@ -2,7 +2,8 @@ import React, { useState, useCallback, useRef } from 'react';
 import { useColorModeValue } from "../components/ui/color-mode";
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useMutation, useQueryClient } from 'react-query';
-import { Steps, Box, Heading, Button, Flex, useToast, Breadcrumb, Icon } from '@chakra-ui/react';
+import { Steps, Box, Heading, Button, Flex, Breadcrumb, Icon } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { FaArrowLeft } from 'react-icons/fa';
 import { createFigure } from '../api';
 import FigureForm from '../components/FigureForm';
@@ -14,7 +15,6 @@ type SubmitAction = 'save' | 'saveAndAdd' | null;
 const AddFigure: React.FC = () => {
   const cardBg = useColorModeValue('white', 'gray.800');
   const navigate = useNavigate();
-  const toast = useToast();
   const queryClient = useQueryClient();
   const [currentAction, setCurrentAction] = useState<SubmitAction>(null);
   // Use ref for synchronous access in callbacks (state updates are async)
@@ -30,33 +30,33 @@ const AddFigure: React.FC = () => {
       // Only navigate if NOT "Save & Add Another"
       // Use ref for synchronous value (state may not have updated yet)
       if (currentActionRef.current !== 'saveAndAdd') {
-        toast({
+        toaster.create({
           title: 'Success',
           description: 'Figure added successfully',
-          status: 'success',
+          type: 'success',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
         navigate('/figures');
       } else {
         // For "Save & Add Another", show a different toast
-        toast({
+        toaster.create({
           title: 'Figure added!',
           description: 'Form cleared for next entry.',
-          status: 'success',
+          type: 'success',
           duration: 2000,
-          isClosable: true,
+          closable: true,
         });
         // Form will be reset by FigureForm's useEffect when it detects loading finished
       }
     },
     onError: (error: any) => {
-      toast({
+      toaster.create({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to add figure',
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
+        closable: true,
       });
       // Reset action on error so user can try again
       setCurrentAction(null);

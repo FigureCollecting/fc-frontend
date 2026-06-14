@@ -2,7 +2,6 @@ import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
-  Steps,
   Box,
   Flex,
   Text,
@@ -17,10 +16,10 @@ import {
   useDisclosure,
   Avatar,
   Menu,
-  useToast,
   Portal,
 } from '@chakra-ui/react';
 import { Tooltip } from './ui/tooltip';
+import { toaster } from './ui/toaster';
 import { FaUser, FaSignOutAlt, FaLock, FaUnlock, FaCog } from 'react-icons/fa';
 import { useAuthStore } from '../stores/authStore';
 import { useQueryClient } from 'react-query';
@@ -35,7 +34,6 @@ const CookieStatusIndicator: React.FC = () => {
   const [cookiesStored, setCookiesStored] = React.useState(hasMfcCookies(userId));
   const [storageType, setStorageType] = React.useState(getStorageType(userId));
   const { open: isModalOpen, onOpen: onModalOpen, onClose: onModalClose } = useDisclosure();
-  const toast = useToast();
   const iconColor = useColorModeValue(
     cookiesStored ? 'green.500' : 'gray.400',
     cookiesStored ? 'green.400' : 'gray.500'
@@ -57,12 +55,12 @@ const CookieStatusIndicator: React.FC = () => {
     clearMfcCookies(userId);
     setCookiesStored(false);
     setStorageType(null);
-    toast({
+    toaster.create({
       title: 'MFC Cookies Cleared',
       description: 'Your MyFigureCollection cookies have been removed.',
-      status: 'success',
+      type: 'success',
       duration: 3000,
-      isClosable: true,
+      closable: true,
     });
   };
 
@@ -84,13 +82,12 @@ const CookieStatusIndicator: React.FC = () => {
           placement: "bottom"
         }}>
           <Menu.Trigger asChild><IconButton
-              icon={<Icon as={cookiesStored ? FaLock : FaUnlock} w="16px" h="16px" />}
               variant="ghost"
               size="sm"
               color={iconColor}
               aria-label="MFC Cookie Status"
               data-testid="cookie-status-button"
-              minW="32px"></IconButton></Menu.Trigger>
+              minW="32px"><Icon w="16px" h="16px">{cookiesStored ? <FaLock /> : <FaUnlock />}</Icon></IconButton></Menu.Trigger>
         </Tooltip>
         <Portal><Menu.Positioner><Menu.Content>
               <Box px={4} py={2}>
@@ -101,12 +98,12 @@ const CookieStatusIndicator: React.FC = () => {
               </Box>
               <Menu.Separator />
               {cookiesStored && (
-                <Menu.Item onSelect={handleClearCookies} color="red.500" value='item-0'>
+                <Menu.Item onClick={handleClearCookies} color="red.500" value='item-0'>
                   Clear Cookies
                 </Menu.Item>
               )}
-              <Menu.Item icon={<FaCog />} onSelect={onModalOpen} value='item-1'>
-                Manage
+              <Menu.Item onClick={onModalOpen} value='item-1'>
+                <FaCog />Manage
               </Menu.Item>
             </Menu.Content></Menu.Positioner></Portal>
       </Menu.Root>
@@ -162,20 +159,19 @@ const Navbar: React.FC = () => {
             onClick={onToggle}
             variant={'ghost'}
             aria-label={'Toggle Navigation'}
-            data-testid="mobile-nav-toggle">{isOpen ? (
+            data-testid="mobile-nav-toggle">{open ? (
               <Box data-testid="close-icon">
-                <Icon as={LuX} w={3} h={3} />
+                <Icon w={3} h={3}><LuX /></Icon>
               </Box>
             ) : (
               <Box data-testid="hamburger-icon">
-                <Icon as={LuMenu} w={5} h={5} />
+                <Icon w={5} h={5}><LuMenu /></Icon>
               </Box>
             )}</IconButton>
         </Flex>
         <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
           <Link
-            as={RouterLink}
-            to="/"
+            asChild
             textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
             fontFamily={'heading'}
             fontWeight="bold"
@@ -184,7 +180,7 @@ const Navbar: React.FC = () => {
               textDecoration: 'none',
             }}
           >
-            FigureCollecting
+            <RouterLink to="/">FigureCollecting</RouterLink>
           </Link>
 
           <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
@@ -205,7 +201,7 @@ const Navbar: React.FC = () => {
             <Menu.Root>
               <Menu.Trigger asChild><Button
                   rounded={'full'}
-                  variant={'link'}
+                  variant={'plain'}
                   cursor={'pointer'}
                   minW={0}
                   data-testid="user-avatar-button"
@@ -213,41 +209,41 @@ const Navbar: React.FC = () => {
                   <Avatar.Root size={'sm'} bg="brand.500" color="white"><Avatar.Fallback name={user.username} /></Avatar.Root>
                 </Button></Menu.Trigger>
               <Portal><Menu.Positioner><Menu.Content>
-                    <Menu.Item as={RouterLink} to="/profile" icon={<Icon as={FaUser} />} value='item-2'>
-                      Profile
+                    <Menu.Item asChild value='item-2'>
+                      <RouterLink to="/profile">
+                        <Icon><FaUser /></Icon>Profile
+                      </RouterLink>
                     </Menu.Item>
                     <Menu.Separator />
-                    <Menu.Item onSelect={handleLogout} icon={<Icon as={FaSignOutAlt} />} value='item-3'>
-                      Sign Out
+                    <Menu.Item onClick={handleLogout} value='item-3'>
+                      <Icon><FaSignOutAlt /></Icon>Sign Out
                     </Menu.Item>
                   </Menu.Content></Menu.Positioner></Portal>
             </Menu.Root>
           ) : (
             <>
               <Button
-                as={RouterLink}
-                to="/login"
+                asChild
                 fontSize={'sm'}
                 fontWeight={400}
-                variant={'link'}
+                variant={'plain'}
               >
-                Sign In
+                <RouterLink to="/login">Sign In</RouterLink>
               </Button>
               <Button
-                as={RouterLink}
-                to="/register"
+                asChild
                 display={{ base: 'none', md: 'inline-flex' }}
                 fontSize={'sm'}
                 fontWeight={600}
                 colorPalette="brand"
               >
-                Sign Up
+                <RouterLink to="/register">Sign Up</RouterLink>
               </Button>
             </>
           )}
         </Stack>
       </Flex>
-      <Collapsible.Root open={isOpen}>
+      <Collapsible.Root open={open}>
         <Collapsible.Content>
           <MobileNav />
         </Collapsible.Content>
@@ -271,8 +267,7 @@ const DesktopNav = () => {
             }}>
             <Popover.Trigger asChild>
               <Link
-                as={RouterLink}
-                to={navItem.href ?? '#'}
+                asChild
                 p={2}
                 fontSize={'sm'}
                 fontWeight={500}
@@ -282,7 +277,7 @@ const DesktopNav = () => {
                   color: linkHoverColor,
                 }}
               >
-                {navItem.label}
+                <RouterLink to={navItem.href ?? '#'}>{navItem.label}</RouterLink>
               </Link>
             </Popover.Trigger>
 
@@ -313,14 +308,14 @@ const DesktopNav = () => {
 const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
   return (
     <Link
-      as={RouterLink}
-      to={href ?? '#'}
+      asChild
       display={'block'}
       p={2}
       rounded={'md'}
       _hover={{ bg: useColorModeValue('brand.50', 'gray.900') }}
       aria-label={`Navigate to ${label}${subLabel ? ': ' + subLabel : ''}`}
     >
+      <RouterLink to={href ?? '#'}>
       <Stack direction={'row'} align={'center'}>
         <Box>
           <Text
@@ -341,9 +336,10 @@ const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
           align={'center'}
           flex={1}
         >
-          <Icon color={'brand.500'} w={5} h={5} as={ChevronRightIcon} />
+          <Icon color={'brand.500'} w={5} h={5}><LuChevronRight /></Icon>
         </Flex>
       </Stack>
+      </RouterLink>
     </Link>
   );
 };
@@ -369,31 +365,33 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
     <Stack gap={4} onClick={children && onToggle}>
       <Flex
         py={2}
-        as={RouterLink}
-        to={href ?? '#'}
+        asChild
         justify={'space-between'}
         align={'center'}
         _hover={{
           textDecoration: 'none',
         }}
       >
-        <Text
-          fontWeight={600}
-          color={useColorModeValue('gray.600', 'gray.200')}
-        >
-          {label}
-        </Text>
-        {children && (
-          <Icon
-            as={ChevronDownIcon}
-            transition={'all .25s ease-in-out'}
-            transform={isOpen ? 'rotate(180deg)' : ''}
-            w={6}
-            h={6}
-          />
-        )}
+        <RouterLink to={href ?? '#'}>
+          <Text
+            fontWeight={600}
+            color={useColorModeValue('gray.600', 'gray.200')}
+          >
+            {label}
+          </Text>
+          {children && (
+            <Icon
+              transition={'all .25s ease-in-out'}
+              transform={open ? 'rotate(180deg)' : ''}
+              w={6}
+              h={6}
+            >
+              <LuChevronDown />
+            </Icon>
+          )}
+        </RouterLink>
       </Flex>
-      <Collapsible.Root open={isOpen} style={{ marginTop: '0!important' }}>
+      <Collapsible.Root open={open} style={{ marginTop: '0!important' }}>
         <Collapsible.Content>
           <Stack
             mt={2}
@@ -407,11 +405,10 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
               children.map((child) => (
                 <Link
                   key={child.label}
-                  as={RouterLink}
-                  to={child.href || '#'}
+                  asChild
                   py={2}
                 >
-                  {child.label}
+                  <RouterLink to={child.href || '#'}>{child.label}</RouterLink>
                 </Link>
               ))}
           </Stack>

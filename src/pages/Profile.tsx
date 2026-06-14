@@ -11,13 +11,11 @@ import {
   VStack,
   HStack,
   Text,
-  useToast,
   Spinner,
   Center,
   Alert,
   useDisclosure,
   InputGroup,
-  InputRightElement,
   Icon,
   Badge,
   Separator,
@@ -25,6 +23,7 @@ import {
   Dialog,
   Portal,
 } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { FaEye, FaEyeSlash, FaShieldAlt } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { getUserProfile, updateUserProfile } from '../api';
@@ -43,7 +42,6 @@ const Profile: React.FC = () => {
 
   const { user, setUser, logout } = useAuthStore();
   const navigate = useNavigate();
-  const toast = useToast();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = React.useState(false);
   const { open, onOpen, onClose } = useDisclosure();
@@ -94,12 +92,12 @@ const Profile: React.FC = () => {
           email: userData.email,
         });
         queryClient.invalidateQueries('userProfile');
-        toast({
+        toaster.create({
           title: 'Success',
           description: 'Profile updated successfully',
-          status: 'success',
+          type: 'success',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
         reset({
           username: userData.username,
@@ -110,12 +108,12 @@ const Profile: React.FC = () => {
         });
       },
       onError: (error: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: error.response?.data?.message || 'Failed to update profile',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }
@@ -140,12 +138,12 @@ const Profile: React.FC = () => {
     if (Object.keys(updateData).length > 0) {
       mutation.mutate(updateData);
     } else {
-      toast({
+      toaster.create({
         title: 'Information',
         description: 'No changes to save',
-        status: 'info',
+        type: 'info',
         duration: 5000,
-        isClosable: true,
+        closable: true,
       });
     }
   };
@@ -222,8 +220,9 @@ const Profile: React.FC = () => {
             <Box>
               <HStack justify="space-between" mb={2}>
                 <Heading size="md">Security</Heading>
-                <Button as={RouterLink} to="/security" size="sm" variant="outline"><Icon as={FaShieldAlt} />Security Settings
-                                  </Button>
+                <Button asChild size="sm" variant="outline">
+                  <RouterLink to="/security"><Icon as={FaShieldAlt} />Security Settings</RouterLink>
+                </Button>
               </HStack>
               <HStack gap={4}>
                 <HStack>
@@ -253,18 +252,8 @@ const Profile: React.FC = () => {
             
             <Field.Root invalid={!!errors.newPassword}>
               <Field.Label>New Password</Field.Label>
-              <InputGroup>
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  {...register('newPassword', {
-                    minLength: {
-                      value: 6,
-                      message: 'New password must be at least 6 characters',
-                    },
-                  })}
-                />
-                <InputRightElement>
+              <InputGroup
+                endElement={
                   <Button
                     variant="ghost"
                     onClick={() => setShowPassword(!showPassword)}
@@ -275,7 +264,18 @@ const Profile: React.FC = () => {
                       color="gray.500"
                     />
                   </Button>
-                </InputRightElement>
+                }
+              >
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  {...register('newPassword', {
+                    minLength: {
+                      value: 6,
+                      message: 'New password must be at least 6 characters',
+                    },
+                  })}
+                />
               </InputGroup>
               {errors.newPassword && (
                 <Text color="red.500" fontSize="sm" mt={1}>
@@ -323,7 +323,7 @@ const Profile: React.FC = () => {
         </form>
       </Box>
       {/* Logout Confirmation Modal */}
-      <Dialog.Root open={isOpen} onOpenChange={e => {
+      <Dialog.Root open={open} onOpenChange={e => {
         if (!e.open) {
           onClose();
         }

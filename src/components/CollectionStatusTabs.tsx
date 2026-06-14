@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import { Steps, Tabs, TabList, Tab, Badge, HStack } from '@chakra-ui/react';
+import { Steps, Tabs, Badge, HStack } from '@chakra-ui/react';
 import { FaBox, FaTruck, FaStar } from 'react-icons/fa';
 import { CollectionStatus, StatusCounts } from '../types';
 
@@ -30,19 +30,18 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
   isLoading = false,
 }) => {
   const statuses: CollectionStatus[] = ['owned', 'ordered', 'wished'];
-  const activeIndex = statuses.indexOf(activeStatus);
 
   const tabBg = useColorModeValue('white', 'gray.800');
   const activeBg = useColorModeValue('brand.50', 'brand.900');
 
-  const handleTabChange = (index: number) => {
-    onStatusChange(statuses[index]);
+  const handleTabChange = (value: string) => {
+    onStatusChange(value as CollectionStatus);
   };
 
   return (
     <Tabs.Root
-      value={activeIndex}
-      onValueChange={handleTabChange}
+      value={activeStatus}
+      onValueChange={(e) => handleTabChange(e.value)}
       variant='subtle'
       colorPalette="brand"
       mb={4}
@@ -61,8 +60,9 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
           const Icon = config.icon;
 
           return (
-            <Tab
+            <Tabs.Trigger
               key={status}
+              value={status}
               px={4}
               py={2}
               borderRadius="md"
@@ -86,7 +86,7 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
                   {count}
                 </Badge>
               </HStack>
-            </Tab>
+            </Tabs.Trigger>
           );
         })}
       </Tabs.List>

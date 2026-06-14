@@ -60,7 +60,7 @@ const ForgotPassword: React.FC = () => {
               <Input
                 type="email"
                 value={email}
-                onValueChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                 required
               />
             </Field.Root>

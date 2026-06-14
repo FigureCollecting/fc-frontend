@@ -14,7 +14,6 @@ import {
   Badge,
   Flex,
   IconButton,
-  useToast,
   Spinner,
   Center,
   Link,
@@ -29,6 +28,7 @@ import {
   useDisclosure,
   Separator,
 } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { FaEdit, FaTrash, FaArrowLeft, FaExternalLinkAlt, FaListUl, FaStar, FaUsers } from 'react-icons/fa';
 import { getFigureById, deleteFigure, getListsByItem } from '../api';
 import { getDisplayCompanies, getDisplayArtists } from '../utils/statsUtils';
@@ -39,7 +39,6 @@ const FigureDetail: React.FC = () => {
   const cardBg = useColorModeValue('white', 'gray.800');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const toast = useToast();
   const queryClient = useQueryClient();
   
   const { open: isListsOpen, onOpen: onListsOpen, onClose: onListsClose } = useDisclosure();
@@ -50,12 +49,12 @@ const FigureDetail: React.FC = () => {
     {
       enabled: !!id,
       onError: (err: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: err.response?.data?.message || 'Failed to load figure details',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }
@@ -75,22 +74,22 @@ const FigureDetail: React.FC = () => {
       queryClient.invalidateQueries('recentFigures');
       queryClient.invalidateQueries('dashboardStats');
       
-      toast({
+      toaster.create({
         title: 'Success',
         description: 'Figure deleted successfully',
-        status: 'success',
+        type: 'success',
         duration: 5000,
-        isClosable: true,
+        closable: true,
       });
       navigate('/figures');
     },
     onError: (err: any) => {
-      toast({
+      toaster.create({
         title: 'Error',
         description: err.response?.data?.message || 'Failed to delete figure',
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
+        closable: true,
       });
     },
   });

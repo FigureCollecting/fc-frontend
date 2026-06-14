@@ -151,11 +151,10 @@ const ReleasesSection: React.FC = () => {
                 <GridItem>
                   <Field.Root>
                     <Field.Label fontSize="xs" mb={1}>Currency</Field.Label>
-                    <NativeSelect.Root>
+                    <NativeSelect.Root size="sm">
                       <NativeSelect.Field
                         {...register(`releases.${index}.currency` as const)}
                         aria-label="Currency"
-                        size="sm"
                         defaultValue={field.currency || 'JPY'}>
                         {CURRENCY_OPTIONS.map((curr) => (
                           <option key={curr} value={curr}>
@@ -203,7 +202,7 @@ const ReleasesSection: React.FC = () => {
                   defaultValue={field.isRerelease}
                   render={({ field: { onChange, onBlur, value, ref } }) => (
                     <Checkbox.Root
-                      onCheckedChange={(e) => onChange(e.target.checked)}
+                      onCheckedChange={(e) => onChange(e.checked)}
                       onBlur={onBlur}
                       ref={ref}
                       aria-label="Rerelease"

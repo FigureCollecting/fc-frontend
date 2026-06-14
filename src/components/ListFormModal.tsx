@@ -84,7 +84,7 @@ const ListFormModal: React.FC<ListFormModalProps> = ({
                 <Field.Label>Name</Field.Label>
                 <Input
                   value={name}
-                  onValueChange={(e) => setName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                   placeholder="List name"
                   maxLength={MFC_LIST_LIMITS.NAME_MAX}
                   data-testid="list-name-input"
@@ -96,7 +96,7 @@ const ListFormModal: React.FC<ListFormModalProps> = ({
                 <Field.Label>Teaser</Field.Label>
                 <Input
                   value={teaser}
-                  onValueChange={(e) => setTeaser(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTeaser(e.target.value)}
                   placeholder="Short description"
                   maxLength={MFC_LIST_LIMITS.TEASER_MAX}
                   data-testid="list-teaser-input"
@@ -107,7 +107,7 @@ const ListFormModal: React.FC<ListFormModalProps> = ({
                 <Field.Label>Description</Field.Label>
                 <Textarea
                   value={description}
-                  onValueChange={(e) => setDescription(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
                   placeholder="Detailed description (optional)"
                   rows={4}
                   data-testid="list-description-input"
@@ -119,7 +119,7 @@ const ListFormModal: React.FC<ListFormModalProps> = ({
                 <NativeSelect.Root>
                   <NativeSelect.Field
                     value={privacy}
-                    onValueChange={(e) => setPrivacy(e.target.value as ListPrivacy)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPrivacy(e.target.value as ListPrivacy)}
                     data-testid="list-privacy-select">
                     <option value="public">Public</option>
                     <option value="friends">Friends Only</option>

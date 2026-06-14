@@ -4,13 +4,13 @@ import {
   Box,
   Heading,
   VStack,
-  useToast,
   Spinner,
   Badge,
   Text,
   HStack,
   Separator,
 } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { useAuthStore } from '../stores/authStore';
 import { getUserProfile } from '../api';
 import TOTPSetup from '../components/security/TOTPSetup';
@@ -20,18 +20,17 @@ const Security: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const toast = useToast();
 
   const fetchProfile = useCallback(async () => {
     try {
       const data = await getUserProfile();
       setProfile(data);
     } catch {
-      toast({ title: 'Failed to load security settings', status: 'error', duration: 5000 });
+      toaster.create({ title: 'Failed to load security settings', type: 'error', duration: 5000 });
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     fetchProfile();

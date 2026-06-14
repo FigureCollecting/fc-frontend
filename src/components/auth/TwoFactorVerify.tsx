@@ -9,12 +9,7 @@ import {
   Text,
   Alert,
   Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
   PinInput,
-  PinInputField,
   HStack,
 } from '@chakra-ui/react';
 import { verify2FA } from '../../api';
@@ -59,52 +54,50 @@ const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = ({
           </Alert.Root>
         )}
 
-        <Tabs.Root w="full" variant='enclosed'>
+        <Tabs.Root w="full" variant='enclosed' defaultValue={methods.includes('totp') ? 'totp' : 'backup'}>
           <Tabs.List>
-            {methods.includes('totp') && <Tab>Authenticator</Tab>}
-            {methods.includes('backup') && <Tab>Backup Code</Tab>}
+            {methods.includes('totp') && <Tabs.Trigger value="totp">Authenticator</Tabs.Trigger>}
+            {methods.includes('backup') && <Tabs.Trigger value="backup">Backup Code</Tabs.Trigger>}
           </Tabs.List>
-          <TabPanels>
-            {methods.includes('totp') && (
-              <TabPanel>
-                <VStack gap={4}>
-                  <Text fontSize="sm">Enter the 6-digit code from your authenticator app.</Text>
-                  <HStack>
-                    <PinInput.Root otp size="lg" onValueComplete={(value) => handleVerify('totp', value)}><PinInput.HiddenInput />
-
-
-
-
-
-
-                      <PinInput.Control><PinInput.Input index={0} /><PinInput.Input index={1} /><PinInput.Input index={2} /><PinInput.Input index={3} /><PinInput.Input index={4} /><PinInput.Input index={5} /></PinInput.Control></PinInput.Root>
-                  </HStack>
-                </VStack>
-              </TabPanel>
-            )}
-            {methods.includes('backup') && (
-              <TabPanel>
-                <VStack gap={4}>
-                  <Text fontSize="sm">Enter one of your backup codes (format: xxxx-xxxx).</Text>
-                  <Input
-                    placeholder="xxxx-xxxx"
-                    value={code}
-                    onValueChange={(e) => setCode(e.target.value)}
-                    maxLength={9}
-                  />
-                  <Button
-                    colorPalette="blue"
-                    w="full"
-                    loading={loading}
-                    onClick={() => handleVerify('backup', code)}
-                    disabled={code.length < 8}
-                  >
-                    Verify
-                  </Button>
-                </VStack>
-              </TabPanel>
-            )}
-          </TabPanels>
+          {methods.includes('totp') && (
+            <Tabs.Content value="totp">
+              <VStack gap={4}>
+                <Text fontSize="sm">Enter the 6-digit code from your authenticator app.</Text>
+                <HStack>
+                  <PinInput.Root otp size="lg" onValueComplete={(e) => handleVerify('totp', e.valueAsString)}>
+                    <PinInput.HiddenInput />
+                    <PinInput.Control>
+                      {[0, 1, 2, 3, 4, 5].map((i) => (
+                        <PinInput.Input key={i} index={i} />
+                      ))}
+                    </PinInput.Control>
+                  </PinInput.Root>
+                </HStack>
+              </VStack>
+            </Tabs.Content>
+          )}
+          {methods.includes('backup') && (
+            <Tabs.Content value="backup">
+              <VStack gap={4}>
+                <Text fontSize="sm">Enter one of your backup codes (format: xxxx-xxxx).</Text>
+                <Input
+                  placeholder="xxxx-xxxx"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  maxLength={9}
+                />
+                <Button
+                  colorPalette="blue"
+                  w="full"
+                  loading={loading}
+                  onClick={() => handleVerify('backup', code)}
+                  disabled={code.length < 8}
+                >
+                  Verify
+                </Button>
+              </VStack>
+            </Tabs.Content>
+          )}
         </Tabs.Root>
 
         <Button variant="ghost" onClick={onCancel}>

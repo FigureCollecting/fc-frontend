@@ -13,7 +13,6 @@ import {
   Grid,
   GridItem,
   InputGroup,
-  InputRightElement,
   IconButton,
   Text,
   Field,
@@ -98,21 +97,22 @@ const CoreFieldsSection: React.FC<CoreFieldsSectionProps> = ({
       <GridItem colSpan={{ base: 1, md: 2 }}>
         <Field.Root invalid={!!errors.imageUrl}>
           <Field.Label>Image URL (Optional)</Field.Label>
-          <InputGroup>
-            <Input
-              {...register('imageUrl', {
-                validate: validateUrl,
-              })}
-              placeholder="https://example.com/image.jpg"
-            />
-            <InputRightElement>
+          <InputGroup
+            endElement={
               <IconButton
                 aria-label="Open image link"
                 size="sm"
                 variant="ghost"
                 onClick={openImageLink}
                 disabled={!imageUrl}><FaImage /></IconButton>
-            </InputRightElement>
+            }
+          >
+            <Input
+              {...register('imageUrl', {
+                validate: validateUrl,
+              })}
+              placeholder="https://example.com/image.jpg"
+            />
           </InputGroup>
           <Field.ErrorText>{errors.imageUrl?.message}</Field.ErrorText>
           <Text fontSize="xs" color="gray.500" mt={1}>

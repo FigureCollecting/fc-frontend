@@ -16,11 +16,6 @@ import {
   HStack,
   NativeSelect,
   NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  Radio,
   RadioGroup,
   Stack,
   Separator,
@@ -55,7 +50,7 @@ const CollectionDetailsSection: React.FC<CollectionDetailsSectionProps> = ({
             <Field.Label>Collection Status</Field.Label>
             <RadioGroup.Root
               value={collectionStatus || 'owned'}
-              onValueChange={(value) => setValue('collectionStatus', value as CollectionStatus)}>
+              onValueChange={(e) => setValue('collectionStatus', e.value as CollectionStatus)}>
               <Stack direction="row" gap={4}>
                 <RadioGroup.Item value="owned"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>Owned</RadioGroup.ItemText></RadioGroup.Item>
                 <RadioGroup.Item value="ordered"><RadioGroup.ItemHiddenInput /><RadioGroup.ItemIndicator /><RadioGroup.ItemText>Ordered</RadioGroup.ItemText></RadioGroup.Item>
@@ -108,16 +103,16 @@ const CollectionDetailsSection: React.FC<CollectionDetailsSectionProps> = ({
                     min={1}
                     max={10}
                     step={1}
-                    precision={0}
+                    formatOptions={{ maximumFractionDigits: 0 }}
                     allowMouseWheel={false}
                     clampValueOnBlur={false}
-                    onValueChange={(valueString, valueNumber) => {
+                    onValueChange={(e) => {
                       // Handle manual input only - steppers are handled separately
-                      if (valueString === '' || valueString === undefined) {
+                      if (e.value === '' || e.value === undefined) {
                         setValue('rating', undefined);
-                      } else if (!isNaN(valueNumber) && valueNumber >= 1 && valueNumber <= 10) {
+                      } else if (!isNaN(e.valueAsNumber) && e.valueAsNumber >= 1 && e.valueAsNumber <= 10) {
                         // Round to integer
-                        setValue('rating', Math.round(valueNumber));
+                        setValue('rating', Math.round(e.valueAsNumber));
                       }
                     }}
                     value={String(watch('rating') ?? '')}
@@ -257,7 +252,7 @@ const CollectionDetailsSection: React.FC<CollectionDetailsSectionProps> = ({
               id="quantity"
               min={1}
               max={99}
-              onValueChange={(_, val) => setValue('quantity', isNaN(val) || val < 1 ? 1 : val)}
+              onValueChange={(e) => setValue('quantity', isNaN(e.valueAsNumber) || e.valueAsNumber < 1 ? 1 : e.valueAsNumber)}
               value={String(watch('quantity') ?? 1)}
             >
               <NumberInput.Input aria-label="Quantity" />
