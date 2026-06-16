@@ -55,13 +55,14 @@ jest.mock('react-query', () => ({
   }),
 }));
 
-jest.mock('@chakra-ui/react', () => {
-  const actual = jest.requireActual('@chakra-ui/react');
-  return {
-    ...actual,
-    useToast: () => mockToast,
-  };
-});
+jest.mock('../../components/ui/toaster', () => ({
+  toaster: {
+    create: (...args: any[]) => mockToast(...args),
+    dismiss: jest.fn(),
+    update: jest.fn(),
+  },
+  Toaster: () => null,
+}));
 
 const enrichedFigure = {
   ...mockFigure,
@@ -233,7 +234,7 @@ describe('FigureDetail', () => {
       expect.objectContaining({
         title: 'Error',
         description: 'Figure not found',
-        status: 'error',
+        type: 'error',
       })
     );
   });
@@ -246,7 +247,7 @@ describe('FigureDetail', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         description: 'Failed to load figure details',
-        status: 'error',
+        type: 'error',
       })
     );
   });
@@ -264,7 +265,7 @@ describe('FigureDetail', () => {
       expect.objectContaining({
         title: 'Success',
         description: 'Figure deleted successfully',
-        status: 'success',
+        type: 'success',
       })
     );
     expect(mockNavigate).toHaveBeenCalledWith('/figures');
@@ -281,7 +282,7 @@ describe('FigureDetail', () => {
       expect.objectContaining({
         title: 'Error',
         description: 'Cannot delete',
-        status: 'error',
+        type: 'error',
       })
     );
   });
@@ -294,7 +295,7 @@ describe('FigureDetail', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         description: 'Failed to delete figure',
-        status: 'error',
+        type: 'error',
       })
     );
   });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, AlertIcon, Button, HStack, Text, useToast } from '@chakra-ui/react';
+import { Alert, Button, HStack, Text } from '@chakra-ui/react';
+import { toaster } from '../ui/toaster';
 import { useAuthStore } from '../../stores/authStore';
 import { resendVerificationEmail, getUserProfile } from '../../api';
 
@@ -8,7 +9,6 @@ const EmailVerificationBanner: React.FC = () => {
   const setUser = useAuthStore((state) => state.setUser);
   const [loading, setLoading] = useState(false);
   const [checked, setChecked] = useState(false);
-  const toast = useToast();
 
   // Sync emailVerified from backend if store shows unverified (handles stale localStorage)
   useEffect(() => {
@@ -33,17 +33,17 @@ const EmailVerificationBanner: React.FC = () => {
     setLoading(true);
     try {
       await resendVerificationEmail(user.email);
-      toast({
+      toaster.create({
         title: 'Verification email sent',
         description: 'Check your inbox for the verification link.',
-        status: 'success',
+        type: 'success',
         duration: 5000,
       });
     } catch {
-      toast({
+      toaster.create({
         title: 'Error',
         description: 'Failed to send verification email. Please try again.',
-        status: 'error',
+        type: 'error',
         duration: 5000,
       });
     } finally {
@@ -52,15 +52,15 @@ const EmailVerificationBanner: React.FC = () => {
   };
 
   return (
-    <Alert status="warning" variant="subtle">
-      <AlertIcon />
+    <Alert.Root status="warning" variant="subtle">
+      <Alert.Indicator />
       <HStack justify="space-between" w="full">
         <Text>Your email is not verified. Please check your inbox.</Text>
-        <Button size="sm" colorScheme="orange" variant="outline" isLoading={loading} onClick={handleResend}>
+        <Button size="sm" colorPalette="orange" variant="outline" loading={loading} onClick={handleResend}>
           Resend
         </Button>
       </HStack>
-    </Alert>
+    </Alert.Root>
   );
 };
 

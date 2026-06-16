@@ -18,21 +18,27 @@ describe('Pagination', () => {
 
   describe('Rendering', () => {
     it('should not render content when there is only one page', () => {
-      const { container } = render(
+      render(
         <Pagination currentPage={1} totalPages={1} onPageChange={mockOnPageChange} showPageSizeSelector={false} />
       );
 
-      // The component returns null when totalPages <= 1 and showPageSizeSelector is false
-      expect(container.firstChild).toBeEmptyDOMElement();
+      // The component returns null when totalPages <= 1 and showPageSizeSelector is false.
+      // (The render container's firstChild is a next-themes <script> injected by
+      // ColorModeProvider, so assert the component itself rendered nothing.)
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      expect(screen.queryByText(/page \d+ of \d+/i)).not.toBeInTheDocument();
     });
 
     it('should not render content when there are no pages', () => {
-      const { container } = render(
+      render(
         <Pagination currentPage={1} totalPages={0} onPageChange={mockOnPageChange} showPageSizeSelector={false} />
       );
 
-      // The component returns null when totalPages <= 1 and showPageSizeSelector is false
-      expect(container.firstChild).toBeEmptyDOMElement();
+      // The component returns null when totalPages <= 1 and showPageSizeSelector is false.
+      // (The render container's firstChild is a next-themes <script> injected by
+      // ColorModeProvider, so assert the component itself rendered nothing.)
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      expect(screen.queryByText(/page \d+ of \d+/i)).not.toBeInTheDocument();
     });
 
     it('should render pagination controls when there are multiple pages', () => {

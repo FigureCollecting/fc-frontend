@@ -13,29 +13,22 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  Button,
+import { Button,
   VStack,
   HStack,
   Text,
-  useToast,
   Badge,
   Box,
   Alert,
-  AlertIcon,
   Icon,
   Spinner,
   Checkbox,
   CheckboxGroup,
   Stack,
+  Dialog,
+  Portal,
 } from '@chakra-ui/react';
+import { toaster } from './ui/toaster';
 import {
   FaSync,
   FaCheckCircle,
@@ -185,7 +178,6 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['owned', 'ordered', 'wished']);
   const [syncLists, setSyncLists] = useState(true);
 
-  const toast = useToast();
   const { user } = useAuthStore();
   const userId = user?._id;
   const { startSync, isActive } = useSyncStore();
@@ -266,10 +258,10 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
         if (result.valid) {
           logger.info(`[session=${currentSession}] Validation successful`);
           setStep('ready');
-          toast({
+          toaster.create({
             title: 'MFC Connected',
             description: `Logged in as ${result.username || 'user'}`,
-            status: 'success',
+            type: 'success',
             duration: 3000,
           });
         } else {
@@ -299,25 +291,25 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
     };
 
     checkCookies();
-  }, [isOpen, userId, toast]);
+  }, [isOpen, userId]);
 
   // Start the sync and close modal
   const handleStartSync = async () => {
     if (!user?._id || !cookies || !validationResult?.valid) return;
     if (selectedStatuses.length === 0 && !syncLists) {
-      toast({
+      toaster.create({
         title: 'Nothing selected',
         description: 'Please select at least one status or enable list sync',
-        status: 'warning',
+        type: 'warning',
         duration: 3000,
       });
       return;
     }
     if (isActive) {
-      toast({
+      toaster.create({
         title: 'Sync already in progress',
         description: 'Please wait for the current sync to complete',
-        status: 'warning',
+        type: 'warning',
         duration: 3000,
       });
       return;
@@ -385,16 +377,16 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
   // ============================================================================
 
   const renderCheckingStep = () => (
-    <VStack spacing={4} align="stretch" py={4}>
+    <VStack gap={4} align="stretch" py={4}>
       {isLoading ? (
-        <VStack spacing={4} py={8}>
-          <Spinner size="xl" color="blue.500" thickness="4px" />
+        <VStack gap={4} py={8}>
+          <Spinner size="xl" color="blue.500" borderWidth="4px" />
           <Text>Checking for stored MFC cookies...</Text>
         </VStack>
       ) : !hasCookiesStored ? (
         <>
-          <Alert status="warning" borderRadius="md">
-            <AlertIcon />
+          <Alert.Root status="warning" borderRadius="md">
+            <Alert.Indicator />
             <Box>
               <Text fontWeight="bold">MFC Cookies Required</Text>
               <Text fontSize="sm">
@@ -402,37 +394,31 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
                 padlock icon in the navbar to set up your cookies.
               </Text>
             </Box>
-          </Alert>
+          </Alert.Root>
 
           {error && (
-            <Alert status="error" borderRadius="md">
-              <AlertIcon />
+            <Alert.Root status="error" borderRadius="md">
+              <Alert.Indicator />
               {error}
-            </Alert>
+            </Alert.Root>
           )}
 
           <Box textAlign="center" py={4}>
-            <Button
-              colorScheme="blue"
-              leftIcon={<Icon as={FaLock} />}
-              onClick={handleOpenCookiesModal}
-              size="lg"
-            >
-              Set Up MFC Cookies
-            </Button>
+            <Button colorPalette="blue" onClick={handleOpenCookiesModal} size="lg"><Icon asChild><FaLock /></Icon>Set Up MFC Cookies
+                          </Button>
           </Box>
 
-          <Alert status="info" borderRadius="md" size="sm">
-            <AlertIcon />
+          <Alert.Root status="info" borderRadius="md" size="sm">
+            <Alert.Indicator />
             <Text fontSize="sm">
               Your MFC cookies are stored securely in your browser and are never saved on our
               servers.
             </Text>
-          </Alert>
+          </Alert.Root>
         </>
       ) : (
-        <VStack spacing={4} py={8}>
-          <Icon as={FaCheckCircle} boxSize={12} color="green.500" />
+        <VStack gap={4} py={8}>
+          <Icon boxSize={12} color="green.500" asChild><FaCheckCircle /></Icon>
           <Text>MFC cookies found! Proceeding to validation...</Text>
         </VStack>
       )}
@@ -440,23 +426,23 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
   );
 
   const renderValidatingStep = () => (
-    <VStack spacing={6} py={8}>
-      <Spinner size="xl" color="blue.500" thickness="4px" />
+    <VStack gap={6} py={8}>
+      <Spinner size="xl" color="blue.500" borderWidth="4px" />
       <Text>Validating cookies with MyFigureCollection...</Text>
     </VStack>
   );
 
   const renderReadyStep = () => (
-    <VStack spacing={6} py={8}>
-      <Icon as={FaCheckCircle} boxSize={16} color="green.500" />
-      <VStack spacing={2}>
+    <VStack gap={6} py={8}>
+      <Icon boxSize={16} color="green.500" asChild><FaCheckCircle /></Icon>
+      <VStack gap={2}>
         <Text fontSize="xl" fontWeight="bold">
           Ready to Sync
         </Text>
         <HStack>
-          <Icon as={FaUser} color="gray.500" />
+          <Icon color="gray.500" asChild><FaUser /></Icon>
           <Text color="gray.500">Logged in as:</Text>
-          <Badge colorScheme="green" fontSize="md">
+          <Badge colorPalette="green" fontSize="md">
             {validationResult?.username || 'MFC User'}
           </Badge>
         </HStack>
@@ -467,45 +453,45 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
         <Text fontWeight="bold" mb={3}>Collection Status:</Text>
         <CheckboxGroup
           value={selectedStatuses}
-          onChange={(values) => setSelectedStatuses(values as string[])}
+          onValueChange={(values) => setSelectedStatuses(values as string[])}
         >
-          <Stack direction="row" spacing={6}>
-            <Checkbox value="owned" colorScheme="green">
+          <Stack direction="row" gap={6}>
+            <Checkbox.Root value="owned" colorPalette="green"><Checkbox.HiddenInput /><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control><Checkbox.Label>
               <Text fontWeight="semibold" color="green.600">Owned</Text>
-            </Checkbox>
-            <Checkbox value="ordered" colorScheme="blue">
+            </Checkbox.Label></Checkbox.Root>
+            <Checkbox.Root value="ordered" colorPalette="blue"><Checkbox.HiddenInput /><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control><Checkbox.Label>
               <Text fontWeight="semibold" color="blue.600">Ordered</Text>
-            </Checkbox>
-            <Checkbox value="wished" colorScheme="purple">
+            </Checkbox.Label></Checkbox.Root>
+            <Checkbox.Root value="wished" colorPalette="purple"><Checkbox.HiddenInput /><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control><Checkbox.Label>
               <Text fontWeight="semibold" color="purple.600">Wished</Text>
-            </Checkbox>
+            </Checkbox.Label></Checkbox.Root>
           </Stack>
         </CheckboxGroup>
       </Box>
 
       {/* Lists Sync Option */}
       <Box w="100%" p={4} bg="gray.50" borderRadius="md" _dark={{ bg: 'gray.700' }}>
-        <Checkbox
-          isChecked={syncLists}
-          onChange={(e) => setSyncLists(e.target.checked)}
-          colorScheme="orange"
+        <Checkbox.Root
+          onCheckedChange={(e) => setSyncLists(!!e.checked)}
+          colorPalette="orange"
           data-testid="sync-lists-checkbox"
-        >
+          checked={syncLists}
+        ><Checkbox.HiddenInput /><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control><Checkbox.Label>
           <Text fontWeight="semibold" color="orange.600">Sync Lists</Text>
-        </Checkbox>
+        </Checkbox.Label></Checkbox.Root>
         <Text fontSize="xs" color="gray.500" mt={1} ml={6}>
           Import your MFC lists (wishlists, for-sale, custom lists, etc.)
         </Text>
       </Box>
 
       {error && (
-        <Alert status="error" borderRadius="md">
-          <AlertIcon />
+        <Alert.Root status="error" borderRadius="md">
+          <Alert.Indicator />
           {error}
-        </Alert>
+        </Alert.Root>
       )}
-      <Alert status="info" borderRadius="md">
-        <AlertIcon />
+      <Alert.Root status="info" borderRadius="md">
+        <Alert.Indicator />
         <Box>
           <Text fontWeight="bold">What happens next?</Text>
           <Text fontSize="sm">
@@ -513,7 +499,7 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
             Progress will be shown in a banner at the top of the page.
           </Text>
         </Box>
-      </Alert>
+      </Alert.Root>
     </VStack>
   );
 
@@ -540,19 +526,16 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
         return null;
       case 'ready':
         return (
-          <HStack spacing={3}>
+          <HStack gap={3}>
             <Button variant="ghost" onClick={handleClose}>
               Cancel
             </Button>
             <Button
-              colorScheme="green"
+              colorPalette="green"
               onClick={handleStartSync}
-              leftIcon={<Icon as={FaSync} />}
-              isLoading={isLoading}
-              loadingText="Starting..."
-            >
-              Start Sync
-            </Button>
+              loading={isLoading}
+              loadingText="Starting..."><Icon asChild><FaSync /></Icon>Start Sync
+                          </Button>
           </HStack>
         );
     }
@@ -570,20 +553,30 @@ const MfcSyncModal: React.FC<MfcSyncModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="lg" scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          <HStack>
-            <Icon as={FaSync} />
-            <Text>{getStepTitle()}</Text>
-          </HStack>
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>{renderStepContent()}</ModalBody>
-        <ModalFooter>{renderFooter()}</ModalFooter>
-      </ModalContent>
-    </Modal>
+    <Dialog.Root open={isOpen} size='lg' scrollBehavior="inside" onOpenChange={e => {
+      if (!e.open) {
+        handleClose();
+      }
+    }}>
+      <Portal>
+
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <HStack>
+                <Icon asChild><FaSync /></Icon>
+                <Text>{getStepTitle()}</Text>
+              </HStack>
+            </Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>{renderStepContent()}</Dialog.Body>
+            <Dialog.Footer>{renderFooter()}</Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

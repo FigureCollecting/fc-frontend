@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import {
-  Box,
+import { Box,
   Heading,
   SimpleGrid,
   Button,
@@ -9,17 +8,15 @@ import {
   Text,
   Spinner,
   Center,
-  useToast,
   useDisclosure,
   HStack,
   Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Icon,
   Spacer,
   useBreakpointValue,
+  Portal,
 } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { FaPlus, FaSync, FaChevronDown } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
 import { getFigures, filterFigures, getFigureStats } from '../api';
@@ -57,11 +54,10 @@ const FigureList: React.FC = () => {
     setActiveStatus,
   } = useFigureListState();
 
-  const toast = useToast();
   const queryClient = useQueryClient();
-  const { isOpen: isImportOpen, onClose: onImportClose } = useDisclosure();
-  const { isOpen: isSyncOpen, onOpen: onSyncOpen, onClose: onSyncClose } = useDisclosure();
-  const { isOpen: isCookiesOpen, onOpen: onCookiesOpen, onClose: onCookiesClose } = useDisclosure();
+  const { open: isImportOpen, onClose: onImportClose } = useDisclosure();
+  const { open: isSyncOpen, onOpen: onSyncOpen, onClose: onSyncClose } = useDisclosure();
+  const { open: isCookiesOpen, onOpen: onCookiesOpen, onClose: onCookiesClose } = useDisclosure();
 
   // Responsive layout
   const isMobile = useBreakpointValue({ base: true, lg: false });
@@ -194,12 +190,12 @@ const FigureList: React.FC = () => {
     {
       keepPreviousData: true,
       onError: (err: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: err.response?.data?.message || 'Failed to load figures',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }
@@ -237,7 +233,7 @@ const FigureList: React.FC = () => {
   if (isLoading) {
     return (
       <Center h="50vh">
-        <Spinner size="xl" color="brand.500" thickness="4px" />
+        <Spinner size="xl" color="brand.500" borderWidth="4px" />
       </Center>
     );
   }
@@ -260,7 +256,7 @@ const FigureList: React.FC = () => {
       {/* Header with title and action buttons */}
       <Flex justify="space-between" align="center" mb={6}>
         <Heading size="lg">Your Collectibles</Heading>
-        <HStack spacing={3}>
+        <HStack gap={3}>
           {/* Mobile: Filter button (shows on mobile only) */}
           {isMobile && (
             <FacetedFilterSidebar
@@ -271,39 +267,26 @@ const FigureList: React.FC = () => {
             />
           )}
           {/* Add Item button */}
-          <Button
-            as={RouterLink}
-            to="/figures/add"
-            leftIcon={<FaPlus />}
-            colorScheme="brand"
-          >
-            Add Item
-          </Button>
+          <Button colorPalette="brand" asChild><RouterLink to="/figures/add"><FaPlus />Add Item
+                                    </RouterLink></Button>
           {/* Sync with MFC dropdown */}
-          <Menu>
-            <MenuButton
-              as={Button}
-              leftIcon={<FaSync />}
-              rightIcon={<Icon as={FaChevronDown} />}
-              colorScheme="purple"
-              variant="outline"
-            >
-              Sync with MFC
-            </MenuButton>
-            <MenuList>
-              <MenuItem icon={<Icon as={FaSync} />} onClick={onSyncOpen}>
-                Sync MFC Account
-              </MenuItem>
-              {/* CSV import hidden until fully implemented
-              <MenuItem icon={<Icon as={FaFileImport} />} onClick={onImportOpen}>
-                Import CSV File
-              </MenuItem>
-              */}
-            </MenuList>
-          </Menu>
+          <Menu.Root>
+            <Menu.Trigger asChild><Button colorPalette="purple" variant="outline"><FaSync />Sync with MFC
+                            <Icon asChild><FaChevronDown /></Icon></Button></Menu.Trigger>
+            <Portal><Menu.Positioner><Menu.Content>
+                  <Menu.Item onSelect={onSyncOpen} value='item-0'>
+                    <Icon asChild><FaSync /></Icon>
+                    Sync MFC Account
+                  </Menu.Item>
+                  {/* CSV import hidden until fully implemented
+                  <MenuItem icon={<Icon as={FaFileImport} />} onClick={onImportOpen}>
+                    Import CSV File
+                  </MenuItem>
+                  */}
+                </Menu.Content></Menu.Positioner></Portal>
+          </Menu.Root>
         </HStack>
       </Flex>
-
       {/* Collection Status Tabs - filter by Owned/Ordered/Wished */}
       <CollectionStatusTabs
         activeStatus={activeStatus}
@@ -311,7 +294,6 @@ const FigureList: React.FC = () => {
         onStatusChange={handleStatusChange}
         isLoading={isStatsLoading}
       />
-
       {/* Main content area with sidebar */}
       <Flex gap={6}>
         {/* Desktop: Sidebar (hidden on mobile) */}
@@ -365,7 +347,7 @@ const FigureList: React.FC = () => {
             )
           ) : (
             <>
-              <SimpleGrid columns={gridColumns} spacing={6}>
+              <SimpleGrid columns={gridColumns} gap={6}>
                 {data?.data.map((figure) => (
                   <FigureCard key={figure._id} figure={figure} layout={cardLayout} maxImageHeight={maxCardHeight} />
                 ))}
@@ -382,21 +364,18 @@ const FigureList: React.FC = () => {
           )}
         </Box>
       </Flex>
-
       {/* Modals */}
       <BulkImportModal
         isOpen={isImportOpen}
         onClose={onImportClose}
         onImportComplete={handleImportComplete}
       />
-
       <MfcSyncModal
         isOpen={isSyncOpen}
         onClose={onSyncClose}
         onSyncComplete={handleSyncComplete}
         onOpenCookiesModal={onCookiesOpen}
       />
-
       <MfcCookiesModal
         isOpen={isCookiesOpen}
         onClose={onCookiesClose}

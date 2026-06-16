@@ -19,11 +19,11 @@ jest.mock('react-router-dom', () => ({
   Link: ({ children, to, ...props }: any) => <a href={to} {...props}>{children}</a>,
 }));
 
-// Mock toast function
-const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => ({
-  ...jest.requireActual('@chakra-ui/react'),
-  useToast: () => mockToast,
+// Mock the v3 toaster module the component imports (../components/ui/toaster)
+const mockToastCreate = jest.fn();
+jest.mock('../../components/ui/toaster', () => ({
+  toaster: { create: (...args: any[]) => mockToastCreate(...args), dismiss: jest.fn(), update: jest.fn() },
+  Toaster: () => null,
 }));
 
 // Mock QueryClient
@@ -152,10 +152,10 @@ describe('EditFigure', () => {
       fireEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
+        expect(mockToastCreate).toHaveBeenCalledWith(
           expect.objectContaining({
             title: 'Success',
-            status: 'success',
+            type: 'success',
           })
         );
       });

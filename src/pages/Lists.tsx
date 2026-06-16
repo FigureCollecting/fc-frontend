@@ -1,25 +1,19 @@
 import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import {
-  Box,
+import { Box,
   Heading,
   Text,
   Spinner,
   Center,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Badge,
   IconButton,
   Flex,
   Button,
-  useToast,
-  Tooltip,
   useDisclosure,
 } from '@chakra-ui/react';
+import { Tooltip } from '../components/ui/tooltip';
+import { toaster } from '../components/ui/toaster';
 import { FaTrash, FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { getLists, deleteList, createList } from '../api';
@@ -34,11 +28,10 @@ const PRIVACY_COLORS: Record<string, string> = {
 
 const Lists: React.FC = () => {
   const navigate = useNavigate();
-  const toast = useToast();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const limit = 20;
-  const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: onCreateClose } = useDisclosure();
+  const { open: isCreateOpen, onOpen: onCreateOpen, onClose: onCreateClose } = useDisclosure();
 
   const { data, isLoading, isError } = useQuery(
     ['lists', page],
@@ -51,11 +44,11 @@ const Lists: React.FC = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('lists');
-        toast({ title: 'List created', status: 'success', duration: 3000 });
+        toaster.create({ title: 'List created', type: 'success', duration: 3000 });
         onCreateClose();
       },
       onError: () => {
-        toast({ title: 'Failed to create list', status: 'error', duration: 3000 });
+        toaster.create({ title: 'Failed to create list', type: 'error', duration: 3000 });
       },
     }
   );
@@ -69,11 +62,11 @@ const Lists: React.FC = () => {
     try {
       await deleteList(listId);
       queryClient.invalidateQueries('lists');
-      toast({ title: 'List deleted', status: 'success', duration: 3000 });
+      toaster.create({ title: 'List deleted', type: 'success', duration: 3000 });
     } catch {
-      toast({ title: 'Failed to delete list', status: 'error', duration: 3000 });
+      toaster.create({ title: 'Failed to delete list', type: 'error', duration: 3000 });
     }
-  }, [queryClient, toast]);
+  }, [queryClient]);
 
   return (
     <Box p={4}>
@@ -86,110 +79,91 @@ const Lists: React.FC = () => {
             </Text>
           )}
           <Button
-            leftIcon={<FaPlus />}
-            colorScheme="brand"
+            colorPalette="brand"
             size="sm"
             onClick={onCreateOpen}
-            data-testid="create-list-btn"
-          >
-            Create List
-          </Button>
+            data-testid="create-list-btn"><FaPlus />Create List
+                      </Button>
         </Flex>
       </Flex>
-
       {isLoading && (
         <Center py={12}>
           <Spinner size="xl" data-testid="lists-spinner" />
         </Center>
       )}
-
       {isError && (
         <Center py={12}>
           <Text color="red.500">Error loading lists. Please try again.</Text>
         </Center>
       )}
-
       {data && data.data.length === 0 && (
         <Center py={12}>
           <Text color="gray.500">No lists found. Create a list or sync your MFC account to import lists.</Text>
         </Center>
       )}
-
       {data && data.data.length > 0 && (
         <>
           <Box overflowX="auto">
-            <Table variant="simple" size="sm">
-              <Thead>
-                <Tr>
-                  <Th>Name</Th>
-                  <Th>Teaser</Th>
-                  <Th>Privacy</Th>
-                  <Th isNumeric>Items</Th>
-                  <Th w="50px"></Th>
-                </Tr>
-              </Thead>
-              <Tbody>
+            <Table.Root size="sm">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader>Name</Table.ColumnHeader>
+                  <Table.ColumnHeader>Teaser</Table.ColumnHeader>
+                  <Table.ColumnHeader>Privacy</Table.ColumnHeader>
+                  <Table.ColumnHeader textAlign='end'>Items</Table.ColumnHeader>
+                  <Table.ColumnHeader w="50px"></Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
                 {data.data.map((list: MfcList) => (
-                  <Tr
+                  <Table.Row
                     key={list._id}
                     cursor="pointer"
                     _hover={{ bg: 'gray.50' }}
                     onClick={() => handleRowClick(list._id)}
                   >
-                    <Td fontWeight="medium">{list.name}</Td>
-                    <Td color="gray.600" maxW="300px" isTruncated>
+                    <Table.Cell fontWeight="medium">{list.name}</Table.Cell>
+                    <Table.Cell color="gray.600" maxW="300px" truncate>
                       {list.teaser || '—'}
-                    </Td>
-                    <Td>
-                      <Badge colorScheme={PRIVACY_COLORS[list.privacy] || 'gray'}>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Badge colorPalette={PRIVACY_COLORS[list.privacy] || 'gray'}>
                         {list.privacy}
                       </Badge>
-                    </Td>
-                    <Td isNumeric>{list.itemCount}</Td>
-                    <Td>
-                      <Tooltip label="Delete list">
+                    </Table.Cell>
+                    <Table.Cell textAlign='end'>{list.itemCount}</Table.Cell>
+                    <Table.Cell>
+                      <Tooltip content="Delete list">
                         <IconButton
                           aria-label="Delete list"
-                          icon={<FaTrash />}
                           size="xs"
                           variant="ghost"
-                          colorScheme="red"
-                          onClick={(e) => handleDelete(e, list._id)}
-                        />
+                          colorPalette="red"
+                          onClick={(e) => handleDelete(e, list._id)}><FaTrash /></IconButton>
                       </Tooltip>
-                    </Td>
-                  </Tr>
+                    </Table.Cell>
+                  </Table.Row>
                 ))}
-              </Tbody>
-            </Table>
+              </Table.Body>
+            </Table.Root>
           </Box>
 
           {data.pages > 1 && (
             <Flex justify="center" align="center" mt={4} gap={4}>
-              <Button
-                size="sm"
-                leftIcon={<FaChevronLeft />}
-                isDisabled={page <= 1}
-                onClick={() => setPage(p => p - 1)}
-              >
-                Previous
-              </Button>
+              <Button size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}><FaChevronLeft />Previous
+                              </Button>
               <Text fontSize="sm" color="gray.600">
                 Page {page} of {data.pages}
               </Text>
               <Button
                 size="sm"
-                rightIcon={<FaChevronRight />}
-                isDisabled={page >= data.pages}
-                onClick={() => setPage(p => p + 1)}
-              >
-                Next
-              </Button>
+                disabled={page >= data.pages}
+                onClick={() => setPage(p => p + 1)}>Next
+                              <FaChevronRight /></Button>
             </Flex>
           )}
         </>
       )}
-
       <ListFormModal
         isOpen={isCreateOpen}
         onClose={onCreateClose}

@@ -6,7 +6,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import Lists from '../pages/Lists';
 import * as api from '../api';
 import { MfcList, PaginatedResponse } from '../types';
-import theme from '../theme';
+import system from '../theme';
 
 // Mock the API module
 jest.mock('../api');
@@ -112,7 +112,7 @@ function renderLists() {
   const user = userEvent.setup();
   const result = render(
     <QueryClientProvider client={queryClient}>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider value={system}>
         <MemoryRouter>
           <Lists />
         </MemoryRouter>

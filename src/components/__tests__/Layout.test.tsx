@@ -5,6 +5,8 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
+import { ColorModeProvider } from '../ui/color-mode';
+import system from '../../theme';
 import Layout from '../Layout';
 
 // Mock package.json to have consistent test data
@@ -37,10 +39,12 @@ global.fetch = jest.fn();
 
 const renderLayout = () => {
   return render(
-    <ChakraProvider>
-      <BrowserRouter>
-        <Layout />
-      </BrowserRouter>
+    <ChakraProvider value={system}>
+      <ColorModeProvider>
+        <BrowserRouter>
+          <Layout />
+        </BrowserRouter>
+      </ColorModeProvider>
     </ChakraProvider>
   );
 };

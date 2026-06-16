@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '../../test-utils';
 import { fireEvent } from '@testing-library/react';
 import ThemeToggle from '../ThemeToggle';
 import { ChakraProvider } from '@chakra-ui/react';
-import theme from '../../theme';
+import system from '../../theme';
 import { act } from 'react-dom/test-utils';
 
 // Mock scrollTo for Chakra Menu
@@ -13,7 +13,7 @@ beforeAll(() => {
 
 // Wrapper with Chakra provider for proper theme context
 const ThemeWrapper = ({ children }: { children: React.ReactNode }) => (
-  <ChakraProvider theme={theme}>{children}</ChakraProvider>
+  <ChakraProvider value={system}>{children}</ChakraProvider>
 );
 
 describe('ThemeToggle', () => {
@@ -107,8 +107,8 @@ describe('ThemeToggle', () => {
       expect(screen.getByText('Easy on the eyes')).toBeInTheDocument();
     });
 
-    // Find and click the Dark menu item
-    const darkOption = screen.getByText('Dark').closest('button');
+    // Find and click the Dark menu item (Ark UI Menu.Item renders role="menuitem")
+    const darkOption = screen.getByText('Dark').closest('[role="menuitem"]');
     expect(darkOption).toBeInTheDocument();
 
     await act(async () => {
@@ -136,8 +136,8 @@ describe('ThemeToggle', () => {
       expect(screen.getByText('Retro CRT with scanlines')).toBeInTheDocument();
     });
 
-    // Find and click the Terminal menu item
-    const terminalOption = screen.getByText('Terminal').closest('button');
+    // Find and click the Terminal menu item (Ark UI Menu.Item renders role="menuitem")
+    const terminalOption = screen.getByText('Terminal').closest('[role="menuitem"]');
     expect(terminalOption).toBeInTheDocument();
 
     await act(async () => {

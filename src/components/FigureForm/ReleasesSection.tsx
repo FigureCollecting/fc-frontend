@@ -7,22 +7,20 @@
  */
 
 import React from 'react';
-import {
-  Box,
+import { useColorModeValue } from "../ui/color-mode";
+import { Box,
   Button,
   Checkbox,
-  FormControl,
-  FormLabel,
   HStack,
   IconButton,
   Input,
-  Select,
+  NativeSelect,
   Text,
   VStack,
   Badge,
   Grid,
   GridItem,
-  useColorModeValue,
+  Field,
 } from '@chakra-ui/react';
 import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
 import { FaPlus, FaTrash } from 'react-icons/fa';
@@ -72,23 +70,19 @@ const ReleasesSection: React.FC = () => {
           Releases
         </Text>
         <Button
-          leftIcon={<FaPlus />}
           size="sm"
           variant="outline"
-          colorScheme="orange"
+          colorPalette="orange"
           onClick={handleAddRelease}
-          aria-label="Add release"
-        >
-          Add Release
-        </Button>
+          aria-label="Add release"><FaPlus />Add Release
+                  </Button>
       </HStack>
-
       {fields.length === 0 ? (
         <Text color="gray.500" fontSize="sm" fontStyle="italic">
           No releases added. Click &quot;Add Release&quot; to add release information.
         </Text>
       ) : (
-        <VStack spacing={4} align="stretch">
+        <VStack gap={4} align="stretch">
           {fields.map((field, index) => (
             <Box
               key={field.id}
@@ -101,7 +95,7 @@ const ReleasesSection: React.FC = () => {
               {/* Rerelease Badge */}
               {field.isRerelease && (
                 <Badge
-                  colorScheme="orange"
+                  colorPalette="orange"
                   position="absolute"
                   top={2}
                   right={12}
@@ -113,34 +107,32 @@ const ReleasesSection: React.FC = () => {
               {/* Remove Button */}
               <IconButton
                 aria-label="Remove release"
-                icon={<FaTrash />}
                 size="sm"
-                colorScheme="red"
+                colorPalette="red"
                 variant="ghost"
                 position="absolute"
                 top={2}
                 right={2}
-                onClick={() => remove(index)}
-              />
+                onClick={() => remove(index)}><FaTrash /></IconButton>
 
               <Grid templateColumns="repeat(4, 1fr)" gap={3}>
                 {/* Release Date */}
                 <GridItem>
-                  <FormControl>
-                    <FormLabel fontSize="xs" mb={1}>Date</FormLabel>
+                  <Field.Root>
+                    <Field.Label fontSize="xs" mb={1}>Date</Field.Label>
                     <Input
                       {...register(`releases.${index}.date` as const)}
                       placeholder="YYYY-MM"
                       size="sm"
                       defaultValue={formatDateForInput(field.date)}
                     />
-                  </FormControl>
+                  </Field.Root>
                 </GridItem>
 
                 {/* Price */}
                 <GridItem>
-                  <FormControl>
-                    <FormLabel fontSize="xs" mb={1}>Price</FormLabel>
+                  <Field.Root>
+                    <Field.Label fontSize="xs" mb={1}>Price</Field.Label>
                     <Input
                       {...register(`releases.${index}.price` as const, {
                         valueAsNumber: true,
@@ -150,52 +142,53 @@ const ReleasesSection: React.FC = () => {
                       size="sm"
                       defaultValue={field.price}
                     />
-                  </FormControl>
+                  </Field.Root>
                 </GridItem>
 
                 {/* Currency */}
                 <GridItem>
-                  <FormControl>
-                    <FormLabel fontSize="xs" mb={1}>Currency</FormLabel>
-                    <Select
-                      {...register(`releases.${index}.currency` as const)}
-                      aria-label="Currency"
-                      size="sm"
-                      defaultValue={field.currency || 'JPY'}
-                    >
-                      {CURRENCY_OPTIONS.map((curr) => (
-                        <option key={curr} value={curr}>
-                          {curr}
-                        </option>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <Field.Root>
+                    <Field.Label fontSize="xs" mb={1}>Currency</Field.Label>
+                    <NativeSelect.Root size="sm">
+                      <NativeSelect.Field
+                        {...register(`releases.${index}.currency` as const)}
+                        aria-label="Currency"
+                        defaultValue={field.currency || 'JPY'}>
+                        {CURRENCY_OPTIONS.map((curr) => (
+                          <option key={curr} value={curr}>
+                            {curr}
+                          </option>
+                        ))}
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                  </Field.Root>
                 </GridItem>
 
                 {/* JAN/Barcode */}
                 <GridItem>
-                  <FormControl>
-                    <FormLabel fontSize="xs" mb={1}>JAN/UPC</FormLabel>
+                  <Field.Root>
+                    <Field.Label fontSize="xs" mb={1}>JAN/UPC</Field.Label>
                     <Input
                       {...register(`releases.${index}.jan` as const)}
                       placeholder="Barcode"
                       size="sm"
                       defaultValue={field.jan}
                     />
-                  </FormControl>
+                  </Field.Root>
                 </GridItem>
 
                 {/* Variant (e.g., "Standard (Japan)", "Limited (China)") */}
                 <GridItem colSpan={2}>
-                  <FormControl>
-                    <FormLabel fontSize="xs" mb={1}>Variant</FormLabel>
+                  <Field.Root>
+                    <Field.Label fontSize="xs" mb={1}>Variant</Field.Label>
                     <Input
                       {...register(`releases.${index}.variant` as const)}
                       placeholder="e.g., Standard (Japan)"
                       size="sm"
                       defaultValue={field.variant}
                     />
-                  </FormControl>
+                  </Field.Root>
                 </GridItem>
               </Grid>
 
@@ -206,16 +199,16 @@ const ReleasesSection: React.FC = () => {
                   name={`releases.${index}.isRerelease` as const}
                   defaultValue={field.isRerelease}
                   render={({ field: { onChange, onBlur, value, ref } }) => (
-                    <Checkbox
-                      isChecked={value}
-                      onChange={(e) => onChange(e.target.checked)}
+                    <Checkbox.Root
+                      onCheckedChange={(e) => onChange(e.checked)}
                       onBlur={onBlur}
                       ref={ref}
                       aria-label="Rerelease"
                       size="sm"
-                    >
+                      checked={value}
+                    ><Checkbox.HiddenInput /><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control><Checkbox.Label>
                       <Text fontSize="sm">This is a rerelease</Text>
-                    </Checkbox>
+                    </Checkbox.Label></Checkbox.Root>
                   )}
                 />
               </HStack>

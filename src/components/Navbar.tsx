@@ -1,4 +1,5 @@
 import React from 'react';
+import { useColorModeValue } from "./ui/color-mode";
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -7,39 +8,32 @@ import {
   IconButton,
   Button,
   Stack,
-  Collapse,
+  Collapsible,
   Icon,
   Link,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
-  useColorModeValue,
   useBreakpointValue,
   useDisclosure,
   Avatar,
   Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuDivider,
-  Tooltip,
-  useToast,
+  Portal,
 } from '@chakra-ui/react';
-import { HamburgerIcon, CloseIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { Tooltip } from './ui/tooltip';
+import { toaster } from './ui/toaster';
 import { FaUser, FaSignOutAlt, FaLock, FaUnlock, FaCog } from 'react-icons/fa';
 import { useAuthStore } from '../stores/authStore';
 import { useQueryClient } from 'react-query';
 import ThemeToggle from './ThemeToggle';
 import MfcCookiesModal from './MfcCookiesModal';
 import { clearMfcCookies, hasMfcCookies, getStorageType } from '../utils/crypto';
+import { LuChevronDown, LuChevronRight, LuMenu, LuX } from 'react-icons/lu';
 
 const CookieStatusIndicator: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const userId = user?._id;
   const [cookiesStored, setCookiesStored] = React.useState(hasMfcCookies(userId));
   const [storageType, setStorageType] = React.useState(getStorageType(userId));
-  const { isOpen: isModalOpen, onOpen: onModalOpen, onClose: onModalClose } = useDisclosure();
-  const toast = useToast();
+  const { open: isModalOpen, onOpen: onModalOpen, onClose: onModalClose } = useDisclosure();
   const iconColor = useColorModeValue(
     cookiesStored ? 'green.500' : 'gray.400',
     cookiesStored ? 'green.400' : 'gray.500'
@@ -61,12 +55,12 @@ const CookieStatusIndicator: React.FC = () => {
     clearMfcCookies(userId);
     setCookiesStored(false);
     setStorageType(null);
-    toast({
+    toaster.create({
       title: 'MFC Cookies Cleared',
       description: 'Your MyFigureCollection cookies have been removed.',
-      status: 'success',
+      type: 'success',
       duration: 3000,
-      isClosable: true,
+      closable: true,
     });
   };
 
@@ -83,38 +77,36 @@ const CookieStatusIndicator: React.FC = () => {
 
   return (
     <>
-      <Menu>
-        <Tooltip label={getTooltipLabel()} placement="bottom">
-          <MenuButton
-            as={IconButton}
-            icon={<Icon as={cookiesStored ? FaLock : FaUnlock} w="16px" h="16px" />}
-            variant="ghost"
-            size="sm"
-            color={iconColor}
-            aria-label="MFC Cookie Status"
-            data-testid="cookie-status-button"
-            minW="32px"
-          />
+      <Menu.Root>
+        <Tooltip content={getTooltipLabel()} positioning={{
+          placement: "bottom"
+        }}>
+          <Menu.Trigger asChild><IconButton
+              variant="ghost"
+              size="sm"
+              color={iconColor}
+              aria-label="MFC Cookie Status"
+              data-testid="cookie-status-button"
+              minW="32px"><Icon w="16px" h="16px">{cookiesStored ? <FaLock /> : <FaUnlock />}</Icon></IconButton></Menu.Trigger>
         </Tooltip>
-        <MenuList>
-          <Box px={4} py={2}>
-            <Text fontWeight="semibold" fontSize="sm">MFC Cookie Status</Text>
-            <Text fontSize="xs" color={statusTextColor}>
-              {cookiesStored ? `Active (${storageType})` : 'No cookies stored'}
-            </Text>
-          </Box>
-          <MenuDivider />
-          {cookiesStored && (
-            <MenuItem onClick={handleClearCookies} color="red.500">
-              Clear Cookies
-            </MenuItem>
-          )}
-          <MenuItem icon={<FaCog />} onClick={onModalOpen}>
-            Manage
-          </MenuItem>
-        </MenuList>
-      </Menu>
-
+        <Portal><Menu.Positioner><Menu.Content>
+              <Box px={4} py={2}>
+                <Text fontWeight="semibold" fontSize="sm">MFC Cookie Status</Text>
+                <Text fontSize="xs" color={statusTextColor}>
+                  {cookiesStored ? `Active (${storageType})` : 'No cookies stored'}
+                </Text>
+              </Box>
+              <Menu.Separator />
+              {cookiesStored && (
+                <Menu.Item onClick={handleClearCookies} color="red.500" value='item-0'>
+                  Clear Cookies
+                </Menu.Item>
+              )}
+              <Menu.Item onClick={onModalOpen} value='item-1'>
+                <FaCog />Manage
+              </Menu.Item>
+            </Menu.Content></Menu.Positioner></Portal>
+      </Menu.Root>
       <MfcCookiesModal
         isOpen={isModalOpen}
         onClose={onModalClose}
@@ -125,7 +117,7 @@ const CookieStatusIndicator: React.FC = () => {
 };
 
 const Navbar: React.FC = () => {
-  const { isOpen, onToggle } = useDisclosure();
+  const { open, onToggle } = useDisclosure();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -165,26 +157,21 @@ const Navbar: React.FC = () => {
         >
           <IconButton
             onClick={onToggle}
-            icon={
-              isOpen ? (
-                <Box data-testid="close-icon">
-                  <CloseIcon w={3} h={3} />
-                </Box>
-              ) : (
-                <Box data-testid="hamburger-icon">
-                  <HamburgerIcon w={5} h={5} />
-                </Box>
-              )
-            }
             variant={'ghost'}
             aria-label={'Toggle Navigation'}
-            data-testid="mobile-nav-toggle"
-          />
+            data-testid="mobile-nav-toggle">{open ? (
+              <Box data-testid="close-icon">
+                <Icon w={3} h={3}><LuX /></Icon>
+              </Box>
+            ) : (
+              <Box data-testid="hamburger-icon">
+                <Icon w={5} h={5}><LuMenu /></Icon>
+              </Box>
+            )}</IconButton>
         </Flex>
         <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
           <Link
-            as={RouterLink}
-            to="/"
+            asChild
             textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
             fontFamily={'heading'}
             fontWeight="bold"
@@ -193,7 +180,7 @@ const Navbar: React.FC = () => {
               textDecoration: 'none',
             }}
           >
-            FigureCollecting
+            <RouterLink to="/">FigureCollecting</RouterLink>
           </Link>
 
           <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
@@ -205,68 +192,62 @@ const Navbar: React.FC = () => {
           flex={{ base: 1, md: 0 }}
           justify={'flex-end'}
           direction={'row'}
-          spacing={6}
+          gap={6}
           align={'center'}
         >
           <ThemeToggle />
           {user && <CookieStatusIndicator />}
           {user ? (
-            <Menu>
-              <MenuButton
-                as={Button}
-                rounded={'full'}
-                variant={'link'}
-                cursor={'pointer'}
-                minW={0}
-                data-testid="user-avatar-button"
-                aria-label="User Menu"
-              >
-                <Avatar
-                  size={'sm'}
-                  name={user.username}
-                  bg="brand.500"
-                  color="white"
-                />
-              </MenuButton>
-              <MenuList>
-                <MenuItem as={RouterLink} to="/profile" icon={<Icon as={FaUser} />}>
-                  Profile
-                </MenuItem>
-                <MenuDivider />
-                <MenuItem onClick={handleLogout} icon={<Icon as={FaSignOutAlt} />}>
-                  Sign Out
-                </MenuItem>
-              </MenuList>
-            </Menu>
+            <Menu.Root>
+              <Menu.Trigger asChild><Button
+                  rounded={'full'}
+                  variant={'plain'}
+                  cursor={'pointer'}
+                  minW={0}
+                  data-testid="user-avatar-button"
+                  aria-label="User Menu">
+                  <Avatar.Root size={'sm'} bg="brand.500" color="white"><Avatar.Fallback name={user.username} /></Avatar.Root>
+                </Button></Menu.Trigger>
+              <Portal><Menu.Positioner><Menu.Content>
+                    <Menu.Item asChild value='item-2'>
+                      <RouterLink to="/profile">
+                        <Icon><FaUser /></Icon>Profile
+                      </RouterLink>
+                    </Menu.Item>
+                    <Menu.Separator />
+                    <Menu.Item onClick={handleLogout} value='item-3'>
+                      <Icon><FaSignOutAlt /></Icon>Sign Out
+                    </Menu.Item>
+                  </Menu.Content></Menu.Positioner></Portal>
+            </Menu.Root>
           ) : (
             <>
               <Button
-                as={RouterLink}
-                to="/login"
+                asChild
                 fontSize={'sm'}
                 fontWeight={400}
-                variant={'link'}
+                variant={'plain'}
               >
-                Sign In
+                <RouterLink to="/login">Sign In</RouterLink>
               </Button>
               <Button
-                as={RouterLink}
-                to="/register"
+                asChild
                 display={{ base: 'none', md: 'inline-flex' }}
                 fontSize={'sm'}
                 fontWeight={600}
-                colorScheme="brand"
+                colorPalette="brand"
               >
-                Sign Up
+                <RouterLink to="/register">Sign Up</RouterLink>
               </Button>
             </>
           )}
         </Stack>
       </Flex>
-
-      <Collapse in={isOpen} animateOpacity>
-        <MobileNav />
-      </Collapse>
+      <Collapsible.Root open={open}>
+        <Collapsible.Content>
+          <MobileNav />
+        </Collapsible.Content>
+      </Collapsible.Root>
     </Box>
   );
 };
@@ -277,14 +258,16 @@ const DesktopNav = () => {
   const popoverContentBgColor = useColorModeValue('white', 'gray.800');
 
   return (
-    <Stack direction={'row'} spacing={4}>
+    <Stack direction={'row'} gap={4}>
       {NAV_ITEMS.map((navItem) => (
         <Box key={navItem.label}>
-          <Popover trigger={'hover'} placement={'bottom-start'}>
-            <PopoverTrigger>
+          <Popover.Root
+            positioning={{
+              placement: 'bottom-start'
+            }}>
+            <Popover.Trigger asChild>
               <Link
-                as={RouterLink}
-                to={navItem.href ?? '#'}
+                asChild
                 p={2}
                 fontSize={'sm'}
                 fontWeight={500}
@@ -294,27 +277,28 @@ const DesktopNav = () => {
                   color: linkHoverColor,
                 }}
               >
-                {navItem.label}
+                <RouterLink to={navItem.href ?? '#'}>{navItem.label}</RouterLink>
               </Link>
-            </PopoverTrigger>
+            </Popover.Trigger>
 
             {navItem.children && (
-              <PopoverContent
-                border={0}
-                boxShadow={'xl'}
-                bg={popoverContentBgColor}
-                p={4}
-                rounded={'xl'}
-                minW={'sm'}
-              >
-                <Stack>
-                  {navItem.children.map((child) => (
-                    <DesktopSubNav key={child.label} {...child} />
-                  ))}
-                </Stack>
-              </PopoverContent>
+              <Popover.Positioner>
+                <Popover.Content
+                  border={0}
+                  boxShadow={'xl'}
+                  bg={popoverContentBgColor}
+                  p={4}
+                  rounded={'xl'}
+                  minW={'sm'}>
+                  <Stack>
+                    {navItem.children.map((child) => (
+                      <DesktopSubNav key={child.label} {...child} />
+                    ))}
+                  </Stack>
+                </Popover.Content>
+              </Popover.Positioner>
             )}
-          </Popover>
+          </Popover.Root>
         </Box>
       ))}
     </Stack>
@@ -324,14 +308,14 @@ const DesktopNav = () => {
 const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
   return (
     <Link
-      as={RouterLink}
-      to={href ?? '#'}
+      asChild
       display={'block'}
       p={2}
       rounded={'md'}
       _hover={{ bg: useColorModeValue('brand.50', 'gray.900') }}
       aria-label={`Navigate to ${label}${subLabel ? ': ' + subLabel : ''}`}
     >
+      <RouterLink to={href ?? '#'}>
       <Stack direction={'row'} align={'center'}>
         <Box>
           <Text
@@ -352,9 +336,10 @@ const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
           align={'center'}
           flex={1}
         >
-          <Icon color={'brand.500'} w={5} h={5} as={ChevronRightIcon} />
+          <Icon color={'brand.500'} w={5} h={5}><LuChevronRight /></Icon>
         </Flex>
       </Stack>
+      </RouterLink>
     </Link>
   );
 };
@@ -374,59 +359,61 @@ const MobileNav = () => {
 };
 
 const MobileNavItem = ({ label, children, href }: NavItem) => {
-  const { isOpen, onToggle } = useDisclosure();
+  const { open, onToggle } = useDisclosure();
 
   return (
-    <Stack spacing={4} onClick={children && onToggle}>
+    <Stack gap={4} onClick={children && onToggle}>
       <Flex
         py={2}
-        as={RouterLink}
-        to={href ?? '#'}
+        asChild
         justify={'space-between'}
         align={'center'}
         _hover={{
           textDecoration: 'none',
         }}
       >
-        <Text
-          fontWeight={600}
-          color={useColorModeValue('gray.600', 'gray.200')}
-        >
-          {label}
-        </Text>
-        {children && (
-          <Icon
-            as={ChevronDownIcon}
-            transition={'all .25s ease-in-out'}
-            transform={isOpen ? 'rotate(180deg)' : ''}
-            w={6}
-            h={6}
-          />
-        )}
+        <RouterLink to={href ?? '#'}>
+          <Text
+            fontWeight={600}
+            color={useColorModeValue('gray.600', 'gray.200')}
+          >
+            {label}
+          </Text>
+          {children && (
+            <Icon
+              transition={'all .25s ease-in-out'}
+              transform={open ? 'rotate(180deg)' : ''}
+              w={6}
+              h={6}
+            >
+              <LuChevronDown />
+            </Icon>
+          )}
+        </RouterLink>
       </Flex>
-
-      <Collapse in={isOpen} animateOpacity style={{ marginTop: '0!important' }}>
-        <Stack
-          mt={2}
-          pl={4}
-          borderLeft={1}
-          borderStyle={'solid'}
-          borderColor={useColorModeValue('gray.200', 'gray.700')}
-          align={'start'}
-        >
-          {children &&
-            children.map((child) => (
-              <Link
-                key={child.label}
-                as={RouterLink}
-                to={child.href || '#'}
-                py={2}
-              >
-                {child.label}
-              </Link>
-            ))}
-        </Stack>
-      </Collapse>
+      <Collapsible.Root open={open} style={{ marginTop: '0!important' }}>
+        <Collapsible.Content>
+          <Stack
+            mt={2}
+            pl={4}
+            borderLeft={1}
+            borderStyle={'solid'}
+            borderColor={useColorModeValue('gray.200', 'gray.700')}
+            align={'start'}
+          >
+            {children &&
+              children.map((child) => (
+                <Link
+                  key={child.label}
+                  asChild
+                  py={2}
+                >
+                  <RouterLink to={child.href || '#'}>{child.label}</RouterLink>
+                </Link>
+              ))}
+          </Stack>
+        </Collapsible.Content>
+      </Collapsible.Root>
     </Stack>
   );
 };

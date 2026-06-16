@@ -1,19 +1,15 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { useColorModeValue } from "../components/ui/color-mode";
 import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
+import { Box,
   Heading,
   SimpleGrid,
   Spinner,
   Center,
   Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
   Flex,
   IconButton,
-  useColorModeValue,
   Text,
 } from '@chakra-ui/react';
 import { FaDownload } from 'react-icons/fa';
@@ -120,58 +116,54 @@ const Statistics: React.FC = () => {
         <Heading size="lg">Collection Statistics</Heading>
         <IconButton
           aria-label="Download statistics as CSV"
-          icon={<FaDownload />}
           onClick={downloadCsv}
-          colorScheme="brand"
+          colorPalette="brand"
           variant="outline"
-          isDisabled={!stats}
-        />
+          disabled={!stats}><FaDownload /></IconButton>
       </Flex>
-
       <CollectionStatusTabs
         activeStatus={activeStatus}
         statusCounts={statusCounts}
         onStatusChange={setActiveStatus}
         isLoading={isLoading}
       />
-
       {isLoading && !stats ? (
         <Center h="40vh">
-          <Spinner size="xl" color="brand.500" thickness="4px" role="status" />
+          <Spinner size="xl" color="brand.500" borderWidth="4px" role="status" />
         </Center>
       ) : stats ? (
         <>
           {/* Summary Cards */}
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 5 }} spacing={4} mb={8}>
-            <Stat bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
-              <StatLabel color={labelColor}>Total Figures</StatLabel>
-              <StatNumber fontSize="3xl" color="brand.500">{stats.totalCount}</StatNumber>
-              <StatHelpText color={helpTextColor}>{activeStatus}</StatHelpText>
-            </Stat>
-            <Stat bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
-              <StatLabel color={labelColor}>Manufacturers</StatLabel>
-              <StatNumber fontSize="3xl" color="purple.500">{mergedManufacturers.length}</StatNumber>
-              <StatHelpText color={helpTextColor}>brands</StatHelpText>
-            </Stat>
-            <Stat bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
-              <StatLabel color={labelColor}>Scales</StatLabel>
-              <StatNumber fontSize="3xl" color="green.500">{stats.scaleStats.length}</StatNumber>
-              <StatHelpText color={helpTextColor}>sizes</StatHelpText>
-            </Stat>
-            <Stat bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
-              <StatLabel color={labelColor}>Origins</StatLabel>
-              <StatNumber fontSize="3xl" color="blue.500">{(stats.originStats ?? []).length}</StatNumber>
-              <StatHelpText color={helpTextColor}>series</StatHelpText>
-            </Stat>
-            <Stat bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
-              <StatLabel color={labelColor}>Categories</StatLabel>
-              <StatNumber fontSize="3xl" color="orange.500">{(stats.categoryStats ?? []).length}</StatNumber>
-              <StatHelpText color={helpTextColor}>types</StatHelpText>
-            </Stat>
+          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 5 }} gap={4} mb={8}>
+            <Stat.Root bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
+              <Stat.Label color={labelColor}>Total Figures</Stat.Label>
+              <Stat.ValueText fontSize="3xl" color="brand.500">{stats.totalCount}</Stat.ValueText>
+              <Stat.HelpText color={helpTextColor}>{activeStatus}</Stat.HelpText>
+            </Stat.Root>
+            <Stat.Root bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
+              <Stat.Label color={labelColor}>Manufacturers</Stat.Label>
+              <Stat.ValueText fontSize="3xl" color="purple.500">{mergedManufacturers.length}</Stat.ValueText>
+              <Stat.HelpText color={helpTextColor}>brands</Stat.HelpText>
+            </Stat.Root>
+            <Stat.Root bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
+              <Stat.Label color={labelColor}>Scales</Stat.Label>
+              <Stat.ValueText fontSize="3xl" color="green.500">{stats.scaleStats.length}</Stat.ValueText>
+              <Stat.HelpText color={helpTextColor}>sizes</Stat.HelpText>
+            </Stat.Root>
+            <Stat.Root bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
+              <Stat.Label color={labelColor}>Origins</Stat.Label>
+              <Stat.ValueText fontSize="3xl" color="blue.500">{(stats.originStats ?? []).length}</Stat.ValueText>
+              <Stat.HelpText color={helpTextColor}>series</Stat.HelpText>
+            </Stat.Root>
+            <Stat.Root bg={cardBg} p={4} shadow="sm" borderRadius="lg" textAlign="center">
+              <Stat.Label color={labelColor}>Categories</Stat.Label>
+              <Stat.ValueText fontSize="3xl" color="orange.500">{(stats.categoryStats ?? []).length}</Stat.ValueText>
+              <Stat.HelpText color={helpTextColor}>types</Stat.HelpText>
+            </Stat.Root>
           </SimpleGrid>
 
           {/* Stat Tables */}
-          <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
+          <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
             <StatTable
               title="Manufacturers"
               data={mergedManufacturers}

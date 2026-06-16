@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Heading,
-  Text,
-  VStack,
-  Icon,
-} from '@chakra-ui/react';
+import { Box, Button, Heading, Text, VStack, Icon } from '@chakra-ui/react';
 import { FaDesktop } from 'react-icons/fa';
 
 const MOBILE_BREAKPOINT = 768; // px — matches Chakra's "md" breakpoint
@@ -53,8 +46,8 @@ const MobileWarning: React.FC = () => {
       justifyContent="center"
       p={8}
     >
-      <VStack spacing={6} textAlign="center" maxW="sm">
-        <Icon as={FaDesktop} boxSize={16} color="brand.300" />
+      <VStack gap={6} textAlign="center" maxW="sm">
+        <Icon boxSize={16} color="brand.300" asChild><FaDesktop /></Icon>
         <Heading size="lg">Desktop Experience</Heading>
         <Text fontSize="md" color="whiteAlpha.800">
           FigureCollecting is designed for desktop browsers.
@@ -66,7 +59,7 @@ const MobileWarning: React.FC = () => {
         <Button
           onClick={handleDismiss}
           variant="outline"
-          colorScheme="whiteAlpha"
+          colorPalette="whiteAlpha"
           size="lg"
           mt={4}
         >

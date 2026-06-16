@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Box, Heading, Spinner, Alert, AlertIcon, Button, VStack } from '@chakra-ui/react';
+import { Box, Heading, Spinner, Alert, Button, VStack } from '@chakra-ui/react';
 import { verifyEmailToken } from '../api';
 
 const VerifyEmail: React.FC = () => {
@@ -31,27 +31,27 @@ const VerifyEmail: React.FC = () => {
 
   return (
     <Box maxW="md" mx="auto" mt={20} p={8}>
-      <VStack spacing={6}>
+      <VStack gap={6}>
         <Heading size="lg">Email Verification</Heading>
         {status === 'loading' && <Spinner size="xl" />}
         {status === 'success' && (
           <>
-            <Alert status="success" borderRadius="md">
-              <AlertIcon />
+            <Alert.Root status="success" borderRadius="md">
+              <Alert.Indicator />
               {message}
-            </Alert>
-            <Button colorScheme="blue" onClick={() => navigate('/login')}>
+            </Alert.Root>
+            <Button colorPalette="blue" onClick={() => navigate('/login')}>
               Go to Login
             </Button>
           </>
         )}
         {status === 'error' && (
           <>
-            <Alert status="error" borderRadius="md">
-              <AlertIcon />
+            <Alert.Root status="error" borderRadius="md">
+              <Alert.Indicator />
               {message}
-            </Alert>
-            <Button colorScheme="blue" variant="outline" onClick={() => navigate('/login')}>
+            </Alert.Root>
+            <Button colorPalette="blue" variant="outline" onClick={() => navigate('/login')}>
               Back to Login
             </Button>
           </>

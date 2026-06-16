@@ -69,13 +69,14 @@ jest.mock('../../utils/crypto', () => ({
 }));
 
 const mockToast = jest.fn();
-jest.mock('@chakra-ui/react', () => {
-  const actual = jest.requireActual('@chakra-ui/react');
-  return {
-    ...actual,
-    useToast: () => mockToast,
-  };
-});
+jest.mock('../../components/ui/toaster', () => ({
+  toaster: {
+    create: (...args: any[]) => mockToast(...args),
+    dismiss: jest.fn(),
+    update: jest.fn(),
+  },
+  Toaster: () => null,
+}));
 
 const mockStatsData = {
   statusCounts: { owned: 5, ordered: 2, wished: 1 },
@@ -226,7 +227,7 @@ describe('FigureList', () => {
         expect.objectContaining({
           title: 'Error',
           description: 'Server error',
-          status: 'error',
+          type: 'error',
         })
       );
     }
@@ -241,7 +242,7 @@ describe('FigureList', () => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
           description: 'Failed to load figures',
-          status: 'error',
+          type: 'error',
         })
       );
     }

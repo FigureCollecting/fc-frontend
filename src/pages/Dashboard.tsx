@@ -1,23 +1,19 @@
 import React, { useState } from 'react';
+import { useColorModeValue } from "../components/ui/color-mode";
 import { Link as RouterLink } from 'react-router-dom';
-import {
-  Box,
+import { Box,
   Heading,
   SimpleGrid,
   Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
   Icon,
   Button,
   Flex,
   Text,
-  Divider,
   Grid,
   GridItem,
-  useColorModeValue,
   useDisclosure,
   HStack,
+  Separator,
 } from '@chakra-ui/react';
 import { FaCube, FaPlus, FaSearch, FaChartBar, FaBoxOpen, FaSync } from 'react-icons/fa';
 import MfcSyncModal from '../components/MfcSyncModal';
@@ -34,8 +30,8 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const cardBg = useColorModeValue('white', 'gray.800');
-  const { isOpen: isSyncOpen, onOpen: onSyncOpen, onClose: onSyncClose } = useDisclosure();
-  const { isOpen: isCookiesOpen, onOpen: onCookiesOpen, onClose: onCookiesClose } = useDisclosure();
+  const { open: isSyncOpen, onOpen: onSyncOpen, onClose: onSyncClose } = useDisclosure();
+  const { open: isCookiesOpen, onOpen: onCookiesOpen, onClose: onCookiesClose } = useDisclosure();
 
   // Collection status state - controls which slice of data is shown
   const [activeStatus, setActiveStatus] = useState<CollectionStatus>('owned');
@@ -69,28 +65,13 @@ const Dashboard: React.FC = () => {
     <Box>
       <Flex justify="space-between" align="center" mb={6}>
         <Heading size="lg">Dashboard</Heading>
-        <HStack spacing={3}>
-          <Button
-            as={RouterLink}
-            to="/figures/add"
-            leftIcon={<FaPlus />}
-            colorScheme="brand"
-            size="sm"
-          >
-            Add Item
-          </Button>
-          <Button
-            leftIcon={<FaSync />}
-            colorScheme="purple"
-            variant="outline"
-            size="sm"
-            onClick={onSyncOpen}
-          >
-            Sync with MFC
-          </Button>
+        <HStack gap={3}>
+          <Button colorPalette="brand" size="sm" asChild><RouterLink to="/figures/add"><FaPlus />Add Item
+                                    </RouterLink></Button>
+          <Button colorPalette="purple" variant="outline" size="sm" onClick={onSyncOpen}><FaSync />Sync with MFC
+                      </Button>
         </HStack>
       </Flex>
-
       {/* Collection Status Tabs - filter by Owned/Ordered/Wished */}
       <CollectionStatusTabs
         activeStatus={activeStatus}
@@ -98,13 +79,11 @@ const Dashboard: React.FC = () => {
         onStatusChange={setActiveStatus}
         isLoading={isStatsLoading}
       />
-
       <Box mb={8}>
         <SearchBar onSearch={handleSearch} placeholder="Search your entire collection..." />
       </Box>
-      
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={5} mb={8}>
-        <Stat
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={5} mb={8}>
+        <Stat.Root
           bg={cardBg}
           p={5}
           shadow="sm"
@@ -112,15 +91,15 @@ const Dashboard: React.FC = () => {
           borderLeft="4px solid"
           borderLeftColor="brand.500"
         >
-          <StatLabel>Total Figures</StatLabel>
+          <Stat.Label>Total Figures</Stat.Label>
           <Flex align="center" mt={2}>
-            <Icon as={FaCube} color="brand.500" boxSize={6} mr={2} />
-            <StatNumber>{statsData?.totalCount || 0}</StatNumber>
+            <Icon color="brand.500" boxSize={6} mr={2} asChild><FaCube /></Icon>
+            <Stat.ValueText>{statsData?.totalCount || 0}</Stat.ValueText>
           </Flex>
-          <StatHelpText>In your collection</StatHelpText>
-        </Stat>
+          <Stat.HelpText>In your collection</Stat.HelpText>
+        </Stat.Root>
         
-        <Stat
+        <Stat.Root
           bg={cardBg}
           p={5}
           shadow="sm"
@@ -128,15 +107,15 @@ const Dashboard: React.FC = () => {
           borderLeft="4px solid"
           borderLeftColor="purple.500"
         >
-          <StatLabel>Manufacturers</StatLabel>
+          <Stat.Label>Manufacturers</Stat.Label>
           <Flex align="center" mt={2}>
-            <Icon as={FaBoxOpen} color="purple.500" boxSize={6} mr={2} />
-            <StatNumber>{statsData?.manufacturerStats.length || 0}</StatNumber>
+            <Icon color="purple.500" boxSize={6} mr={2} asChild><FaBoxOpen /></Icon>
+            <Stat.ValueText>{statsData?.manufacturerStats.length || 0}</Stat.ValueText>
           </Flex>
-          <StatHelpText>Different brands</StatHelpText>
-        </Stat>
+          <Stat.HelpText>Different brands</Stat.HelpText>
+        </Stat.Root>
         
-        <Stat
+        <Stat.Root
           bg={cardBg}
           p={5}
           shadow="sm"
@@ -144,15 +123,15 @@ const Dashboard: React.FC = () => {
           borderLeft="4px solid"
           borderLeftColor="green.500"
         >
-          <StatLabel>Scales</StatLabel>
+          <Stat.Label>Scales</Stat.Label>
           <Flex align="center" mt={2}>
-            <Icon as={FaChartBar} color="green.500" boxSize={6} mr={2} />
-            <StatNumber>{statsData?.scaleStats.length || 0}</StatNumber>
+            <Icon color="green.500" boxSize={6} mr={2} asChild><FaChartBar /></Icon>
+            <Stat.ValueText>{statsData?.scaleStats.length || 0}</Stat.ValueText>
           </Flex>
-          <StatHelpText>Different sizes</StatHelpText>
-        </Stat>
+          <Stat.HelpText>Different sizes</Stat.HelpText>
+        </Stat.Root>
         
-        <Stat
+        <Stat.Root
           bg={cardBg}
           p={5}
           shadow="sm"
@@ -160,47 +139,33 @@ const Dashboard: React.FC = () => {
           borderLeft="4px solid"
           borderLeftColor="orange.500"
         >
-          <StatLabel>Origins</StatLabel>
+          <Stat.Label>Origins</Stat.Label>
           <Flex align="center" mt={2}>
-            <Icon as={FaSearch} color="orange.500" boxSize={6} mr={2} />
-            <StatNumber>{statsData?.originStats?.length || 0}</StatNumber>
+            <Icon color="orange.500" boxSize={6} mr={2} asChild><FaSearch /></Icon>
+            <Stat.ValueText>{statsData?.originStats?.length || 0}</Stat.ValueText>
           </Flex>
-          <StatHelpText>Series/Franchises</StatHelpText>
-        </Stat>
+          <Stat.HelpText>Series/Franchises</Stat.HelpText>
+        </Stat.Root>
       </SimpleGrid>
-      
       <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={6}>
         <GridItem>
           <Box bg={cardBg} p={5} shadow="sm" borderRadius="lg">
             <Flex justify="space-between" align="center" mb={4}>
               <Heading size="md">Recent Figures</Heading>
-              <Button 
-                as={RouterLink} 
-                to="/figures" 
-                variant="outline" 
-                size="sm"
-                aria-label="View All Items"
-              >
-                View All
-              </Button>
+              <Button variant="outline" size="sm" aria-label="View All Items" asChild><RouterLink to="/figures">View All
+                              </RouterLink></Button>
             </Flex>
             
-            <Divider mb={4} />
+            <Separator mb={4} />
             
             {figuresData?.data.length === 0 ? (
               <Flex direction="column" align="center" justify="center" py={8}>
                 <Text color="gray.500" mb={4}>You haven't added any figures yet.</Text>
-                <Button 
-                  as={RouterLink} 
-                  to="/figures/add" 
-                  leftIcon={<FaPlus />} 
-                  colorScheme="brand"
-                >
-                  Add Your First Figure
-                </Button>
+                <Button colorPalette="brand" asChild><RouterLink to="/figures/add"><FaPlus />Add Your First Figure
+                                                      </RouterLink></Button>
               </Flex>
             ) : (
-              <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
+              <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} gap={4}>
                 {figuresData?.data.map((figure) => (
                   <FigureCard key={figure._id} figure={figure} />
                 ))}
@@ -212,7 +177,7 @@ const Dashboard: React.FC = () => {
         <GridItem>
           <Box bg={cardBg} p={5} shadow="sm" borderRadius="lg" height="100%">
             <Heading size="md" mb={4}>Top Manufacturers</Heading>
-            <Divider mb={4} />
+            <Separator mb={4} />
             
             {!statsData?.manufacturerStats.length ? (
               <Text color="gray.500" textAlign="center" py={8}>
@@ -227,30 +192,25 @@ const Dashboard: React.FC = () => {
                   </Flex>
                 ))}
                 
-                <Button 
-                  as={RouterLink} 
-                  to="/statistics" 
-                  variant="outline" 
-                  size="sm" 
-                  width="100%" 
+                <Button
+                  variant="outline"
+                  size="sm"
+                  width="100%"
                   mt={4}
                   aria-label="View Detailed Figure Statistics"
-                >
-                  View All Statistics
-                </Button>
+                  asChild><RouterLink to="/statistics">View All Statistics
+                                  </RouterLink></Button>
               </Box>
             )}
           </Box>
         </GridItem>
       </Grid>
-
       <MfcSyncModal
         isOpen={isSyncOpen}
         onClose={onSyncClose}
         onSyncComplete={handleSyncComplete}
         onOpenCookiesModal={onCookiesOpen}
       />
-
       <MfcCookiesModal
         isOpen={isCookiesOpen}
         onClose={onCookiesClose}

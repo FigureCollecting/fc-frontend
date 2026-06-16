@@ -1,36 +1,27 @@
 import React from 'react';
+import { useColorModeValue } from "../components/ui/color-mode";
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import {
-  Box,
+import { Box,
   Heading,
-  FormControl,
-  FormLabel,
   Input,
   Button,
   VStack,
   HStack,
   Text,
-  Divider,
-  useToast,
   Spinner,
   Center,
   Alert,
-  AlertIcon,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
   InputGroup,
-  InputRightElement,
   Icon,
   Badge,
-  useColorModeValue,
+  Separator,
+  Field,
+  Dialog,
+  Portal,
 } from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { FaEye, FaEyeSlash, FaShieldAlt } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { getUserProfile, updateUserProfile } from '../api';
@@ -49,10 +40,9 @@ const Profile: React.FC = () => {
 
   const { user, setUser, logout } = useAuthStore();
   const navigate = useNavigate();
-  const toast = useToast();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = React.useState(false);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
 
   const { data: profile, isLoading, error } = useQuery('userProfile', getUserProfile) || { data: null, isLoading: false, error: null };
   
@@ -100,12 +90,12 @@ const Profile: React.FC = () => {
           email: userData.email,
         });
         queryClient.invalidateQueries('userProfile');
-        toast({
+        toaster.create({
           title: 'Success',
           description: 'Profile updated successfully',
-          status: 'success',
+          type: 'success',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
         reset({
           username: userData.username,
@@ -116,12 +106,12 @@ const Profile: React.FC = () => {
         });
       },
       onError: (error: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: error.response?.data?.message || 'Failed to update profile',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }
@@ -146,12 +136,12 @@ const Profile: React.FC = () => {
     if (Object.keys(updateData).length > 0) {
       mutation.mutate(updateData);
     } else {
-      toast({
+      toaster.create({
         title: 'Information',
         description: 'No changes to save',
-        status: 'info',
+        type: 'info',
         duration: 5000,
-        isClosable: true,
+        closable: true,
       });
     }
   };
@@ -164,29 +154,27 @@ const Profile: React.FC = () => {
   if (isLoading) {
     return (
       <Center h="50vh">
-        <Spinner size="xl" color="brand.500" thickness="4px" />
+        <Spinner size="xl" color="brand.500" borderWidth="4px" />
       </Center>
     );
   }
 
   if (error) {
     return (
-      <Alert status="error" borderRadius="md">
-        <AlertIcon />
-        Failed to load profile. Please try again.
-      </Alert>
+      <Alert.Root status="error" borderRadius="md">
+        <Alert.Indicator />Failed to load profile. Please try again.
+              </Alert.Root>
     );
   }
 
   return (
     <Box>
       <Heading size="lg" mb={6}>Your Profile</Heading>
-      
       <Box bg={cardBg} p={6} borderRadius="lg" shadow="md">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <VStack spacing={6} align="stretch">
-            <FormControl isInvalid={!!errors.username}>
-              <FormLabel>Username</FormLabel>
+          <VStack gap={6} align="stretch">
+            <Field.Root invalid={!!errors.username}>
+              <Field.Label>Username</Field.Label>
               <Input
                 autoComplete="username"
                 {...register('username', {
@@ -202,10 +190,10 @@ const Profile: React.FC = () => {
                   {errors.username.message}
                 </Text>
               )}
-            </FormControl>
+            </Field.Root>
             
-            <FormControl isInvalid={!!errors.email}>
-              <FormLabel>Email Address</FormLabel>
+            <Field.Root invalid={!!errors.email}>
+              <Field.Label>Email Address</Field.Label>
               <Input
                 type="email"
                 autoComplete="email"
@@ -222,64 +210,48 @@ const Profile: React.FC = () => {
                   {errors.email.message}
                 </Text>
               )}
-            </FormControl>
+            </Field.Root>
             
-            <Divider />
+            <Separator />
 
             {/* Security Status */}
             <Box>
               <HStack justify="space-between" mb={2}>
                 <Heading size="md">Security</Heading>
-                <Button
-                  as={RouterLink}
-                  to="/security"
-                  size="sm"
-                  leftIcon={<Icon as={FaShieldAlt} />}
-                  variant="outline"
-                >
-                  Security Settings
+                <Button asChild size="sm" variant="outline">
+                  <RouterLink to="/security"><Icon as={FaShieldAlt} />Security Settings</RouterLink>
                 </Button>
               </HStack>
-              <HStack spacing={4}>
+              <HStack gap={4}>
                 <HStack>
                   <Text fontSize="sm">Email:</Text>
-                  <Badge colorScheme={profile?.emailVerified ? 'green' : 'yellow'}>
+                  <Badge colorPalette={profile?.emailVerified ? 'green' : 'yellow'}>
                     {profile?.emailVerified ? 'Verified' : 'Not Verified'}
                   </Badge>
                 </HStack>
                 <HStack>
                   <Text fontSize="sm">2FA:</Text>
-                  <Badge colorScheme={profile?.twoFactorEnabled ? 'green' : 'gray'}>
+                  <Badge colorPalette={profile?.twoFactorEnabled ? 'green' : 'gray'}>
                     {profile?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
                   </Badge>
                 </HStack>
                 {(profile?.webauthnCredentialCount ?? 0) > 0 && (
                   <HStack>
                     <Text fontSize="sm">Passkeys:</Text>
-                    <Badge colorScheme="blue">{profile?.webauthnCredentialCount}</Badge>
+                    <Badge colorPalette="blue">{profile?.webauthnCredentialCount}</Badge>
                   </HStack>
                 )}
               </HStack>
             </Box>
 
-            <Divider />
+            <Separator />
 
             <Heading size="md">Change Password</Heading>
             
-            <FormControl isInvalid={!!errors.newPassword}>
-              <FormLabel>New Password</FormLabel>
-              <InputGroup>
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  {...register('newPassword', {
-                    minLength: {
-                      value: 6,
-                      message: 'New password must be at least 6 characters',
-                    },
-                  })}
-                />
-                <InputRightElement>
+            <Field.Root invalid={!!errors.newPassword}>
+              <Field.Label>New Password</Field.Label>
+              <InputGroup
+                endElement={
                   <Button
                     variant="ghost"
                     onClick={() => setShowPassword(!showPassword)}
@@ -290,17 +262,28 @@ const Profile: React.FC = () => {
                       color="gray.500"
                     />
                   </Button>
-                </InputRightElement>
+                }
+              >
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  {...register('newPassword', {
+                    minLength: {
+                      value: 6,
+                      message: 'New password must be at least 6 characters',
+                    },
+                  })}
+                />
               </InputGroup>
               {errors.newPassword && (
                 <Text color="red.500" fontSize="sm" mt={1}>
                   {errors.newPassword.message}
                 </Text>
               )}
-            </FormControl>
+            </Field.Root>
             
-            <FormControl isInvalid={!!errors.confirmNewPassword}>
-              <FormLabel>Confirm New Password</FormLabel>
+            <Field.Root invalid={!!errors.confirmNewPassword}>
+              <Field.Label>Confirm New Password</Field.Label>
               <Input
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
@@ -314,12 +297,12 @@ const Profile: React.FC = () => {
                   {errors.confirmNewPassword.message}
                 </Text>
               )}
-            </FormControl>
+            </Field.Root>
             
-            <HStack spacing={4} justify="flex-end">
+            <HStack gap={4} justify="flex-end">
               <Button
                 variant="outline"
-                colorScheme="red"
+                colorPalette="red"
                 onClick={onOpen}
               >
                 Sign Out
@@ -327,9 +310,9 @@ const Profile: React.FC = () => {
               
               <Button
                 type="submit"
-                colorScheme="brand"
-                isLoading={mutation.isLoading}
-                isDisabled={!isDirty}
+                colorPalette="brand"
+                loading={mutation.isLoading}
+                disabled={!isDirty}
               >
                 Save Changes
               </Button>
@@ -337,26 +320,35 @@ const Profile: React.FC = () => {
           </VStack>
         </form>
       </Box>
-
       {/* Logout Confirmation Modal */}
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Sign Out</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            Are you sure you want to sign out?
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button colorScheme="red" onClick={handleLogout}>
-              Sign Out
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <Dialog.Root open={open} onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+        <Portal>
+
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>Sign Out</Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>
+                Are you sure you want to sign out?
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button variant="ghost" mr={3} onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button colorPalette="red" onClick={handleLogout}>
+                  Sign Out
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
     </Box>
   );
 };

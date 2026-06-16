@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Box, Heading, Input, Button, FormControl, FormLabel, Alert, AlertIcon, VStack, Text } from '@chakra-ui/react';
+import { Box, Heading, Input, Button, Alert, VStack, Text, Field } from '@chakra-ui/react';
 import { resetPasswordRequest } from '../api';
 
 const ResetPassword: React.FC = () => {
@@ -25,13 +25,13 @@ const ResetPassword: React.FC = () => {
   if (!token || !userId) {
     return (
       <>
-      {helmet}
-      <Box maxW="md" mx="auto" mt={20} p={8}>
-        <Alert status="error" borderRadius="md">
-          <AlertIcon />
-          Invalid reset link. Please request a new one.
-        </Alert>
-      </Box>
+        {helmet}
+        <Box maxW="md" mx="auto" mt={20} p={8}>
+          <Alert.Root status="error" borderRadius="md">
+            <Alert.Indicator />
+            Invalid reset link. Please request a new one.
+          </Alert.Root>
+        </Box>
       </>
     );
   }
@@ -61,49 +61,49 @@ const ResetPassword: React.FC = () => {
   if (status === 'success') {
     return (
       <>
-      {helmet}
-      <Box maxW="md" mx="auto" mt={20} p={8}>
-        <VStack spacing={6}>
-          <Heading size="lg">Password Reset</Heading>
-          <Alert status="success" borderRadius="md">
-            <AlertIcon />
-            Your password has been reset successfully.
-          </Alert>
-          <Button colorScheme="blue" onClick={() => navigate('/login')}>
-            Go to Login
-          </Button>
-        </VStack>
-      </Box>
+        {helmet}
+        <Box maxW="md" mx="auto" mt={20} p={8}>
+          <VStack gap={6}>
+            <Heading size="lg">Password Reset</Heading>
+            <Alert.Root status="success" borderRadius="md">
+              <Alert.Indicator />
+              Your password has been reset successfully.
+            </Alert.Root>
+            <Button colorPalette="blue" onClick={() => navigate('/login')}>
+              Go to Login
+            </Button>
+          </VStack>
+        </Box>
       </>
     );
   }
 
   return (
     <>
-    {helmet}
-    <Box maxW="md" mx="auto" mt={20} p={8}>
-      <VStack spacing={6} as="form" onSubmit={handleSubmit}>
-        <Heading size="lg">Reset Password</Heading>
-        <Text>Enter your new password.</Text>
-        {status === 'error' && (
-          <Alert status="error" borderRadius="md">
-            <AlertIcon />
-            {errorMessage}
-          </Alert>
-        )}
-        <FormControl>
-          <FormLabel>New Password</FormLabel>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Confirm Password</FormLabel>
-          <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-        </FormControl>
-        <Button type="submit" colorScheme="blue" w="full" isLoading={status === 'loading'}>
-          Reset Password
-        </Button>
-      </VStack>
-    </Box>
+      {helmet}
+      <Box maxW="md" mx="auto" mt={20} p={8}>
+        <VStack gap={6} asChild><form onSubmit={handleSubmit}>
+            <Heading size="lg">Reset Password</Heading>
+            <Text>Enter your new password.</Text>
+            {status === 'error' && (
+              <Alert.Root status="error" borderRadius="md">
+                <Alert.Indicator />
+                {errorMessage}
+              </Alert.Root>
+            )}
+            <Field.Root>
+              <Field.Label>New Password</Field.Label>
+              <Input type="password" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} required minLength={6} />
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>Confirm Password</Field.Label>
+              <Input type="password" value={confirmPassword} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)} required />
+            </Field.Root>
+            <Button type="submit" colorPalette="blue" w="full" loading={status === 'loading'}>
+              Reset Password
+            </Button>
+          </form></VStack>
+      </Box>
     </>
   );
 };

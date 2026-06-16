@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import {
-  VStack, Heading, Text, Button, HStack, Box, Input, Alert, AlertIcon,
-  useToast, IconButton
+import { VStack,
+  Heading,
+  Text,
+  Button,
+  HStack,
+  Box,
+  Input,
+  Alert,
+  IconButton,
 } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { toaster } from '../ui/toaster';
 import { getWebAuthnRegisterOptions, verifyWebAuthnRegistration, deleteWebAuthnCredential } from '../../api';
 import { startRegistration } from '@simplewebauthn/browser';
+import { LuTrash2 } from 'react-icons/lu';
 
 interface Credential {
   credentialId: string;
@@ -22,7 +29,6 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
   const [adding, setAdding] = useState(false);
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
-  const toast = useToast();
 
   const isSupported = typeof window !== 'undefined' && window.PublicKeyCredential !== undefined;
 
@@ -32,13 +38,13 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
       const { data: optionsData } = await getWebAuthnRegisterOptions(nickname || undefined);
       const regResponse = await startRegistration({ optionsJSON: optionsData.options });
       await verifyWebAuthnRegistration(optionsData.challengeId, regResponse);
-      toast({ title: 'Passkey added', status: 'success', duration: 3000 });
+      toaster.create({ title: 'Passkey added', type: 'success', duration: 3000 });
       setAdding(false);
       setNickname('');
       onUpdate();
     } catch (err: any) {
       if (err.name !== 'NotAllowedError') {
-        toast({ title: 'Failed to add passkey', description: err.message, status: 'error', duration: 5000 });
+        toaster.create({ title: 'Failed to add passkey', description: err.message, type: 'error', duration: 5000 });
       }
     } finally {
       setLoading(false);
@@ -48,25 +54,23 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
   const handleDelete = async (credentialId: string) => {
     try {
       await deleteWebAuthnCredential(credentialId);
-      toast({ title: 'Passkey removed', status: 'info', duration: 3000 });
+      toaster.create({ title: 'Passkey removed', type: 'info', duration: 3000 });
       onUpdate();
     } catch {
-      toast({ title: 'Failed to remove passkey', status: 'error', duration: 5000 });
+      toaster.create({ title: 'Failed to remove passkey', type: 'error', duration: 5000 });
     }
   };
 
   return (
-    <VStack spacing={4} align="stretch">
+    <VStack gap={4} align="stretch">
       <Heading size="sm">Passkeys</Heading>
       <Text fontSize="sm">Use passkeys for passwordless login.</Text>
-
       {!isSupported && (
-        <Alert status="info" borderRadius="md">
-          <AlertIcon />
+        <Alert.Root status="info" borderRadius="md">
+          <Alert.Indicator />
           Your browser doesn't support passkeys.
-        </Alert>
+        </Alert.Root>
       )}
-
       {credentials.map((cred) => (
         <HStack key={cred.credentialId} p={3} borderWidth={1} borderRadius="md" justify="space-between">
           <Box>
@@ -77,17 +81,14 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
           </Box>
           <IconButton
             aria-label="Remove passkey"
-            icon={<DeleteIcon />}
             size="sm"
-            colorScheme="red"
+            colorPalette="red"
             variant="ghost"
-            onClick={() => handleDelete(cred.credentialId)}
-          />
+            onClick={() => handleDelete(cred.credentialId)}><LuTrash2 /></IconButton>
         </HStack>
       ))}
-
       {adding ? (
-        <VStack spacing={3}>
+        <VStack gap={3}>
           <Input
             placeholder="Passkey nickname (optional)"
             value={nickname}
@@ -95,7 +96,7 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
             maxLength={50}
           />
           <HStack>
-            <Button colorScheme="blue" onClick={handleAdd} isLoading={loading}>
+            <Button colorPalette="blue" onClick={handleAdd} loading={loading}>
               Register Passkey
             </Button>
             <Button variant="ghost" onClick={() => setAdding(false)}>Cancel</Button>
@@ -103,7 +104,7 @@ const PasskeyManagement: React.FC<PasskeyManagementProps> = ({ credentials, onUp
         </VStack>
       ) : (
         isSupported && (
-          <Button colorScheme="blue" variant="outline" onClick={() => setAdding(true)}>
+          <Button colorPalette="blue" variant="outline" onClick={() => setAdding(true)}>
             Add Passkey
           </Button>
         )

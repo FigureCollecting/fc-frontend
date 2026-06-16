@@ -7,6 +7,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FigureForm from '../FigureForm';
 import { ChakraProvider } from '@chakra-ui/react';
+import system from '../../theme';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 // Mock usePublicConfigs to avoid QueryClient dependency issues
@@ -47,7 +48,7 @@ const renderFigureForm = (props = {}) => {
   };
 
   return render(
-    <ChakraProvider>
+    <ChakraProvider value={system}>
       <FigureForm {...defaultProps} />
     </ChakraProvider>
   );
@@ -72,7 +73,7 @@ describe('FigureForm Uncovered Conditions', () => {
 
       // Condition 2: with valid URL (truthy)
       rerender(
-        <ChakraProvider>
+        <ChakraProvider value={system}>
           <FigureForm
             onSubmit={jest.fn()}
             isLoading={false}
@@ -100,7 +101,7 @@ describe('FigureForm Uncovered Conditions', () => {
 
       // Condition 2: with valid URL (truthy)
       rerender(
-        <ChakraProvider>
+        <ChakraProvider value={system}>
           <FigureForm
             onSubmit={jest.fn()}
             isLoading={false}
@@ -238,6 +239,10 @@ describe('FigureForm Uncovered Conditions', () => {
       renderFigureForm();
       const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
+      // Scraping is triggered by a debounced effect watching mfcLink, not by blur.
+      // Short item IDs (< 5 digits) use a 2000ms debounce, so the waitFor timeout
+      // must exceed that plus the time userEvent.type takes (it resets the timer
+      // on each keystroke). 4000ms gives reliable headroom.
       await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/123');
       fireEvent.blur(mfcInput);
 
@@ -250,7 +255,7 @@ describe('FigureForm Uncovered Conditions', () => {
             body: JSON.stringify({ mfcLink: 'https://myfigurecollection.net/item/123' }),
           })
         );
-      }, { timeout: 2000 });
+      }, { timeout: 4000 });
     });
 
     it('should cover line 183 - response.success is false', async () => {
@@ -277,7 +282,7 @@ describe('FigureForm Uncovered Conditions', () => {
             body: JSON.stringify({ mfcLink: 'https://myfigurecollection.net/item/456' }),
           })
         );
-      }, { timeout: 2000 });
+      }, { timeout: 4000 });
     });
 
     it('should cover line 187 - catch block', async () => {
@@ -298,7 +303,7 @@ describe('FigureForm Uncovered Conditions', () => {
             body: JSON.stringify({ mfcLink: 'https://myfigurecollection.net/item/789' }),
           })
         );
-      }, { timeout: 2000 });
+      }, { timeout: 4000 });
     });
   });
 
@@ -458,13 +463,17 @@ describe('FigureForm Uncovered Conditions', () => {
       renderFigureForm();
       const mfcInput = screen.getByPlaceholderText(/item #.*MFC URL/i);
 
-      await userEvent.type(mfcInput, 'https://myfigurecollection.net/item/1003');
+      // Deliver the value via fireEvent.change so RHF's watch fires immediately
+      // (userEvent.type resets the debounce timer on each keystroke).
+      fireEvent.change(mfcInput, { target: { value: 'https://myfigurecollection.net/item/1003' } });
       fireEvent.blur(mfcInput);
 
+      // Item ID "1003" is 4 digits (< 5) so the scrape debounce is 2000ms;
+      // the async fetch + setValue then follow, so wait beyond the debounce.
       await waitFor(() => {
         const nameInput = screen.getByPlaceholderText(/Nendoroid Miku Hatsune/i) as HTMLInputElement;
         expect(nameInput.value).toBe('Scraped');
-      }, { timeout: 2000 });
+      }, { timeout: 4000 });
     });
 
     it('should cover line 177 condition', async () => {

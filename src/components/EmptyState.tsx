@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Text, Button, VStack, Icon, useColorModeValue } from '@chakra-ui/react';
+import { useColorModeValue } from "./ui/color-mode";
+import { Box, Text, Button, VStack, Icon } from '@chakra-ui/react';
 import { FaPlus, FaCube, FaSearch, FaTimes, FaFilter } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -75,10 +76,10 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       textAlign="center"
       my={10}
     >
-      <VStack spacing={6}>
-        <Icon as={content.icon} boxSize={12} color="gray.400" />
+      <VStack gap={6}>
+        <Icon boxSize={12} color="gray.400" asChild><content.icon /></Icon>
         
-        <VStack spacing={2}>
+        <VStack gap={2}>
           <Text fontSize="xl" fontWeight="bold">
             {content.title}
           </Text>
@@ -88,24 +89,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         </VStack>
         
         {content.button.link ? (
-          <Button
-            as={RouterLink}
-            to={content.button.link}
-            leftIcon={content.button.icon && <Icon as={content.button.icon} />}
-            colorScheme="brand"
-            size="md"
-          >
-            {content.button.text}
-          </Button>
+          <Button colorPalette="brand" size="md" asChild><RouterLink to={content.button.link}>{content.button.icon && <Icon asChild><content.button.icon /></Icon>}{content.button.text}</RouterLink></Button>
         ) : (
-          <Button
-            onClick={content.button.onclick}
-            leftIcon={content.button.icon && <Icon as={content.button.icon} />}
-            colorScheme="brand"
-            size="md"
-          >
-            {content.button.text}
-          </Button>
+          <Button onClick={content.button.onclick} colorPalette="brand" size="md">{content.button.icon && <Icon asChild><content.button.icon /></Icon>}{content.button.text}</Button>
         )}
       </VStack>
     </Box>

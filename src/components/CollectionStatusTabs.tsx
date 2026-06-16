@@ -5,14 +5,8 @@
  * Acts as the primary view filter for collection data slices.
  */
 import React from 'react';
-import {
-  Tabs,
-  TabList,
-  Tab,
-  Badge,
-  HStack,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { useColorModeValue } from "./ui/color-mode";
+import { Tabs, Badge, HStack } from '@chakra-ui/react';
 import { FaBox, FaTruck, FaStar } from 'react-icons/fa';
 import { CollectionStatus, StatusCounts } from '../types';
 
@@ -36,24 +30,23 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
   isLoading = false,
 }) => {
   const statuses: CollectionStatus[] = ['owned', 'ordered', 'wished'];
-  const activeIndex = statuses.indexOf(activeStatus);
 
   const tabBg = useColorModeValue('white', 'gray.800');
   const activeBg = useColorModeValue('brand.50', 'brand.900');
 
-  const handleTabChange = (index: number) => {
-    onStatusChange(statuses[index]);
+  const handleTabChange = (value: string) => {
+    onStatusChange(value as CollectionStatus);
   };
 
   return (
-    <Tabs
-      index={activeIndex}
-      onChange={handleTabChange}
-      variant="soft-rounded"
-      colorScheme="brand"
+    <Tabs.Root
+      value={activeStatus}
+      onValueChange={(e) => handleTabChange(e.value)}
+      variant='subtle'
+      colorPalette="brand"
       mb={4}
     >
-      <TabList
+      <Tabs.List
         bg={tabBg}
         p={1}
         borderRadius="lg"
@@ -67,8 +60,9 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
           const Icon = config.icon;
 
           return (
-            <Tab
+            <Tabs.Trigger
               key={status}
+              value={status}
               px={4}
               py={2}
               borderRadius="md"
@@ -77,13 +71,13 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
                 bg: activeBg,
                 color: 'brand.600',
               }}
-              isDisabled={isLoading}
+              disabled={isLoading}
             >
-              <HStack spacing={2}>
+              <HStack gap={2}>
                 <Icon />
                 <span>{config.label}</span>
                 <Badge
-                  colorScheme={isActive ? 'brand' : 'gray'}
+                  colorPalette={isActive ? 'brand' : 'gray'}
                   variant={isActive ? 'solid' : 'subtle'}
                   borderRadius="full"
                   px={2}
@@ -92,11 +86,11 @@ const CollectionStatusTabs: React.FC<CollectionStatusTabsProps> = ({
                   {count}
                 </Badge>
               </HStack>
-            </Tab>
+            </Tabs.Trigger>
           );
         })}
-      </TabList>
-    </Tabs>
+      </Tabs.List>
+    </Tabs.Root>
   );
 };
 

@@ -1,164 +1,79 @@
-import { extendTheme, type ThemeConfig } from '@chakra-ui/react';
-import { mode } from '@chakra-ui/theme-tools';
-import type { StyleFunctionProps } from '@chakra-ui/styled-system';
-
-const config: ThemeConfig = {
-  initialColorMode: 'light',
-  useSystemColorMode: false,
-};
+import { createSystem, defaultConfig, defineConfig } from '@chakra-ui/react';
 
 // Terminal theme colors - retro green on black
 const terminalColors = {
-  bg: '#0a0a0a',
-  text: '#00ff00',
-  textDim: '#00cc00',
-  accent: '#00ff66',
-  border: '#00aa00',
-  highlight: '#003300',
+  bg: { value: '#0a0a0a' },
+  text: { value: '#00ff00' },
+  textDim: { value: '#00cc00' },
+  accent: { value: '#00ff66' },
+  border: { value: '#00aa00' },
+  highlight: { value: '#003300' },
 };
 
-const theme = extendTheme({
-  config,
-  colors: {
-    brand: {
-      50: '#e6f7ff',
-      100: '#bae3ff',
-      200: '#7cc4fa',
-      300: '#47a3f3',
-      400: '#2186eb',
-      500: '#0967d2',
-      600: '#0552b5',
-      700: '#03449e',
-      800: '#01337d',
-      900: '#002159',
+const config = defineConfig({
+  // Body background/foreground per color mode. v3 replaces the v2 `mode()`
+  // helper with the `_dark` conditional.
+  globalCss: {
+    body: {
+      bg: 'white',
+      color: 'gray.900',
+      _dark: {
+        bg: 'gray.800',
+        color: 'gray.100',
+      },
     },
-    terminal: terminalColors,
   },
-  fonts: {
-    heading: 'Inter, sans-serif',
-    body: 'Inter, sans-serif',
-  },
-  styles: {
-    global: (props: StyleFunctionProps) => ({
-      body: {
-        bg: mode('white', 'gray.800')(props),
-        color: mode('gray.900', 'gray.100')(props),
+  theme: {
+    tokens: {
+      colors: {
+        brand: {
+          50: { value: '#e6f7ff' },
+          100: { value: '#bae3ff' },
+          200: { value: '#7cc4fa' },
+          300: { value: '#47a3f3' },
+          400: { value: '#2186eb' },
+          500: { value: '#0967d2' },
+          600: { value: '#0552b5' },
+          700: { value: '#03449e' },
+          800: { value: '#01337d' },
+          900: { value: '#002159' },
+        },
+        terminal: terminalColors,
       },
-    }),
-  },
-  components: {
-    Button: {
-      defaultProps: {
-        colorScheme: 'brand',
+      fonts: {
+        heading: { value: 'Inter, sans-serif' },
+        body: { value: 'Inter, sans-serif' },
       },
-      variants: {
-        solid: (props: StyleFunctionProps) => {
-          // Fix contrast for brand colorScheme in dark mode
-          if (props.colorScheme === 'brand') {
-            return {
-              bg: mode('brand.500', 'brand.400')(props),
-              color: mode('white', 'gray.900')(props),
-              _hover: {
-                // Dark mode: go darker + add glow instead of lighter (which looks disabled)
-                bg: mode('brand.600', 'brand.500')(props),
-                boxShadow: mode('none', '0 0 8px rgba(33, 134, 235, 0.5)')(props),
-                _disabled: {
-                  bg: mode('brand.500', 'brand.400')(props),
-                  boxShadow: 'none',
-                },
-              },
-              _active: {
-                bg: mode('brand.700', 'brand.600')(props),
-                boxShadow: 'none',
-              },
-            };
-          }
-          return {};
+    },
+    // Map the brand palette onto the v3 semantic color-palette slots so that
+    // `colorPalette="brand"` (and the default Button below) render with good
+    // contrast in both light and dark mode. This replaces the v2 custom Button
+    // `solid` variant that hand-rolled `mode()` brand contrast.
+    semanticTokens: {
+      colors: {
+        brand: {
+          solid: { value: { base: '{colors.brand.500}', _dark: '{colors.brand.400}' } },
+          contrast: { value: { base: 'white', _dark: '{colors.gray.900}' } },
+          fg: { value: { base: '{colors.brand.700}', _dark: '{colors.brand.300}' } },
+          muted: { value: { base: '{colors.brand.100}', _dark: '{colors.brand.800}' } },
+          subtle: { value: { base: '{colors.brand.50}', _dark: '{colors.brand.900}' } },
+          emphasized: { value: { base: '{colors.brand.600}', _dark: '{colors.brand.500}' } },
+          focusRing: { value: { base: '{colors.brand.500}', _dark: '{colors.brand.400}' } },
         },
       },
     },
-    Input: {
-      variants: {
-        outline: (props: StyleFunctionProps) => ({
-          field: {
-            bg: mode('white', 'gray.700')(props),
-            borderColor: mode('gray.200', 'gray.600')(props),
-            color: mode('gray.900', 'gray.100')(props),
-            _focus: {
-              borderColor: mode('blue.500', 'blue.300')(props),
-              boxShadow: mode(
-                '0 0 0 1px var(--chakra-colors-blue-500)',
-                '0 0 0 1px var(--chakra-colors-blue-300)'
-              )(props),
-            },
-            _placeholder: {
-              color: mode('gray.500', 'gray.400')(props),
-            },
-          },
-        }),
-      },
-    },
-    Select: {
-      variants: {
-        outline: (props: StyleFunctionProps) => ({
-          field: {
-            bg: mode('white', 'gray.700')(props),
-            borderColor: mode('gray.200', 'gray.600')(props),
-            color: mode('gray.900', 'gray.100')(props),
-            _focus: {
-              borderColor: mode('blue.500', 'blue.300')(props),
-            },
-          },
-        }),
-      },
-    },
-    Textarea: {
-      variants: {
-        outline: (props: StyleFunctionProps) => ({
-          bg: mode('white', 'gray.700')(props),
-          borderColor: mode('gray.200', 'gray.600')(props),
-          color: mode('gray.900', 'gray.100')(props),
-          _focus: {
-            borderColor: mode('blue.500', 'blue.300')(props),
-          },
-          _placeholder: {
-            color: mode('gray.500', 'gray.400')(props),
-          },
-        }),
-      },
-    },
-    FormLabel: {
-      baseStyle: (props: StyleFunctionProps) => ({
-        color: mode('gray.700', 'gray.200')(props),
-      }),
-    },
-    Card: {
-      baseStyle: (props: StyleFunctionProps) => ({
-        container: {
-          bg: mode('white', 'gray.700')(props),
-          borderColor: mode('gray.200', 'gray.600')(props),
+    // Default Button to the brand color palette, matching the v2
+    // `Button.defaultProps.colorScheme = 'brand'`.
+    recipes: {
+      button: {
+        base: {
+          colorPalette: 'brand',
         },
-      }),
-    },
-    Menu: {
-      baseStyle: (props: StyleFunctionProps) => ({
-        list: {
-          bg: mode('white', 'gray.700')(props),
-          borderColor: mode('gray.200', 'gray.600')(props),
-        },
-        item: {
-          bg: mode('white', 'gray.700')(props),
-          color: mode('gray.800', 'gray.100')(props),
-          _hover: {
-            bg: mode('gray.100', 'gray.600')(props),
-          },
-          _focus: {
-            bg: mode('gray.100', 'gray.600')(props),
-          },
-        },
-      }),
+      },
     },
   },
 });
 
-export default theme;
+const system = createSystem(defaultConfig, config);
+
+export default system;

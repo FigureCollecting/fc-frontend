@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { render, screen, fireEvent } from '../../../test-utils';
+import userEvent from '@testing-library/user-event';
 import CatalogPurchaseSection from '../CatalogPurchaseSection';
 
 function createMockFormProps(overrides: Record<string, any> = {}) {
@@ -95,52 +96,57 @@ describe('CatalogPurchaseSection', () => {
     expect(screen.getByText('GBP (£)')).toBeInTheDocument();
   });
 
-  it('should call setValue for height when dimension input changes', () => {
+  it('should call setValue for height when dimension input changes', async () => {
+    const user = userEvent.setup();
     const props = createMockFormProps();
     render(<CatalogPurchaseSection {...props} />);
 
     // Expand dimensions
     fireEvent.click(screen.getByText('Physical Dimensions'));
 
-    // Find the height input
+    // Find the height input. Zag's NumberInput commits via onValueChange on
+    // keystroke input, not on a raw fireEvent.change, so drive it with userEvent.
     const heightInput = screen.getByPlaceholderText('e.g., 230');
-    fireEvent.change(heightInput, { target: { value: '250' } });
+    await user.type(heightInput, '250');
 
     expect(props.setValue).toHaveBeenCalledWith('heightMm', 250);
   });
 
-  it('should call setValue for width when dimension input changes', () => {
+  it('should call setValue for width when dimension input changes', async () => {
+    const user = userEvent.setup();
     const props = createMockFormProps();
     render(<CatalogPurchaseSection {...props} />);
 
     fireEvent.click(screen.getByText('Physical Dimensions'));
 
     const widthInput = screen.getByPlaceholderText('e.g., 150');
-    fireEvent.change(widthInput, { target: { value: '180' } });
+    await user.type(widthInput, '180');
 
     expect(props.setValue).toHaveBeenCalledWith('widthMm', 180);
   });
 
-  it('should call setValue for depth when dimension input changes', () => {
+  it('should call setValue for depth when dimension input changes', async () => {
+    const user = userEvent.setup();
     const props = createMockFormProps();
     render(<CatalogPurchaseSection {...props} />);
 
     fireEvent.click(screen.getByText('Physical Dimensions'));
 
     const depthInput = screen.getByPlaceholderText('e.g., 120');
-    fireEvent.change(depthInput, { target: { value: '100' } });
+    await user.type(depthInput, '100');
 
     expect(props.setValue).toHaveBeenCalledWith('depthMm', 100);
   });
 
-  it('should call setValue for purchase price when input changes', () => {
+  it('should call setValue for purchase price when input changes', async () => {
+    const user = userEvent.setup();
     const props = createMockFormProps();
     render(<CatalogPurchaseSection {...props} />);
 
     fireEvent.click(screen.getByText('Purchase Information'));
 
     const priceInput = screen.getByPlaceholderText('e.g., 150.00');
-    fireEvent.change(priceInput, { target: { value: '99.99' } });
+    await user.type(priceInput, '99.99');
 
     expect(props.setValue).toHaveBeenCalledWith('purchasePrice', 99.99);
   });

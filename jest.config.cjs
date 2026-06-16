@@ -31,13 +31,21 @@ module.exports = {
     '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)': '<rootDir>/jest/fileTransform.cjs'
   },
   transformIgnorePatterns: [
-    '[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$',
+    // Chakra UI v3 and its Ark UI / Zag.js dependencies ship ESM that must be
+    // transpiled for Jest 27's CommonJS runtime; exclude them from the ignore
+    // list so babel-jest transforms them. (Several @zag-js packages declare a
+    // `require` entry that actually contains ESM `export` syntax.)
+    '[/\\\\]node_modules[/\\\\](?!(@chakra-ui|@ark-ui|@zag-js)[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$',
     '^.+\\.module\\.(css|sass|scss)$'
   ],
   modulePaths: [],
+  // Custom resolver that honors the package `exports` field (Jest 27's bundled
+  // resolver does not). Required for Chakra UI v3's Ark UI / Zag.js dependency
+  // tree, whose CJS entries live behind `exports` `require` conditions while
+  // their legacy `main` points at ESM builds.
+  resolver: '<rootDir>/jest/exportsResolver.cjs',
   moduleNameMapper: {
-    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
-    '@chakra-ui/utils/context': '<rootDir>/node_modules/@chakra-ui/utils/dist/cjs/context.cjs'
+    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy'
   },
   moduleFileExtensions: ['web.js', 'js', 'web.ts', 'ts', 'web.tsx', 'tsx', 'json', 'web.jsx', 'jsx', 'node'],
   resetMocks: true

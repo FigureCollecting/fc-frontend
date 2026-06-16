@@ -1,5 +1,13 @@
+/*
+ MIGRATION NOTE: The following Chakra UI hooks have been removed.
+ Please replace them with the suggested alternatives:
+
+//   - useClipboard: Use react-use: useCopyToClipboard
+
+ See: https://chakra-ui.com/docs/get-started/migration#hooks
+*/
 import React from 'react';
-import { Box, Heading, SimpleGrid, Code, Button, VStack, Alert, AlertIcon, useClipboard } from '@chakra-ui/react';
+import { Box, Heading, SimpleGrid, Code, Button, VStack, Alert } from '@chakra-ui/react';
 
 interface BackupCodesDisplayProps {
   codes: string[];
@@ -7,7 +15,12 @@ interface BackupCodesDisplayProps {
 
 const BackupCodesDisplay: React.FC<BackupCodesDisplayProps> = ({ codes }) => {
   const codeText = codes.join('\n');
-  const { hasCopied, onCopy } = useClipboard(codeText);
+  const [hasCopied, setHasCopied] = React.useState(false);
+  const onCopy = async () => {
+    await navigator.clipboard.writeText(codeText);
+    setHasCopied(true);
+    setTimeout(() => setHasCopied(false), 1500);
+  };
 
   const handleDownload = () => {
     const blob = new Blob([`FigureCollecting Backup Codes\n${'='.repeat(30)}\n\n${codeText}\n\nStore these codes in a safe place.\nEach code can only be used once.`], { type: 'text/plain' });
@@ -20,13 +33,13 @@ const BackupCodesDisplay: React.FC<BackupCodesDisplayProps> = ({ codes }) => {
   };
 
   return (
-    <VStack spacing={4} align="stretch">
+    <VStack gap={4} align="stretch">
       <Heading size="sm">Backup Codes</Heading>
-      <Alert status="warning" borderRadius="md">
-        <AlertIcon />
+      <Alert.Root status="warning" borderRadius="md">
+        <Alert.Indicator />
         Save these codes in a safe place. Each code can only be used once.
-      </Alert>
-      <SimpleGrid columns={2} spacing={2}>
+      </Alert.Root>
+      <SimpleGrid columns={2} gap={2}>
         {codes.map((code, i) => (
           <Code key={i} p={2} textAlign="center" fontSize="md">
             {code}

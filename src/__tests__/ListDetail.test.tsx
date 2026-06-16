@@ -6,7 +6,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import ListDetail from '../pages/ListDetail';
 import * as api from '../api';
 import { MfcList } from '../types';
-import theme from '../theme';
+import system from '../theme';
 
 // Mock the API module
 jest.mock('../api');
@@ -80,7 +80,7 @@ function renderListDetail(listId = 'list1') {
   const user = userEvent.setup();
   const result = render(
     <QueryClientProvider client={queryClient}>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider value={system}>
         <MemoryRouter initialEntries={[`/lists/${listId}`]}>
           <Routes>
             <Route path="/lists/:id" element={<ListDetail />} />

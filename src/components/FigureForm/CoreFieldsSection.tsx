@@ -7,19 +7,15 @@
  * Note: Image preview is now rendered in FigureFormMain as a sticky sidebar.
  */
 import React from 'react';
-import {
-  FormControl,
-  FormLabel,
-  Input,
-  FormErrorMessage,
+import { Input,
   Grid,
   GridItem,
   InputGroup,
-  InputRightElement,
   IconButton,
-  Tooltip,
   Text,
+  Field,
 } from '@chakra-ui/react';
+import { Tooltip } from '../ui/tooltip';
 import { FaQuestionCircle, FaImage } from 'react-icons/fa';
 import { UseFormRegister, UseFormGetValues, FieldErrors } from 'react-hook-form';
 import { FigureFormData } from '../../types';
@@ -49,34 +45,27 @@ const CoreFieldsSection: React.FC<CoreFieldsSectionProps> = ({
   return (
     <Grid templateColumns={{ base: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' }} gap={6}>
       <GridItem>
-        <FormControl isInvalid={!!errors.name}>
-          <FormLabel>
+        <Field.Root invalid={!!errors.name}>
+          <Field.Label>
             Figure Name
             {!mfcLink && <Text as="span" color="red.500" ml={1} aria-label="required">*</Text>}
-          </FormLabel>
+          </Field.Label>
           <Input
             {...register('name', { validate: validateName })}
             placeholder="e.g., Nendoroid Miku Hatsune"
             aria-describedby={errors.name ? "name-error" : undefined}
           />
-          <FormErrorMessage id="name-error" data-testid="form-error-message">{errors.name?.message}</FormErrorMessage>
-        </FormControl>
+          <Field.ErrorText id="name-error" data-testid="form-error-message">{errors.name?.message}</Field.ErrorText>
+        </Field.Root>
       </GridItem>
-
       <GridItem>
-        <FormControl isInvalid={!!errors.scale}>
-          <FormLabel fontWeight="bold" color="purple.600">
+        <Field.Root invalid={!!errors.scale}>
+          <Field.Label fontWeight="bold" color="purple.600">
             Scale
-            <Tooltip label="Common scales: 1/8, 1/7, 1/6 for scale figures, or enter 'Nendoroid', 'Figma', etc.">
-              <IconButton
-                aria-label="Scale info"
-                icon={<FaQuestionCircle />}
-                size="xs"
-                variant="ghost"
-                ml={1}
-              />
+            <Tooltip content="Common scales: 1/8, 1/7, 1/6 for scale figures, or enter 'Nendoroid', 'Figma', etc.">
+              <IconButton aria-label="Scale info" size="xs" variant="ghost" ml={1}><FaQuestionCircle /></IconButton>
             </Tooltip>
-          </FormLabel>
+          </Field.Label>
           <Input
             {...register('scale')}
             placeholder="e.g., 1/8, 1/7, Nendoroid"
@@ -86,57 +75,48 @@ const CoreFieldsSection: React.FC<CoreFieldsSectionProps> = ({
             borderWidth="2px"
             _focus={{ borderColor: 'purple.500', boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)' }}
           />
-          <FormErrorMessage>{errors.scale?.message}</FormErrorMessage>
-        </FormControl>
+          <Field.ErrorText>{errors.scale?.message}</Field.ErrorText>
+        </Field.Root>
       </GridItem>
-
       <GridItem>
-        <FormControl>
-          <FormLabel>
+        <Field.Root>
+          <Field.Label>
             Storage Detail
-            <Tooltip label="Where within your storage location (shelf label, box ID, drawer number, etc.)">
-              <IconButton
-                aria-label="Storage detail info"
-                icon={<FaQuestionCircle />}
-                size="xs"
-                variant="ghost"
-                ml={1}
-              />
+            <Tooltip content="Where within your storage location (shelf label, box ID, drawer number, etc.)">
+              <IconButton aria-label="Storage detail info" size="xs" variant="ghost" ml={1}><FaQuestionCircle /></IconButton>
             </Tooltip>
-          </FormLabel>
+          </Field.Label>
           <Input
             {...register('storageDetail')}
             placeholder="e.g., Shelf A-3, Box #12, Left corner"
           />
-        </FormControl>
+        </Field.Root>
       </GridItem>
-
       <GridItem colSpan={{ base: 1, md: 2 }}>
-        <FormControl isInvalid={!!errors.imageUrl}>
-          <FormLabel>Image URL (Optional)</FormLabel>
-          <InputGroup>
+        <Field.Root invalid={!!errors.imageUrl}>
+          <Field.Label>Image URL (Optional)</Field.Label>
+          <InputGroup
+            endElement={
+              <IconButton
+                aria-label="Open image link"
+                size="sm"
+                variant="ghost"
+                onClick={openImageLink}
+                disabled={!imageUrl}><FaImage /></IconButton>
+            }
+          >
             <Input
               {...register('imageUrl', {
                 validate: validateUrl,
               })}
               placeholder="https://example.com/image.jpg"
             />
-            <InputRightElement>
-              <IconButton
-                aria-label="Open image link"
-                icon={<FaImage />}
-                size="sm"
-                variant="ghost"
-                onClick={openImageLink}
-                isDisabled={!imageUrl}
-              />
-            </InputRightElement>
           </InputGroup>
-          <FormErrorMessage>{errors.imageUrl?.message}</FormErrorMessage>
+          <Field.ErrorText>{errors.imageUrl?.message}</Field.ErrorText>
           <Text fontSize="xs" color="gray.500" mt={1}>
             Leave blank to auto-fetch from MFC • Preview shown on right
           </Text>
-        </FormControl>
+        </Field.Root>
       </GridItem>
     </Grid>
   );

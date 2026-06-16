@@ -1,13 +1,7 @@
 import React from 'react';
-import {
-  HStack,
-  Select,
-  FormControl,
-  FormLabel,
-  IconButton,
-  Tooltip,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { useColorModeValue } from "./ui/color-mode";
+import { HStack, NativeSelect, IconButton, Field } from '@chakra-ui/react';
+import { Tooltip } from './ui/tooltip';
 import { FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 
 export type SortField = 'activity' | 'createdAt' | 'updatedAt' | 'name';
@@ -50,42 +44,42 @@ const SortControls: React.FC<SortControlsProps> = ({
   };
 
   return (
-    <HStack spacing={2} data-testid="sort-controls">
-      <FormControl w="auto">
-        <FormLabel htmlFor="sort-by" srOnly>
+    <HStack gap={2} data-testid="sort-controls">
+      <Field.Root w="auto">
+        <Field.Label htmlFor="sort-by" srOnly>
           Sort by
-        </FormLabel>
-        <Select
-          id="sort-by"
-          value={sortBy}
-          onChange={handleFieldChange}
-          size="sm"
-          borderColor={borderColor}
-          bg={bgColor}
-          aria-label="Sort by field"
-          data-testid="sort-field-select"
-        >
-          {SORT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </Select>
-      </FormControl>
-
+        </Field.Label>
+        <NativeSelect.Root size="sm">
+          <NativeSelect.Field
+            id="sort-by"
+            value={sortBy}
+            onChange={handleFieldChange}
+            borderColor={borderColor}
+            bg={bgColor}
+            aria-label="Sort by field"
+            data-testid="sort-field-select">
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+      </Field.Root>
       <Tooltip
-        label={sortOrder === 'asc' ? 'Ascending (click for descending)' : 'Descending (click for ascending)'}
-        placement="top"
+        content={sortOrder === 'asc' ? 'Ascending (click for descending)' : 'Descending (click for ascending)'}
+        positioning={{
+          placement: "top"
+        }}
       >
         <IconButton
           aria-label={`Sort ${sortOrder === 'asc' ? 'ascending' : 'descending'}`}
-          icon={sortOrder === 'asc' ? <FaSortAmountUp /> : <FaSortAmountDown />}
           size="sm"
           variant="outline"
           onClick={handleDirectionToggle}
           borderColor={borderColor}
-          data-testid="sort-direction-button"
-        />
+          data-testid="sort-direction-button">{sortOrder === 'asc' ? <FaSortAmountUp /> : <FaSortAmountDown />}</IconButton>
       </Tooltip>
     </HStack>
   );

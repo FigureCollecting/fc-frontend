@@ -6,7 +6,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import Statistics from '../pages/Statistics';
 import * as api from '../api';
 import { StatsData } from '../types';
-import theme from '../theme';
+import system from '../theme';
 
 // Mock the API module
 jest.mock('../api');
@@ -118,7 +118,7 @@ function renderStatistics() {
   const user = userEvent.setup();
   const result = render(
     <QueryClientProvider client={queryClient}>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider value={system}>
         <MemoryRouter>
           <Statistics />
         </MemoryRouter>

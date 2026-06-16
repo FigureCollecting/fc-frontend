@@ -6,6 +6,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { useColorModeValue } from "./ui/color-mode";
 import {
   Box,
   Flex,
@@ -16,12 +17,11 @@ import {
   Button,
   IconButton,
   Badge,
-  Collapse,
+  Collapsible,
   useDisclosure,
-  useColorModeValue,
-  Tooltip,
   Icon,
 } from '@chakra-ui/react';
+import { Tooltip } from './ui/tooltip';
 import {
   FaSync,
   FaTimes,
@@ -89,7 +89,7 @@ function getPhaseStatus(phase: SyncPhase | null): {
 }
 
 const SyncStatusBanner: React.FC = () => {
-  const { isOpen: isExpanded, onToggle } = useDisclosure();
+  const { open: isExpanded, onToggle } = useDisclosure();
 
   const {
     sessionId,
@@ -233,14 +233,14 @@ const SyncStatusBanner: React.FC = () => {
         py={2}
       >
         <Flex align="center" justify="space-between">
-          <HStack spacing={3} flex={1}>
-            <Icon as={FaPlug} color="orange.500" boxSize={5} />
-            <VStack align="start" spacing={0} flex={1}>
+          <HStack gap={3} flex={1}>
+            <Icon color="orange.500" boxSize={5} asChild><FaPlug /></Icon>
+            <VStack align="start" gap={0} flex={1}>
               <HStack>
                 <Text fontWeight="bold" fontSize="sm">
                   Sync Session Found
                 </Text>
-                <Badge colorScheme="orange" fontSize="xs">
+                <Badge colorPalette="orange" fontSize="xs">
                   {orphanedSessionData.phase}
                 </Badge>
               </HStack>
@@ -250,36 +250,25 @@ const SyncStatusBanner: React.FC = () => {
             </VStack>
           </HStack>
 
-          <HStack spacing={2}>
-            <Tooltip label="Reconnect to this session to see live progress">
-              <Button
-                size="sm"
-                colorScheme="green"
-                leftIcon={<FaPlug />}
-                onClick={handleReconnect}
-              >
-                Reconnect
-              </Button>
+          <HStack gap={2}>
+            <Tooltip content="Reconnect to this session to see live progress">
+              <Button size="sm" colorPalette="green" onClick={handleReconnect}><FaPlug />Reconnect
+                              </Button>
             </Tooltip>
-            <Tooltip label="Cancel this sync session">
+            <Tooltip content="Cancel this sync session">
               <Button
                 size="sm"
                 variant="outline"
-                colorScheme="red"
-                leftIcon={<FaTimes />}
-                onClick={handleCancelOrphaned}
-              >
-                Cancel
-              </Button>
+                colorPalette="red"
+                onClick={handleCancelOrphaned}><FaTimes />Cancel
+                              </Button>
             </Tooltip>
-            <Tooltip label="Dismiss this notification">
+            <Tooltip content="Dismiss this notification">
               <IconButton
                 aria-label="Dismiss"
-                icon={<FaTimes />}
                 size="sm"
                 variant="ghost"
-                onClick={dismissOrphanedSession}
-              />
+                onClick={dismissOrphanedSession}><FaTimes /></IconButton>
             </Tooltip>
           </HStack>
         </Flex>
@@ -300,27 +289,27 @@ const SyncStatusBanner: React.FC = () => {
     >
       <Flex align="center" justify="space-between">
         {/* Left: Icon and status */}
-        <HStack spacing={3} flex={1}>
+        <HStack gap={3} flex={1}>
           <Icon
-            as={phaseStatus.icon}
             color={phaseStatus.color}
             boxSize={5}
-            className={phaseStatus.isSpinning ? 'spin' : ''}
-            sx={phaseStatus.isSpinning ? {
+            css={phaseStatus.isSpinning ? {
               animation: 'spin 1s linear infinite',
               '@keyframes spin': {
                 '0%': { transform: 'rotate(0deg)' },
                 '100%': { transform: 'rotate(360deg)' },
               },
-            } : {}}
-          />
-          <VStack align="start" spacing={0} flex={1}>
+            } : undefined}
+          >
+            <phaseStatus.icon />
+          </Icon>
+          <VStack align="start" gap={0} flex={1}>
             <HStack>
               <Text fontWeight="bold" fontSize="sm">
                 Sync with MFC
               </Text>
               <Badge
-                colorScheme={
+                colorPalette={
                   phase === 'completed' ? 'green' :
                   phase === 'failed' || phase === 'cancelled' ? 'red' :
                   'blue'
@@ -330,13 +319,13 @@ const SyncStatusBanner: React.FC = () => {
                 {getPhaseLabel(phase)}
               </Badge>
               {connectionState !== 'connected' && isActive && (
-                <Badge colorScheme="yellow" fontSize="xs">
+                <Badge colorPalette="yellow" fontSize="xs">
                   {connectionState === 'connecting' ? 'Connecting...' : 'Reconnecting...'}
                 </Badge>
               )}
             </HStack>
             {stats && stats.total > 0 && (
-              <HStack spacing={2} fontSize="xs" color="gray.600">
+              <HStack gap={2} fontSize="xs" color="gray.600">
                 {/* Per-status progress if available */}
                 {stats.byStatus ? (
                   <>
@@ -371,14 +360,17 @@ const SyncStatusBanner: React.FC = () => {
         {/* Center: Progress bar (only for active sync with items) */}
         {isActive && stats && stats.total > 0 && (
           <Box flex={1} mx={4} maxW="300px">
-            <Progress
+            <Progress.Root
               value={progressPercent}
               size="sm"
-              colorScheme={phase === 'enriching' ? 'green' : 'blue'}
+              colorPalette={phase === 'enriching' ? 'green' : 'blue'}
               borderRadius="full"
-              hasStripe
-              isAnimated={isActive}
-            />
+              striped
+              animated={isActive}>
+              <Progress.Track>
+                <Progress.Range />
+              </Progress.Track>
+            </Progress.Root>
             <Text fontSize="xs" textAlign="center" color="gray.500" mt={1}>
               {progressPercent}%
             </Text>
@@ -386,164 +378,136 @@ const SyncStatusBanner: React.FC = () => {
         )}
 
         {/* Right: Actions */}
-        <HStack spacing={2}>
+        <HStack gap={2}>
           {/* Expand/collapse details */}
           {(failedItems.length > 0 || (stats && stats.total > 0)) && (
-            <Tooltip label={isExpanded ? 'Hide details' : 'Show details'}>
-              <IconButton
-                aria-label="Toggle details"
-                icon={isExpanded ? <FaChevronUp /> : <FaChevronDown />}
-                size="sm"
-                variant="ghost"
-                onClick={onToggle}
-              />
+            <Tooltip content={isExpanded ? 'Hide details' : 'Show details'}>
+              <IconButton aria-label="Toggle details" size="sm" variant="ghost" onClick={onToggle}>{isExpanded ? <FaChevronUp /> : <FaChevronDown />}</IconButton>
             </Tooltip>
           )}
 
           {/* Resume button (when paused) */}
           {isActive && isPaused && (
-            <Tooltip label="Resume sync after fixing issues">
-              <Button
-                size="sm"
-                variant="solid"
-                colorScheme="green"
-                leftIcon={<FaPlay />}
-                onClick={handleResume}
-              >
-                Resume
-              </Button>
+            <Tooltip content="Resume sync after fixing issues">
+              <Button size="sm" variant="solid" colorPalette="green" onClick={handleResume}><FaPlay />Resume
+                              </Button>
             </Tooltip>
           )}
 
           {/* Skip failed button (when there are failed items) */}
           {isActive && stats && stats.failed > 0 && (
-            <Tooltip label="Skip failed items and continue with remaining">
+            <Tooltip content="Skip failed items and continue with remaining">
               <Button
                 size="sm"
                 variant="outline"
-                colorScheme="orange"
-                leftIcon={<FaForward />}
-                onClick={handleSkipFailed}
-              >
-                Skip Failed
-              </Button>
+                colorPalette="orange"
+                onClick={handleSkipFailed}><FaForward />Skip Failed
+                              </Button>
             </Tooltip>
           )}
 
           {/* Cancel button (only for active sync) */}
           {isActive && (
-            <Button
-              size="sm"
-              variant="outline"
-              colorScheme="red"
-              leftIcon={<FaTimes />}
-              onClick={handleCancel}
-            >
-              Abort
-            </Button>
+            <Button size="sm" variant="outline" colorPalette="red" onClick={handleCancel}><FaTimes />Abort
+                          </Button>
           )}
 
           {/* Dismiss button (for completed/failed/cancelled) */}
           {!isActive && (
-            <Tooltip label="Dismiss">
-              <IconButton
-                aria-label="Dismiss"
-                icon={<FaTimes />}
-                size="sm"
-                variant="ghost"
-                onClick={handleDismiss}
-              />
+            <Tooltip content="Dismiss">
+              <IconButton aria-label="Dismiss" size="sm" variant="ghost" onClick={handleDismiss}><FaTimes /></IconButton>
             </Tooltip>
           )}
         </HStack>
       </Flex>
-
       {/* Expandable details section */}
-      <Collapse in={isExpanded}>
-        <Box mt={3} pt={3} borderTop="1px" borderColor={currentBorderColor}>
-          {/* Per-status breakdown */}
-          {stats?.byStatus && (
-            <HStack spacing={6} wrap="wrap" mb={3}>
-              <VStack align="start" spacing={0}>
-                <Text fontSize="xs" color="green.600" fontWeight="semibold">Owned</Text>
-                <Text fontWeight="bold">
-                  {stats.byStatus.owned.completed}/{stats.byStatus.owned.queued}
-                  {stats.byStatus.owned.failed > 0 && (
-                    <Text as="span" color="red.500" fontSize="xs"> ({stats.byStatus.owned.failed} failed)</Text>
-                  )}
-                </Text>
+      <Collapsible.Root open={isExpanded}>
+        <Collapsible.Content>
+          <Box mt={3} pt={3} borderTop="1px" borderColor={currentBorderColor}>
+            {/* Per-status breakdown */}
+            {stats?.byStatus && (
+              <HStack gap={6} wrap="wrap" mb={3}>
+                <VStack align="start" gap={0}>
+                  <Text fontSize="xs" color="green.600" fontWeight="semibold">Owned</Text>
+                  <Text fontWeight="bold">
+                    {stats.byStatus.owned.completed}/{stats.byStatus.owned.queued}
+                    {stats.byStatus.owned.failed > 0 && (
+                      <Text as="span" color="red.500" fontSize="xs"> ({stats.byStatus.owned.failed} failed)</Text>
+                    )}
+                  </Text>
+                </VStack>
+                <VStack align="start" gap={0}>
+                  <Text fontSize="xs" color="blue.600" fontWeight="semibold">Ordered</Text>
+                  <Text fontWeight="bold">
+                    {stats.byStatus.ordered.completed}/{stats.byStatus.ordered.queued}
+                    {stats.byStatus.ordered.failed > 0 && (
+                      <Text as="span" color="red.500" fontSize="xs"> ({stats.byStatus.ordered.failed} failed)</Text>
+                    )}
+                  </Text>
+                </VStack>
+                <VStack align="start" gap={0}>
+                  <Text fontSize="xs" color="purple.600" fontWeight="semibold">Wished</Text>
+                  <Text fontWeight="bold">
+                    {stats.byStatus.wished.completed}/{stats.byStatus.wished.queued}
+                    {stats.byStatus.wished.failed > 0 && (
+                      <Text as="span" color="red.500" fontSize="xs"> ({stats.byStatus.wished.failed} failed)</Text>
+                    )}
+                  </Text>
+                </VStack>
+              </HStack>
+            )}
+            {/* Overall stats */}
+            <HStack gap={6} wrap="wrap">
+              <VStack align="start" gap={0}>
+                <Text fontSize="xs" color="gray.500">Pending</Text>
+                <Text fontWeight="bold">{stats?.pending || 0}</Text>
               </VStack>
-              <VStack align="start" spacing={0}>
-                <Text fontSize="xs" color="blue.600" fontWeight="semibold">Ordered</Text>
-                <Text fontWeight="bold">
-                  {stats.byStatus.ordered.completed}/{stats.byStatus.ordered.queued}
-                  {stats.byStatus.ordered.failed > 0 && (
-                    <Text as="span" color="red.500" fontSize="xs"> ({stats.byStatus.ordered.failed} failed)</Text>
-                  )}
-                </Text>
+              <VStack align="start" gap={0}>
+                <Text fontSize="xs" color="gray.500">Processing</Text>
+                <Text fontWeight="bold" color="blue.500">{stats?.processing || 0}</Text>
               </VStack>
-              <VStack align="start" spacing={0}>
-                <Text fontSize="xs" color="purple.600" fontWeight="semibold">Wished</Text>
-                <Text fontWeight="bold">
-                  {stats.byStatus.wished.completed}/{stats.byStatus.wished.queued}
-                  {stats.byStatus.wished.failed > 0 && (
-                    <Text as="span" color="red.500" fontSize="xs"> ({stats.byStatus.wished.failed} failed)</Text>
-                  )}
-                </Text>
+              <VStack align="start" gap={0}>
+                <Text fontSize="xs" color="gray.500">Completed</Text>
+                <Text fontWeight="bold" color="green.500">{stats?.completed || 0}</Text>
+              </VStack>
+              <VStack align="start" gap={0}>
+                <Text fontSize="xs" color="gray.500">Failed</Text>
+                <Text fontWeight="bold" color="red.500">{stats?.failed || 0}</Text>
+              </VStack>
+              <VStack align="start" gap={0}>
+                <Text fontSize="xs" color="gray.500">Skipped</Text>
+                <Text fontWeight="bold" color="gray.500">{stats?.skipped || 0}</Text>
               </VStack>
             </HStack>
-          )}
-          {/* Overall stats */}
-          <HStack spacing={6} wrap="wrap">
-            <VStack align="start" spacing={0}>
-              <Text fontSize="xs" color="gray.500">Pending</Text>
-              <Text fontWeight="bold">{stats?.pending || 0}</Text>
-            </VStack>
-            <VStack align="start" spacing={0}>
-              <Text fontSize="xs" color="gray.500">Processing</Text>
-              <Text fontWeight="bold" color="blue.500">{stats?.processing || 0}</Text>
-            </VStack>
-            <VStack align="start" spacing={0}>
-              <Text fontSize="xs" color="gray.500">Completed</Text>
-              <Text fontWeight="bold" color="green.500">{stats?.completed || 0}</Text>
-            </VStack>
-            <VStack align="start" spacing={0}>
-              <Text fontSize="xs" color="gray.500">Failed</Text>
-              <Text fontWeight="bold" color="red.500">{stats?.failed || 0}</Text>
-            </VStack>
-            <VStack align="start" spacing={0}>
-              <Text fontSize="xs" color="gray.500">Skipped</Text>
-              <Text fontWeight="bold" color="gray.500">{stats?.skipped || 0}</Text>
-            </VStack>
-          </HStack>
 
-          {/* Failed items list */}
-          {failedItems.length > 0 && (
-            <Box mt={3}>
-              <Text fontSize="xs" color="red.500" fontWeight="bold" mb={1}>
-                Failed Items ({failedItems.length}):
-              </Text>
-              <Box maxH="100px" overflowY="auto" fontSize="xs" color="gray.600">
-                {failedItems.slice(0, 10).map((item, idx) => (
-                  <Text key={idx}>
-                    MFC#{item.mfcId}: {item.error || 'Unknown error'}
-                  </Text>
-                ))}
-                {failedItems.length > 10 && (
-                  <Text fontStyle="italic">...and {failedItems.length - 10} more</Text>
-                )}
+            {/* Failed items list */}
+            {failedItems.length > 0 && (
+              <Box mt={3}>
+                <Text fontSize="xs" color="red.500" fontWeight="bold" mb={1}>
+                  Failed Items ({failedItems.length}):
+                </Text>
+                <Box maxH="100px" overflowY="auto" fontSize="xs" color="gray.600">
+                  {failedItems.slice(0, 10).map((item, idx) => (
+                    <Text key={idx}>
+                      MFC#{item.mfcId}: {item.error || 'Unknown error'}
+                    </Text>
+                  ))}
+                  {failedItems.length > 10 && (
+                    <Text fontStyle="italic">...and {failedItems.length - 10} more</Text>
+                  )}
+                </Box>
               </Box>
-            </Box>
-          )}
+            )}
 
-          {/* Message */}
-          {message && (
-            <Text fontSize="xs" color="gray.500" mt={2}>
-              {message}
-            </Text>
-          )}
-        </Box>
-      </Collapse>
+            {/* Message */}
+            {message && (
+              <Text fontSize="xs" color="gray.500" mt={2}>
+                {message}
+              </Text>
+            )}
+          </Box>
+        </Collapsible.Content>
+      </Collapsible.Root>
     </Box>
   );
 };

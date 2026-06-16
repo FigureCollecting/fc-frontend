@@ -1,10 +1,12 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import { MemoryRouter } from 'react-router-dom';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { HelmetProvider } from 'react-helmet-async';
+import { ColorModeProvider } from './components/ui/color-mode';
+import system from './theme';
 
 // Mock QueryClient and Provider for testing
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -36,29 +38,17 @@ const AllProviders = ({ children, initialRoutes = ['/'] }: {
 }) => {
   // Ensure emotion cache is unique for testing
   const emotionCache = createCache({ key: 'custom' });
-// Removed extractCritical
-
-
-  // Create theme with proper breakpoints for testing
-  const testTheme = extendTheme({
-    breakpoints: {
-      base: '0px',
-      sm: '320px', 
-      md: '768px',
-      lg: '960px',
-      xl: '1200px',
-      '2xl': '1536px',
-    }
-  });
 
   return (
     <HelmetProvider>
       <CacheProvider value={emotionCache}>
         <MockQueryClientProvider>
-          <ChakraProvider theme={testTheme}>
-            <MemoryRouter initialEntries={initialRoutes}>
-              {children}
-            </MemoryRouter>
+          <ChakraProvider value={system}>
+            <ColorModeProvider>
+              <MemoryRouter initialEntries={initialRoutes}>
+                {children}
+              </MemoryRouter>
+            </ColorModeProvider>
           </ChakraProvider>
         </MockQueryClientProvider>
       </CacheProvider>

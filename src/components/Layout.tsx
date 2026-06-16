@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { useColorModeValue } from "./ui/color-mode";
 import { Outlet } from 'react-router-dom';
-import { Box, Container, Text, Flex, Popover, PopoverTrigger, PopoverContent, PopoverBody, VStack, Badge, HStack, useColorModeValue } from '@chakra-ui/react';
+import { Box,
+  Container,
+  Text,
+  Flex,
+  Popover,
+  HoverCard,
+  VStack,
+  Badge,
+  HStack,
+} from '@chakra-ui/react';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import SyncStatusBanner from './SyncStatusBanner';
@@ -58,13 +68,10 @@ const Layout: React.FC = () => {
       <Box data-testid="navbar" flexShrink={0}>
         <Navbar />
       </Box>
-
       {/* Email verification banner - appears for unverified users */}
       <EmailVerificationBanner />
-
       {/* Sync status banner - appears when sync is active or just completed */}
       <SyncStatusBanner />
-
       <Box flex="1" overflowY="auto">
         <Container maxW={{ base: "100%", xl: "95%" }} pt={2} pb={2} minHeight="100%">
           <Box display="flex" gap={5} minHeight="100%">
@@ -77,49 +84,53 @@ const Layout: React.FC = () => {
           </Box>
         </Container>
       </Box>
-
       {/* Footer with version info */}
       <Box data-testid="footer" role="contentinfo" as="footer" py={4} borderTop="1px" borderColor={footerBorder} bg={footerBg} flexShrink={0}>
         <Container maxW="container.xl">
           <Flex justify="flex-end" align="center">
             {versionInfo && (
-              <Popover trigger="hover" placement="top-end">
-                <PopoverTrigger>
+              <HoverCard.Root
+                positioning={{
+                  placement: 'top-end'
+                }}>
+                <HoverCard.Trigger asChild>
                   <Text fontSize="xs" color={footerText} cursor="pointer" _hover={{ color: footerTextHover }}>
                     FigureCollecting
                   </Text>
-                </PopoverTrigger>
-                <PopoverContent width="auto" maxW="400px">
-                  <PopoverBody>
-                    <VStack align="start" spacing={2}>
-                      <Text fontWeight="semibold" fontSize="sm">Service Versions</Text>
-                      <VStack align="start" spacing={1} fontSize="xs">
-                        <HStack>
-                          <Text minW="70px">Frontend:</Text>
-                          <Badge colorScheme={versionInfo.services?.frontend?.status === 'healthy' ? 'green' : 'red'} size="sm">
-                            v{versionInfo.services?.frontend?.version || 'unknown'}
-                          </Badge>
-                          <Text color="gray.500">({versionInfo.services?.frontend?.status || 'unknown'})</Text>
-                        </HStack>
-                        <HStack>
-                          <Text minW="70px">Backend:</Text>
-                          <Badge colorScheme={versionInfo.services?.backend?.status === 'healthy' ? 'green' : 'red'} size="sm">
-                            v{versionInfo.services?.backend?.version || 'unknown'}
-                          </Badge>
-                          <Text color="gray.500">({versionInfo.services?.backend?.status || 'unknown'})</Text>
-                        </HStack>
-                        <HStack>
-                          <Text minW="70px">Scraper:</Text>
-                          <Badge colorScheme={versionInfo.services?.scraper?.status === 'healthy' ? 'green' : versionInfo.services?.scraper?.status === 'unavailable' ? 'gray' : 'red'} size="sm">
-                            v{versionInfo.services?.scraper?.version || 'unknown'}
-                          </Badge>
-                          <Text color="gray.500">({versionInfo.services?.scraper?.status || 'unknown'})</Text>
-                        </HStack>
+                </HoverCard.Trigger>
+                <HoverCard.Positioner>
+                  <HoverCard.Content width="auto" maxW="400px">
+                    <Box p={4}>
+                      <VStack align="start" gap={2}>
+                        <Text fontWeight="semibold" fontSize="sm">Service Versions</Text>
+                        <VStack align="start" gap={1} fontSize="xs">
+                          <HStack>
+                            <Text minW="70px">Frontend:</Text>
+                            <Badge colorPalette={versionInfo.services?.frontend?.status === 'healthy' ? 'green' : 'red'} size="sm">
+                              v{versionInfo.services?.frontend?.version || 'unknown'}
+                            </Badge>
+                            <Text color="gray.500">({versionInfo.services?.frontend?.status || 'unknown'})</Text>
+                          </HStack>
+                          <HStack>
+                            <Text minW="70px">Backend:</Text>
+                            <Badge colorPalette={versionInfo.services?.backend?.status === 'healthy' ? 'green' : 'red'} size="sm">
+                              v{versionInfo.services?.backend?.version || 'unknown'}
+                            </Badge>
+                            <Text color="gray.500">({versionInfo.services?.backend?.status || 'unknown'})</Text>
+                          </HStack>
+                          <HStack>
+                            <Text minW="70px">Scraper:</Text>
+                            <Badge colorPalette={versionInfo.services?.scraper?.status === 'healthy' ? 'green' : versionInfo.services?.scraper?.status === 'unavailable' ? 'gray' : 'red'} size="sm">
+                              v{versionInfo.services?.scraper?.version || 'unknown'}
+                            </Badge>
+                            <Text color="gray.500">({versionInfo.services?.scraper?.status || 'unknown'})</Text>
+                          </HStack>
+                        </VStack>
                       </VStack>
-                    </VStack>
-                  </PopoverBody>
-                </PopoverContent>
-              </Popover>
+                    </Box>
+                  </HoverCard.Content>
+                </HoverCard.Positioner>
+              </HoverCard.Root>
             )}
           </Flex>
         </Container>

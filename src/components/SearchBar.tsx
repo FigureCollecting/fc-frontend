@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useColorModeValue } from "./ui/color-mode";
 import { useNavigate } from 'react-router-dom';
 import {
   InputGroup,
   Input,
-  InputRightElement,
   IconButton,
   Box,
-  useColorModeValue,
   VStack,
   Text,
   Spinner,
@@ -39,18 +38,16 @@ const HighlightMatch: React.FC<{ text: string; query: string; highlightColor: st
         const isMatch = terms.some(term => part.toLowerCase() === term);
         return isMatch ? (
           <Box
-            key={index}
-            as="mark"
             display="inline"
             px={0.5}
             borderRadius="sm"
-            sx={{
+            css={{
               background: `${highlightColor} !important`,
-              color: 'inherit',
+              color: 'inherit'
             }}
-          >
-            {part}
-          </Box>
+            asChild><mark key={index}>
+              {part}
+            </mark></Box>
         ) : (
           <React.Fragment key={index}>{part}</React.Fragment>
         );
@@ -152,41 +149,36 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <Box position="relative" width="100%">
-      <Box as="form" onSubmit={handleSubmit} width="100%">
-        <InputGroup size="lg">
-          <Input
-            ref={inputRef}
-            type="search"
-            role="combobox"
-            aria-label="Search your figures"
-            aria-expanded={isOpen}
-            aria-autocomplete="list"
-            aria-controls="search-suggestions"
-            placeholder={placeholder}
-            value={query}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onFocus={() => {
-              if (query.length >= 3 && suggestions && suggestions.length > 0) {
-                setIsOpen(true);
-              }
-            }}
-            bg={inputBg}
-            boxShadow="sm"
-            borderRadius="lg"
-          />
-          <InputRightElement>
-            <IconButton
-              aria-label="Search"
-              icon={<FaSearch />}
-              size="sm"
-              colorScheme="brand"
-              type="submit"
+      <Box width="100%" asChild><form onSubmit={handleSubmit}>
+          <InputGroup
+            endElement={
+              <IconButton aria-label="Search" size="sm" colorPalette="brand" type="submit"><FaSearch /></IconButton>
+            }
+          >
+            <Input
+              ref={inputRef}
+              size="lg"
+              type="search"
+              role="combobox"
+              aria-label="Search your figures"
+              aria-expanded={isOpen}
+              aria-autocomplete="list"
+              aria-controls="search-suggestions"
+              placeholder={placeholder}
+              value={query}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => {
+                if (query.length >= 3 && suggestions && suggestions.length > 0) {
+                  setIsOpen(true);
+                }
+              }}
+              bg={inputBg}
+              boxShadow="sm"
+              borderRadius="lg"
             />
-          </InputRightElement>
-        </InputGroup>
-      </Box>
-
+          </InputGroup>
+        </form></Box>
       {/* Suggestions Dropdown */}
       {isOpen && (
         <Portal>
@@ -215,7 +207,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 </Text>
               </Box>
             ) : suggestions && suggestions.length > 0 ? (
-              <VStack align="stretch" spacing={0} py={1}>
+              <VStack align="stretch" gap={0} py={1}>
                 {suggestions.slice(0, 8).map((result) => (
                   <Box
                     key={result.id}
@@ -226,10 +218,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     _hover={{ bg: hoverBg }}
                     onClick={() => handleSuggestionClick(result.id)}
                   >
-                    <Text fontWeight="medium" fontSize="sm" noOfLines={1}>
+                    <Text fontWeight="medium" fontSize="sm" lineClamp={1}>
                       <HighlightMatch text={result.name} query={query} highlightColor={highlightColor} />
                     </Text>
-                    <Text fontSize="xs" color="gray.500" noOfLines={1}>
+                    <Text fontSize="xs" color="gray.500" lineClamp={1}>
                       <HighlightMatch text={result.manufacturer || ''} query={query} highlightColor={highlightColor} /> • <HighlightMatch text={result.scale || ''} query={query} highlightColor={highlightColor} />
                       {result.searchScore !== undefined && <Text as="span" color="gray.400" ml={2}>({result.searchScore.toFixed(2)})</Text>}
                     </Text>

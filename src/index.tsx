@@ -2,10 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { ChakraProvider } from '@chakra-ui/react';
 import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
-import theme from './theme';
+import { Provider } from './components/ui/provider';
+import { Toaster } from './components/ui/toaster';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -24,9 +24,10 @@ root.render(
     <HelmetProvider>
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
-          <ChakraProvider theme={theme}>
+          <Provider defaultTheme="light">
             <App />
-          </ChakraProvider>
+            <Toaster />
+          </Provider>
         </QueryClientProvider>
       </BrowserRouter>
     </HelmetProvider>

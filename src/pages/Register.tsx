@@ -1,23 +1,21 @@
 import React from 'react';
+import { useColorModeValue } from "../components/ui/color-mode";
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useMutation } from 'react-query';
-import {
-  Box,
+import { Box,
   Button,
-  FormControl,
-  FormLabel,
   Input,
-  FormErrorMessage,
   Heading,
   Text,
   Flex,
   Link,
   Icon,
+  IconButton,
   InputGroup,
-  InputRightElement,
-  useToast,
-useColorModeValue, } from '@chakra-ui/react';
+  Field,
+} from '@chakra-ui/react';
+import { toaster } from '../components/ui/toaster';
 import { useForm } from 'react-hook-form';
 import { FaEye, FaEyeSlash, FaCube } from 'react-icons/fa';
 import { registerUser } from '../api';
@@ -39,8 +37,7 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const { setUser } = useAuthStore();
   const navigate = useNavigate();
-  const toast = useToast();
-  
+
   const {
     register,
     handleSubmit,
@@ -62,22 +59,22 @@ const Register: React.FC = () => {
     {
       onSuccess: (userData) => {
         setUser(userData);
-        toast({
+        toaster.create({
           title: 'Account created!',
           description: 'Check your email to verify your account.',
-          status: 'success',
+          type: 'success',
           duration: 8000,
-          isClosable: true,
+          closable: true,
         });
         navigate('/');
       },
       onError: (error: any) => {
-        toast({
+        toaster.create({
           title: 'Error',
           description: error.response?.data?.message || 'Registration failed',
-          status: 'error',
+          type: 'error',
           duration: 5000,
-          isClosable: true,
+          closable: true,
         });
       },
     }
@@ -102,137 +99,138 @@ const Register: React.FC = () => {
 
   return (
     <>
-    <Helmet>
-      <title>Create Account — FigureCollecting</title>
-      <meta name="description" content="Create your free FigureCollecting account. Catalog your anime figures, sync your MyFigureCollection data, and organize your collection with powerful tools." />
-      <link rel="canonical" href="https://figurecollecting.com/register" />
-    </Helmet>
-    <Flex minH="100vh" align="center" justify="center" bg={pageBg}>
-      <Box
-        data-testid="auth-card"
-        bg={cardBg}
-        p={8}
-        rounded="lg"
-        shadow="lg"
-        maxW="md"
-        w="full"
-      >
-        <Flex direction="column" align="center" mb={8}>
-          <Icon as={FaCube} boxSize={12} color="brand.500" mb={2} />
-          <Heading size="xl" textAlign="center" color={headingColor}>
-            FigureCollecting
-          </Heading>
-          <Text color={textColor} mt={2}>
-            Create an account to start your collection
-          </Text>
-          <Text fontSize="xs" color="gray.500" mt={2} textAlign="center">
-            Uses data from MyFigureCollection.net. Not affiliated with MFC.
-          </Text>
-        </Flex>
-        
-        <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-          <FormControl isInvalid={!!errors.username} mb={4}>
-            <FormLabel>Username</FormLabel>
-            <Input
-              placeholder="Choose a username"
-              size="lg"
-              autoComplete="username"
-              {...register('username', {
-                required: 'Username is required',
-                minLength: {
-                  value: 3,
-                  message: 'Username must be at least 3 characters',
-                },
-              })}
-            />
-            <FormErrorMessage>{errors.username?.message}</FormErrorMessage>
-          </FormControl>
+      <Helmet>
+        <title>Create Account — FigureCollecting</title>
+        <meta name="description" content="Create your free FigureCollecting account. Catalog your anime figures, sync your MyFigureCollection data, and organize your collection with powerful tools." />
+        <link rel="canonical" href="https://figurecollecting.com/register" />
+      </Helmet>
+      <Flex minH="100vh" align="center" justify="center" bg={pageBg}>
+        <Box
+          data-testid="auth-card"
+          bg={cardBg}
+          p={8}
+          rounded="lg"
+          shadow="lg"
+          maxW="md"
+          w="full"
+        >
+          <Flex direction="column" align="center" mb={8}>
+            <Icon as={FaCube} boxSize={12} color="brand.500" mb={2} />
+            <Heading size="xl" textAlign="center" color={headingColor}>
+              FigureCollecting
+            </Heading>
+            <Text color={textColor} mt={2}>
+              Create an account to start your collection
+            </Text>
+            <Text fontSize="xs" color="gray.500" mt={2} textAlign="center">
+              Uses data from MyFigureCollection.net. Not affiliated with MFC.
+            </Text>
+          </Flex>
           
-          <FormControl isInvalid={!!errors.email} mb={4}>
-            <FormLabel>Email</FormLabel>
-            <Input
-              type="email"
-              placeholder="Your email address"
-              size="lg"
-              autoComplete="email"
-              {...register('email', {
-                required: 'Email is required',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address',
-                },
-              })}
-            />
-            <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
-          </FormControl>
-          
-          <FormControl isInvalid={!!errors.password} mb={4}>
-            <FormLabel>Password</FormLabel>
-            <InputGroup>
+          <Box as="form" onSubmit={handleSubmit(onSubmit)}>
+            <Field.Root invalid={!!errors.username} mb={4}>
+              <Field.Label>Username</Field.Label>
               <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Create a password"
+                placeholder="Choose a username"
                 size="lg"
-                autoComplete="new-password"
-                {...register('password', {
-                  required: 'Password is required',
+                autoComplete="username"
+                {...register('username', {
+                  required: 'Username is required',
                   minLength: {
-                    value: 6,
-                    message: 'Password must be at least 6 characters',
+                    value: 3,
+                    message: 'Username must be at least 3 characters',
                   },
                 })}
               />
-              <InputRightElement h="full">
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  <Icon
-                    as={showPassword ? FaEyeSlash : FaEye}
-                    color={linkColor}
-                  />
-                </Button>
-              </InputRightElement>
-            </InputGroup>
-            <FormErrorMessage>{errors.password?.message}</FormErrorMessage>
-          </FormControl>
-          
-          <FormControl isInvalid={!!errors.confirmPassword} mb={6}>
-            <FormLabel>Confirm Password</FormLabel>
-            <Input
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Confirm your password"
+              <Field.ErrorText>{errors.username?.message}</Field.ErrorText>
+            </Field.Root>
+            
+            <Field.Root invalid={!!errors.email} mb={4}>
+              <Field.Label>Email</Field.Label>
+              <Input
+                type="email"
+                placeholder="Your email address"
+                size="lg"
+                autoComplete="email"
+                {...register('email', {
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email address',
+                  },
+                })}
+              />
+              <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
+            </Field.Root>
+            
+            <Field.Root invalid={!!errors.password} mb={4}>
+              <Field.Label>Password</Field.Label>
+              <InputGroup
+                endElement={
+                  <IconButton
+                    variant="ghost"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <Icon
+                      as={showPassword ? FaEyeSlash : FaEye}
+                      color={linkColor}
+                    />
+                  </IconButton>
+                }
+              >
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a password"
+                  size="lg"
+                  autoComplete="new-password"
+                  {...register('password', {
+                    required: 'Password is required',
+                    minLength: {
+                      value: 6,
+                      message: 'Password must be at least 6 characters',
+                    },
+                  })}
+                />
+              </InputGroup>
+              <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
+            </Field.Root>
+            
+            <Field.Root invalid={!!errors.confirmPassword} mb={6}>
+              <Field.Label>Confirm Password</Field.Label>
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Confirm your password"
+                size="lg"
+                autoComplete="new-password"
+                {...register('confirmPassword', {
+                  required: 'Please confirm your password',
+                  validate: (value) => value === password || 'Passwords do not match',
+                })}
+              />
+              <Field.ErrorText>{errors.confirmPassword?.message}</Field.ErrorText>
+            </Field.Root>
+            
+            <Button
+              type="submit"
+              colorPalette="brand"
               size="lg"
-              autoComplete="new-password"
-              {...register('confirmPassword', {
-                required: 'Please confirm your password',
-                validate: (value) => value === password || 'Passwords do not match',
-              })}
-            />
-            <FormErrorMessage>{errors.confirmPassword?.message}</FormErrorMessage>
-          </FormControl>
-          
-          <Button
-            type="submit"
-            colorScheme="brand"
-            size="lg"
-            width="full"
-            isLoading={mutation.isLoading}
-            mb={4}
-          >
-            Create Account
-          </Button>
-          
-          <Text textAlign="center">
-            Already have an account?{' '}
-            <Link as={RouterLink} to="/login" color="brand.500">
-              Sign In
-            </Link>
-          </Text>
+              width="full"
+              loading={mutation.isLoading}
+              mb={4}
+            >
+              Create Account
+            </Button>
+            
+            <Text textAlign="center">
+              Already have an account?{' '}
+              <Link asChild color="brand.500">
+                <RouterLink to="/login">Sign In</RouterLink>
+              </Link>
+            </Text>
+          </Box>
         </Box>
-      </Box>
-    </Flex>
+      </Flex>
     </>
   );
 };
