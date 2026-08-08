@@ -19,7 +19,7 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get clean
 
 # Install Node.js 24 using official binaries (avoids package manager CVEs)
-RUN NODE_VERSION=v24.16.0 \
+RUN NODE_VERSION=v24.18.1 \
     && curl -fsSLO https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz \
     && tar -xJf node-${NODE_VERSION}-linux-x64.tar.xz -C /usr/local --strip-components=1 \
     && rm node-${NODE_VERSION}-linux-x64.tar.xz
@@ -134,7 +134,7 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get clean
 
 # Install Node.js for health check
-RUN NODE_VERSION=v24.16.0 \
+RUN NODE_VERSION=v24.18.1 \
     && curl -fsSLO https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz \
     && tar -xJf node-${NODE_VERSION}-linux-x64.tar.xz -C /usr/local --strip-components=1 \
     && rm node-${NODE_VERSION}-linux-x64.tar.xz
