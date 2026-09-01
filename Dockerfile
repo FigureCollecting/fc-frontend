@@ -2,12 +2,12 @@
 # Supports: base, development, test, builder, production stages
 
 # ============================================================================
-# BASE STAGE - Ubuntu 24.04 with Node.js and security patches
+# BASE STAGE - Ubuntu 26.04 with Node.js and security patches
 # ============================================================================
-FROM ubuntu:24.04 as base
+FROM ubuntu:26.04 AS base
 
 # Cache-bust ARG to invalidate Docker layers when security patches are needed
-ARG CACHE_BUST=2026-02-12-npm-11.10-openssl-glibc-patches
+ARG CACHE_BUST=2026-09-01-ubuntu2604-node26.8.1-npm11
 
 # Update all packages for latest security patches (openssl, glibc, gnupg)
 RUN apt-get update && apt-get upgrade -y \
@@ -15,24 +15,29 @@ RUN apt-get update && apt-get upgrade -y \
     curl \
     xz-utils \
     ca-certificates \
+    libatomic1 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Install Node.js 24 using official binaries (avoids package manager CVEs)
-RUN NODE_VERSION=v24.18.1 \
+# Remove pebble: unpackaged Go binary shipped in the ubuntu:26.04 base image (flags Go stdlib CVEs, unused)
+RUN rm -f /usr/bin/pebble
+
+# Install Node.js 26 using official binaries (avoids package manager CVEs)
+RUN NODE_VERSION=v26.8.1 \
     && curl -fsSLO https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz \
     && tar -xJf node-${NODE_VERSION}-linux-x64.tar.xz -C /usr/local --strip-components=1 \
     && rm node-${NODE_VERSION}-linux-x64.tar.xz
 
-# Upgrade npm to latest to fix bundled dependency vulnerabilities (tar, brace-expansion)
-RUN npm install -g npm@latest && npm cache clean --force
+# Pin npm@11.19.1 exactly: bundles tar 7.5.22 (GHSA-r292-9mhp-454m fixed >=7.5.21);
+# node's own bundled npm 11.19.0 and npm@12/latest ship vulnerable tar <=7.5.20
+RUN npm install -g npm@11.19.1 && npm cache clean --force
 
 WORKDIR /app
 
 # ============================================================================
 # DEVELOPMENT STAGE - For local development with hot reload
 # ============================================================================
-FROM base as development
+FROM base AS development
 
 # Copy package files
 COPY package*.json ./
@@ -60,7 +65,7 @@ CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "5081"]
 # ============================================================================
 # TEST STAGE - For running tests in CI/CD
 # ============================================================================
-FROM base as test
+FROM base AS test
 
 # Install bash for test scripts
 RUN apt-get update && apt-get install -y bash \
@@ -85,7 +90,7 @@ CMD ["npm", "test", "--", "--watchAll=false", "--coverage"]
 # ============================================================================
 # BUILDER STAGE - Build optimized production bundle
 # ============================================================================
-FROM base as builder
+FROM base AS builder
 
 # Copy package files
 COPY package*.json ./
@@ -108,10 +113,10 @@ RUN npm run build
 # ============================================================================
 # PRODUCTION STAGE - Nginx server with built React app
 # ============================================================================
-FROM ubuntu:24.04 as production
+FROM ubuntu:26.04 AS production
 
 # Cache-bust ARG for production stage security patches
-ARG CACHE_BUST=2026-02-12-npm-11.10-openssl-glibc-patches
+ARG CACHE_BUST=2026-09-01-ubuntu2604-node26.8.1-npm11
 
 # Build arguments for OCI labels
 ARG GITHUB_ORG=FigureCollecting
@@ -128,19 +133,24 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y \
     nginx \
     gettext-base \
+    libatomic1 \
     curl \
     xz-utils \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+# Remove pebble: unpackaged Go binary shipped in the ubuntu:26.04 base image (flags Go stdlib CVEs, unused)
+RUN rm -f /usr/bin/pebble
+
 # Install Node.js for health check
-RUN NODE_VERSION=v24.18.1 \
+RUN NODE_VERSION=v26.8.1 \
     && curl -fsSLO https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz \
     && tar -xJf node-${NODE_VERSION}-linux-x64.tar.xz -C /usr/local --strip-components=1 \
     && rm node-${NODE_VERSION}-linux-x64.tar.xz
 
-# Upgrade npm to latest to fix bundled dependency vulnerabilities (tar, brace-expansion)
-RUN npm install -g npm@latest && npm cache clean --force
+# Pin npm@11.19.1 exactly: bundles tar 7.5.22 (GHSA-r292-9mhp-454m fixed >=7.5.21);
+# node's own bundled npm 11.19.0 and npm@12/latest ship vulnerable tar <=7.5.20
+RUN npm install -g npm@11.19.1 && npm cache clean --force
 
 # Create nginx user and set up directories
 RUN useradd --system --no-create-home --shell /bin/false nginx \
