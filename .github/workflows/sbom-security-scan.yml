@@ -33,7 +33,7 @@ jobs:
     steps:
       # Checkout to access .grype.yaml configuration
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Log in to registry to pull images for scanning
       - name: Log in to GitHub Container Registry
