@@ -81,7 +81,7 @@ function renderListDetail(listId = 'list1') {
   const result = render(
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={system}>
-        <MemoryRouter initialEntries={[`/lists/${listId}`]}>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={[`/lists/${listId}`]}>
           <Routes>
             <Route path="/lists/:id" element={<ListDetail />} />
           </Routes>
