@@ -2,16 +2,16 @@ import React from 'react';
 import { render, screen, fireEvent, userEvent } from '../../test-utils';
 import EmptyState from '../EmptyState';
 
-// Mock window.location.href
-delete (window as any).location;
-(window as any).location = { href: '' };
+// Mock the navigation boundary (jsdom >= 21 makes window.location unforgeable)
+jest.mock('../../utils/navigation', () => ({
+  redirectTo: jest.fn(),
+  reloadPage: jest.fn(),
+}));
+import { redirectTo } from '../../utils/navigation';
+
+const mockedRedirectTo = jest.mocked(redirectTo);
 
 describe('EmptyState', () => {
-  afterEach(() => {
-    // Reset location mock after each test
-    (window as any).location.href = '';
-  });
-
   describe('collection type', () => {
     it('should render collection empty state with default message', () => {
       render(<EmptyState type="collection" />);
@@ -70,7 +70,7 @@ describe('EmptyState', () => {
       const clearButton = screen.getByRole('button', { name: /clear search/i });
       await user.click(clearButton);
 
-      expect((window as any).location.href).toBe('/figures');
+      expect(mockedRedirectTo).toHaveBeenCalledWith('/figures');
     });
   });
 
@@ -98,7 +98,7 @@ describe('EmptyState', () => {
       const clearButton = screen.getByRole('button', { name: /clear filters/i });
       await user.click(clearButton);
 
-      expect((window as any).location.href).toBe('/figures');
+      expect(mockedRedirectTo).toHaveBeenCalledWith('/figures');
     });
   });
 
@@ -192,7 +192,7 @@ describe('EmptyState', () => {
       // Test keyboard interaction
       await user.type(button, '{enter}');
       
-      expect((window as any).location.href).toBe('/figures');
+      expect(mockedRedirectTo).toHaveBeenCalledWith('/figures');
     });
 
     it('should not break when onclick is undefined', () => {

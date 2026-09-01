@@ -3,6 +3,7 @@ import { useColorModeValue } from "./ui/color-mode";
 import { Box, Text, Button, VStack, Icon } from '@chakra-ui/react';
 import { FaPlus, FaCube, FaSearch, FaTimes, FaFilter } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
+import { redirectTo } from '../utils/navigation';
 
 interface EmptyStateProps {
   type: 'collection' | 'search' | 'filter';
@@ -38,7 +39,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           button: {
             text: 'Clear Search',
             icon: FaTimes,
-            onclick: () => window.location.href = '/figures'
+            onclick: () => redirectTo('/figures')
           }
         };
       case 'filter':
@@ -49,7 +50,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           button: {
             text: 'Clear Filters',
             icon: FaTimes,
-            onclick: onClearFilters || (() => window.location.href = '/figures')
+            onclick: onClearFilters || (() => redirectTo('/figures'))
           }
         };
       default:

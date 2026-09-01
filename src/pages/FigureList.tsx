@@ -35,6 +35,7 @@ import { CollectionStatus } from '../types';
 import { useFigureListState, EMPTY_FACETED_FILTERS } from '../hooks/useFigureListState';
 import { useCardSize } from '../hooks/useCardSize';
 import { PageSizeValue, CardLayout } from '../components/Pagination';
+import { reloadPage } from '../utils/navigation';
 
 const FigureList: React.FC = () => {
   // URL-persisted state
@@ -244,7 +245,7 @@ const FigureList: React.FC = () => {
         <Heading size="md" color="red.500" mb={4}>
           Error loading figures
         </Heading>
-        <Button onClick={() => window.location.reload()}>
+        <Button onClick={() => reloadPage()}>
           Try Again
         </Button>
       </Box>

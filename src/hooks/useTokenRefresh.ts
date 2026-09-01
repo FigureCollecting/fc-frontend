@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { refreshAccessToken } from '../api';
 import { createLogger } from '../utils/logger';
+import { redirectTo } from '../utils/navigation';
 
 const logger = createLogger('TOKEN_REFRESH');
 
@@ -70,7 +71,7 @@ export const useTokenRefresh = () => {
         logger.warn('Refresh token invalid, logging out');
         logout();
         localStorage.removeItem('auth-storage');
-        window.location.href = '/login';
+        redirectTo('/login');
       }
       return false;
     } finally {
