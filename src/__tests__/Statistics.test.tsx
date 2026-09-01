@@ -119,7 +119,7 @@ function renderStatistics() {
   const result = render(
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={system}>
-        <MemoryRouter>
+        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Statistics />
         </MemoryRouter>
       </ChakraProvider>

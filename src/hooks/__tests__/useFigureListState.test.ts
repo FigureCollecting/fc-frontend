@@ -9,7 +9,7 @@ import { useFigureListState, EMPTY_FACETED_FILTERS } from '../useFigureListState
 // Wrapper that provides router context
 function createWrapper(initialEntries: string[] = ['/']) {
   return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(MemoryRouter, { initialEntries }, children);
+    React.createElement(MemoryRouter, { initialEntries, future: { v7_startTransition: true, v7_relativeSplatPath: true } }, children);
 }
 
 describe('useFigureListState', () => {

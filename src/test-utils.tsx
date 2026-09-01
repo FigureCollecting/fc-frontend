@@ -45,7 +45,7 @@ const AllProviders = ({ children, initialRoutes = ['/'] }: {
         <MockQueryClientProvider>
           <ChakraProvider value={system}>
             <ColorModeProvider>
-              <MemoryRouter initialEntries={initialRoutes}>
+              <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={initialRoutes}>
                 {children}
               </MemoryRouter>
             </ColorModeProvider>
