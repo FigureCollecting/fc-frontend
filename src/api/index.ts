@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 import { Figure, FigureFormData, PaginatedResponse, SearchResult, StatsData, SystemConfig, User, BulkImportPreviewResponse, BulkImportExecuteResponse, MfcList, MfcListFormData, ListPrivacy } from '../types';
 import { createLogger } from '../utils/logger';
+import { redirectTo } from '../utils/navigation';
 import { API_URL, MODE } from '../config/env';
 
 const logger = createLogger('API');
@@ -59,7 +60,7 @@ api.interceptors.response.use(
         logger.warn('Refresh token invalid, logging out');
         logout();
         localStorage.removeItem('auth-storage');
-        window.location.href = '/login';
+        redirectTo('/login');
         return Promise.reject(error);
       }
 
@@ -98,7 +99,7 @@ api.interceptors.response.use(
           logger.error('Token refresh failed, logging out');
           logout();
           localStorage.removeItem('auth-storage');
-          window.location.href = '/login';
+          redirectTo('/login');
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;
@@ -108,7 +109,7 @@ api.interceptors.response.use(
         // No refresh token, just logout
         logout();
         localStorage.removeItem('auth-storage');
-        window.location.href = '/login';
+        redirectTo('/login');
         return Promise.reject(error);
       }
     }

@@ -13,9 +13,13 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 jest.mock('../../stores/authStore');
 const mockedUseAuthStore = useAuthStore as unknown as jest.MockedFunction<typeof useAuthStore>;
 
-// Mock window.location
-delete (window as any).location;
-window.location = { href: '' } as any;
+// Mock the navigation boundary (jsdom >= 21 makes window.location unforgeable)
+jest.mock('../../utils/navigation', () => ({
+  redirectTo: jest.fn(),
+  reloadPage: jest.fn(),
+}));
+import { redirectTo } from '../../utils/navigation';
+const mockedRedirectTo = jest.mocked(redirectTo);
 
 // Mock localStorage
 const localStorageMock = {
@@ -37,7 +41,6 @@ describe('API Module', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    window.location.href = '';
     localStorageMock.clear();
     localStorageMock.removeItem.mockClear();
 
@@ -148,7 +151,7 @@ describe('API Module', () => {
 
       expect(logout).toHaveBeenCalled();
       expect(localStorage.removeItem).toHaveBeenCalledWith('auth-storage');
-      expect(window.location.href).toBe('/login');
+      expect(mockedRedirectTo).toHaveBeenCalledWith('/login');
     });
   });
 

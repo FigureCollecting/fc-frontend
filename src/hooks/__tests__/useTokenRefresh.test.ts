@@ -18,9 +18,18 @@ jest.mock('../../api', () => ({
   refreshAccessToken: jest.fn(),
 }));
 
+// Mock the navigation boundary (jsdom >= 21 makes window.location unforgeable)
+jest.mock('../../utils/navigation', () => ({
+  redirectTo: jest.fn(),
+  reloadPage: jest.fn(),
+}));
+
 import { useAuthStore } from '../../stores/authStore';
 import { refreshAccessToken } from '../../api';
 import { useTokenRefresh, recordUserActivity } from '../useTokenRefresh';
+import { redirectTo } from '../../utils/navigation';
+
+const mockedRedirectTo = jest.mocked(redirectTo);
 
 const mockedRefreshAccessToken = refreshAccessToken as jest.MockedFunction<typeof refreshAccessToken>;
 
@@ -140,21 +149,13 @@ describe('useTokenRefresh', () => {
     const error = { response: { status: 401 }, message: 'Unauthorized' };
     mockedRefreshAccessToken.mockRejectedValue(error);
 
-    // Mock window.location
-    const originalLocation = window.location;
-    delete (window as any).location;
-    window.location = { href: '' } as any;
-
     const { result } = renderHook(() => useTokenRefresh());
 
     await act(async () => {
       await result.current.attemptRefresh();
     });
 
-    expect(window.location.href).toBe('/login');
-
-    // Restore
-    window.location = originalLocation;
+    expect(mockedRedirectTo).toHaveBeenCalledWith('/login');
   });
 
   it('attemptRefresh should handle 403 error by logging out', async () => {
@@ -173,18 +174,13 @@ describe('useTokenRefresh', () => {
     const error = { response: { status: 403 }, message: 'Forbidden' };
     mockedRefreshAccessToken.mockRejectedValue(error);
 
-    const originalLocation = window.location;
-    delete (window as any).location;
-    window.location = { href: '' } as any;
-
     const { result } = renderHook(() => useTokenRefresh());
 
     await act(async () => {
       await result.current.attemptRefresh();
     });
 
-    expect(window.location.href).toBe('/login');
-    window.location = originalLocation;
+    expect(mockedRedirectTo).toHaveBeenCalledWith('/login');
   });
 
   it('attemptRefresh should prevent concurrent refresh attempts', async () => {

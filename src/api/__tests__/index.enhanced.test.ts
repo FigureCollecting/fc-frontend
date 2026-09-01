@@ -60,6 +60,12 @@ const mockApiInstance = (global as any).__mockApiInstance || mockedAxios.default
 // Mock the auth store
 jest.mock('../../stores/authStore');
 
+// Mock the navigation boundary (jsdom >= 21 makes window.location unforgeable)
+jest.mock('../../utils/navigation', () => ({
+  redirectTo: jest.fn(),
+  reloadPage: jest.fn(),
+}));
+
 // Import the API functions after setting up mocks
 import {
   loginUser,
@@ -75,6 +81,9 @@ import {
   filterFigures,
   getFigureStats,
 } from '../index';
+import { redirectTo } from '../../utils/navigation';
+
+const mockedRedirectTo = jest.mocked(redirectTo);
 
 // Enhanced API Integration Tests with mocked axios
 describe('Enhanced API Integration Tests', () => {
@@ -109,11 +118,6 @@ describe('Enhanced API Integration Tests', () => {
       mockedAxios.create = jest.fn(() => mockApiInstance);
     }
 
-    // Mock window.location
-    Object.defineProperty(window, 'location', {
-      value: { href: '' },
-      writable: true,
-    });
   });
 
   describe('API Instance Configuration', () => {
@@ -281,7 +285,7 @@ describe('Enhanced API Integration Tests', () => {
 
         expect(mockLogout).toHaveBeenCalled();
         expect(localStorage.removeItem).toHaveBeenCalledWith('auth-storage');
-        expect(window.location.href).toBe('/login');
+        expect(mockedRedirectTo).toHaveBeenCalledWith('/login');
       });
 
       it('should handle errors in logout endpoint with response object', async () => {
@@ -295,7 +299,7 @@ describe('Enhanced API Integration Tests', () => {
 
         expect(mockLogout).not.toHaveBeenCalled();
         expect(localStorage.removeItem).not.toHaveBeenCalled();
-        expect(window.location.href).not.toBe('/login');
+        expect(mockedRedirectTo).not.toHaveBeenCalled();
       });
 
       it('should handle errors without response object by simply rejecting', async () => {
@@ -306,21 +310,11 @@ describe('Enhanced API Integration Tests', () => {
 
         expect(mockLogout).not.toHaveBeenCalled();
         expect(localStorage.removeItem).not.toHaveBeenCalled();
-        expect(window.location.href).toBe('');
+        expect(mockedRedirectTo).not.toHaveBeenCalled();
       });
-      const originalLocation = window.location;
-
       beforeEach(() => {
         // Mock localStorage
         Storage.prototype.removeItem = jest.fn();
-        Object.defineProperty(window, 'location', {
-          value: { href: '' },
-          writable: true,
-        });
-      });
-
-      afterEach(() => {
-        window.location = originalLocation;
       });
 
       it('should handle 401 error and logout user', async () => {
@@ -334,7 +328,7 @@ describe('Enhanced API Integration Tests', () => {
 
         expect(mockLogout).toHaveBeenCalled();
         expect(localStorage.removeItem).toHaveBeenCalledWith('auth-storage');
-        expect(window.location.href).toBe('/login');
+        expect(mockedRedirectTo).toHaveBeenCalledWith('/login');
       });
 
       it('should not handle non-401 errors', async () => {
@@ -346,7 +340,7 @@ describe('Enhanced API Integration Tests', () => {
 
         expect(mockLogout).not.toHaveBeenCalled();
         expect(localStorage.removeItem).not.toHaveBeenCalled();
-        expect(window.location.href).not.toBe('/login');
+        expect(mockedRedirectTo).not.toHaveBeenCalled();
       });
 
       it('should handle 401 error without response data', async () => {

@@ -14,6 +14,13 @@ const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore
 jest.mock('../../stores/syncStore');
 const mockUseSyncStore = useSyncStore as jest.MockedFunction<typeof useSyncStore>;
 
+// Mock the navigation boundary (jsdom >= 21 makes window.location unforgeable)
+jest.mock('../../utils/navigation', () => ({
+  redirectTo: jest.fn(),
+  reloadPage: jest.fn(),
+}));
+import { reloadPage } from '../../utils/navigation';
+
 // Mock react-router-dom
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -255,16 +262,9 @@ describe('FigureList', () => {
       error: new Error('fail'),
     } as any));
 
-    // Mock window.location.reload
-    const reloadMock = jest.fn();
-    Object.defineProperty(window, 'location', {
-      value: { ...window.location, reload: reloadMock },
-      writable: true,
-    });
-
     render(<FigureList />);
     fireEvent.click(screen.getByText('Try Again'));
 
-    expect(reloadMock).toHaveBeenCalled();
+    expect(jest.mocked(reloadPage)).toHaveBeenCalled();
   });
 });

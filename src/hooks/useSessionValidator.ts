@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { getUserProfile } from '../api';
 import { createLogger } from '../utils/logger';
+import { redirectTo } from '../utils/navigation';
 
 const logger = createLogger('SESSION');
 
@@ -54,7 +55,7 @@ export const useSessionValidator = () => {
         logger.warn('Session expired - redirecting to login');
         logout();
         localStorage.removeItem('auth-storage');
-        window.location.href = '/login';
+        redirectTo('/login');
       } else if (!error.response) {
         // Network error - backend might be down, don't logout
         logger.warn('Network error during session validation - backend may be unavailable');
