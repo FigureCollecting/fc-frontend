@@ -5,10 +5,10 @@ import { render, mockUser } from '../../test-utils';
 import Navbar from '../Navbar';
 import { useAuthStore } from '../../stores/authStore';
 
-// Mock react-router-dom
+// Mock react-router
 const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => mockNavigate,
 }));
 

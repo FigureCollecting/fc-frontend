@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router';
 import { Box, Heading, Text, Button, VStack, Icon } from '@chakra-ui/react';
 import { FaExclamationTriangle, FaHome } from 'react-icons/fa';
 

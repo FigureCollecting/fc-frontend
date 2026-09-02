@@ -1,7 +1,7 @@
 import React from 'react';
 import { useColorModeValue } from "../components/ui/color-mode";
 import { Helmet } from 'react-helmet-async';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router';
 import { useMutation } from 'react-query';
 import { Box,
   Button,

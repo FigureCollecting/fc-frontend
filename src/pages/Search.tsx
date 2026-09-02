@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { useQuery } from 'react-query';
 import { Box, Heading, SimpleGrid, Spinner, Center, Text, Flex } from '@chakra-ui/react';
 import { toaster } from '../components/ui/toaster';

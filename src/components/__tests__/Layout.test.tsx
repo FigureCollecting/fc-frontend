@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { ChakraProvider } from '@chakra-ui/react';
 import { ColorModeProvider } from '../ui/color-mode';
 import system from '../../theme';
@@ -28,9 +28,9 @@ jest.mock('../Sidebar', () => {
   };
 });
 
-// Mock Outlet from react-router-dom
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+// Mock Outlet from react-router
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   Outlet: () => <div data-testid="mock-outlet">Page Content</div>,
 }));
 
@@ -41,7 +41,7 @@ const renderLayout = () => {
   return render(
     <ChakraProvider value={system}>
       <ColorModeProvider>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter>
           <Layout />
         </BrowserRouter>
       </ColorModeProvider>

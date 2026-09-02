@@ -24,7 +24,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { CollectionStatus } from '../types';
 import { FacetedFilters } from '../components/FacetedFilterSidebar';
 import { PageSizeValue, DEFAULT_PAGE_SIZE, PAGE_SIZE_PRESETS, CardLayout, DEFAULT_CARD_LAYOUT } from '../components/Pagination';

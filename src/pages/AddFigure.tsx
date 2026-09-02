@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useColorModeValue } from "../components/ui/color-mode";
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router';
 import { useMutation, useQueryClient } from 'react-query';
 import { Box, Heading, Button, Flex, Breadcrumb, Icon } from '@chakra-ui/react';
 import { toaster } from '../components/ui/toaster';

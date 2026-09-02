@@ -15,7 +15,7 @@ import { Box,
 import { Tooltip } from '../components/ui/tooltip';
 import { toaster } from '../components/ui/toaster';
 import { FaTrash, FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { getLists, deleteList, createList } from '../api';
 import { MfcList, MfcListFormData } from '../types';
 import ListFormModal from '../components/ListFormModal';

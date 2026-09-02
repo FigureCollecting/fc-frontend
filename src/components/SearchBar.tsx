@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   InputGroup,
   Input,

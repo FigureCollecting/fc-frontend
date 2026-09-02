@@ -3,13 +3,13 @@
  */
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { useFigureListState, EMPTY_FACETED_FILTERS } from '../useFigureListState';
 
 // Wrapper that provides router context
 function createWrapper(initialEntries: string[] = ['/']) {
   return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(MemoryRouter, { initialEntries, future: { v7_startTransition: true, v7_relativeSplatPath: true } }, children);
+    React.createElement(MemoryRouter, { initialEntries }, children);
 }
 
 describe('useFigureListState', () => {
