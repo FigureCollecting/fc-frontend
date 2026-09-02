@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useColorModeValue } from "../components/ui/color-mode";
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router';
 import { Box,
   Heading,
   SimpleGrid,
@@ -23,7 +23,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { getFigures, getFigureStats } from '../api';
 import FigureCard from '../components/FigureCard';
 import SearchBar from '../components/SearchBar';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { CollectionStatus } from '../types';
 
 const Dashboard: React.FC = () => {

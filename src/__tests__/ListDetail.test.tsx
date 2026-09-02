@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ChakraProvider } from '@chakra-ui/react';
 import ListDetail from '../pages/ListDetail';
@@ -15,8 +15,8 @@ const mockUpdateList = api.updateList as jest.MockedFunction<typeof api.updateLi
 
 // Mock useNavigate
 const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => mockNavigate,
 }));
 
@@ -81,7 +81,7 @@ function renderListDetail(listId = 'list1') {
   const result = render(
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={system}>
-        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={[`/lists/${listId}`]}>
+        <MemoryRouter initialEntries={[`/lists/${listId}`]}>
           <Routes>
             <Route path="/lists/:id" element={<ListDetail />} />
           </Routes>

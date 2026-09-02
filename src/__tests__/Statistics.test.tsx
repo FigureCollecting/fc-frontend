@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ChakraProvider } from '@chakra-ui/react';
 import Statistics from '../pages/Statistics';
@@ -14,8 +14,8 @@ const mockGetFigureStats = api.getFigureStats as jest.MockedFunction<typeof api.
 
 // Mock useNavigate
 const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => mockNavigate,
 }));
 
@@ -119,7 +119,7 @@ function renderStatistics() {
   const result = render(
     <QueryClientProvider client={queryClient}>
       <ChakraProvider value={system}>
-        <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <MemoryRouter>
           <Statistics />
         </MemoryRouter>
       </ChakraProvider>

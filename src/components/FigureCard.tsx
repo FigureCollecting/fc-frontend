@@ -1,6 +1,6 @@
 import React from 'react';
 import { useColorModeValue } from "./ui/color-mode";
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router';
 import { Box, Image, Text, Badge, Link, Flex, IconButton, HStack } from '@chakra-ui/react';
 import { toaster } from './ui/toaster';
 import { FaEdit, FaTrash } from 'react-icons/fa';

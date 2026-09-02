@@ -21,9 +21,9 @@ jest.mock('../../utils/navigation', () => ({
 }));
 import { reloadPage } from '../../utils/navigation';
 
-// Mock react-router-dom
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+// Mock react-router
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => jest.fn(),
   Link: ({ children, to, ...props }: any) => <a href={to} {...props}>{children}</a>,
 }));

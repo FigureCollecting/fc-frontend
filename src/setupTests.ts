@@ -4,6 +4,17 @@
  * All library-specific mocks are in src/test-utils/mocks/
  */
 
+// Node globals react-router v7 needs under jsdom (not provided by jest-environment-jsdom)
+import { TextDecoder, TextEncoder } from 'node:util';
+import { ReadableStream, TransformStream, WritableStream } from 'node:stream/web';
+
+if (typeof globalThis.TextEncoder === 'undefined') {
+  Object.assign(globalThis, { TextEncoder, TextDecoder });
+}
+if (typeof globalThis.ReadableStream === 'undefined') {
+  Object.assign(globalThis, { ReadableStream, WritableStream, TransformStream });
+}
+
 import '@testing-library/jest-dom';
 import 'jest-axe/extend-expect';
 import { configure } from '@testing-library/react';

@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { HelmetProvider } from 'react-helmet-async';
@@ -45,7 +45,7 @@ const AllProviders = ({ children, initialRoutes = ['/'] }: {
         <MockQueryClientProvider>
           <ChakraProvider value={system}>
             <ColorModeProvider>
-              <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={initialRoutes}>
+              <MemoryRouter initialEntries={initialRoutes}>
                 {children}
               </MemoryRouter>
             </ColorModeProvider>

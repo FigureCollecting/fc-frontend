@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router';
 import { Box, Stack, Link, Text, Icon, Flex } from '@chakra-ui/react';
 import { FaHome, FaCube, FaPlus, FaSearch, FaChartBar, FaListUl, FaUser } from 'react-icons/fa';
 

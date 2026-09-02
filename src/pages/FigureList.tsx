@@ -18,7 +18,7 @@ import { Box,
 } from '@chakra-ui/react';
 import { toaster } from '../components/ui/toaster';
 import { FaPlus, FaSync, FaChevronDown } from 'react-icons/fa';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router';
 import { getFigures, filterFigures, getFigureStats } from '../api';
 import FigureCard from '../components/FigureCard';
 import { FacetedFilters } from '../components/FacetedFilterSidebar';

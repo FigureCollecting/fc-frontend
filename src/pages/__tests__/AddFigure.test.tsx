@@ -11,9 +11,9 @@ const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore
 // Mock navigate function
 const mockNavigate = jest.fn();
 
-// Mock react-router-dom
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+// Mock react-router
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => mockNavigate,
   Link: ({ children, to, ...props }: any) => <a href={to} {...props}>{children}</a>,
 }));

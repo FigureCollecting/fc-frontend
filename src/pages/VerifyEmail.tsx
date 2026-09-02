@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router';
 import { Box, Heading, Spinner, Alert, Button, VStack } from '@chakra-ui/react';
 import { verifyEmailToken } from '../api';
 

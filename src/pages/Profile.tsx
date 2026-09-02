@@ -1,6 +1,6 @@
 import React from 'react';
 import { useColorModeValue } from "../components/ui/color-mode";
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Box,
   Heading,

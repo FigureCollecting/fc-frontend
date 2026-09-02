@@ -89,7 +89,7 @@ jest.mock('../pages/NotFound', () => {
 
 jest.mock('../components/Layout', () => {
   return function MockLayout() {
-    const { Outlet } = require('react-router-dom');
+    const { Outlet } = require('react-router');
     return (
       <div data-testid="layout">
         <div data-testid="layout-header">Layout Header</div>

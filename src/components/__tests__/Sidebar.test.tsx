@@ -3,10 +3,10 @@ import { screen } from '@testing-library/react';
 import { render } from '../../test-utils';
 import Sidebar from '../Sidebar';
 
-// Mock react-router-dom to control location
+// Mock react-router to control location
 const mockUseLocation = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useLocation: () => mockUseLocation(),
 }));
 
